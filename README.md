@@ -13,7 +13,7 @@
 > *   **Data Sovereignty (HIPAA/GDPR):** Features a **Zero-Trust Local Architecture**. All inference occurs on-premise (via Ollama); no clinical data is transmitted to external providers (OpenAI/Anthropic), satisfying strict BAA protocols and data residency requirements.
 > *   **IP Safety:** Utilizes **Synthea™** synthetic data (Apache 2.0). This repository contains **Zero PHI** (Protected Health Information), making it safe for public audit and portfolio demonstration.
 
-![Dashboard Screenshot](PriorAuth.png) *[Add a screenshot of your React Dashboard here]*
+![Dashboard Screenshot](PriorAuth.png)
 
 ## 🏥 Executive Summary
 Healthcare administrative costs consume billions annually, with **Prior Authorizations (PA)** serving as the primary bottleneck for patient care and hospital revenue.
