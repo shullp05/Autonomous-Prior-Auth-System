@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["metadata", "results"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["timestamp", "mode", "total_claims"],
+      "properties": {
+        "timestamp": {"type": "string"},
+        "mode": {"type": "string"},
+        "total_claims": {"type": "integer"},
+        "avg_duration_ms": {"type": ["number", "null"]},
+        "p50_duration_ms": {"type": ["number", "null"]},
+        "p95_duration_ms": {"type": ["number", "null"]},
+        "audit_model": {"type": "string"},
+        "appeal_model": {"type": "string"},
+        "embed_model": {"type": "string"}
+      }
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["patient_id", "status", "duration_ms"],
+        "properties": {
+          "patient_id": {"type": "string"},
+          "status": {"type": "string"},
+          "duration_ms": {"type": ["number", "null"]}
+        }
+      }
+    }
+  }
+}

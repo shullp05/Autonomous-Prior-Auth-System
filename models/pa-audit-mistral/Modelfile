@@ -1,0 +1,47 @@
+# PA-Audit Model: Mistral Nemo 12B (Optimized for Clinical PA)
+#
+# Mistral Nemo is a fast, reliable model for structured output.
+# Good balance of speed and accuracy for clinical decisions.
+#
+# Build: ollama create pa-audit-mistral -f models/pa-audit-mistral/Modelfile
+
+FROM mistral-nemo:latest
+
+# === RAM/VRAM Optimization ===
+# Context window: 4096 tokens for PA audit prompts
+# Mistral Nemo supports up to 128K but we constrain for efficiency
+PARAMETER num_ctx 4096
+
+# Max output tokens: 512 for concise JSON responses
+PARAMETER num_predict 512
+
+# Use all available GPU layers
+PARAMETER num_gpu -1
+
+# === Inference Parameters ===
+# Low temperature for deterministic clinical decisions
+PARAMETER temperature 0.2
+
+# Moderate top_p
+PARAMETER top_p 0.9
+
+# Repetition penalty
+PARAMETER repeat_penalty 1.1
+
+# Stop sequences for Mistral
+PARAMETER stop "</s>"
+PARAMETER stop "[INST]"
+
+# === System Prompt ===
+SYSTEM """You are a Senior Utilization Review Medical Director specialized in prior authorization decisions.
+
+Your role:
+- Evaluate clinical eligibility for medications using strict policy criteria
+- Output structured JSON responses for automated processing
+- Apply safety exclusions with zero tolerance
+- Flag ambiguous cases for human review rather than guessing
+
+Output requirements:
+- Return ONLY valid JSON, no markdown or explanatory text
+- Use exact field names as specified in prompts
+- Never invent clinical data not present in inputs"""

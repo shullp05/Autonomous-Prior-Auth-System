@@ -1,0 +1,257 @@
+# PAYER POLICY: Chronic Weight Management (Wegovy/Semaglutide)
+# (OBESITY / CHRONIC WEIGHT MANAGEMENT ONLY – NOT CV-RISK OR MASH PATHWAYS)
+
+Effective Date: 2025-01-01
+Policy ID: RX-WEG-2025
+BMI_DIAGNOSIS_REQUIREMENTS
+(only these patterns and their clear derivations/abbreviations count as satisfying BMI/diagnosis criteria)
+
+GENERAL NOTES:
+- Height/weight that clearly calculate to the thresholds below count the same as explicit BMI.
+- Diagnosis strings include BOTH free-text labels and structured problem-list / ICD-based text.
+
+================================================================================
+ADULTS (≥ 18 YEARS) – OBESITY / OVERWEIGHT CRITERIA
+================================================================================
+
+A. STANDARD ADULT BMI PATTERNS THAT QUALIFY
+
+
+   Adult patient (≥18 years) must meet ONE of the following BMI patterns:
+
+   1) BMI ≥ 30 kg/m² (OBESITY PATHWAY)
+
+      - Baseline or current BMI ≥ 30 kg/m²
+      - PLUS ≥1 adult obesity diagnosis string in the chart.
+
+      ADULT OBESITY DIAGNOSIS STRINGS THAT COUNT:
+      (free-text, problem list, or ICD-linked labels)
+
+      - Generic / unspecified obesity:
+        - "Obesity", "obese", "clinical obesity"
+        - "Obese patient", "patient is obese"
+        - "BMI ≥ 30", "BMI > 30", "BMI 30–39.9" when clearly diagnostic
+        - "Simple obesity", "unspecified obesity"
+        - ICD-linked text such as:
+          - "Obesity due to excess calories (E66.0)"
+          - "Obesity, unspecified (E66.9)"
+          - "Overweight and obesity (E66.x)" when BMI ≥ 30
+
+      - Class-specific obesity:
+        - "Class 1 obesity", "class I obesity", "mild obesity"
+        - "Class 2 obesity", "class II obesity", "moderate obesity"
+        - "Class 3 obesity", "class III obesity"
+        - "Severe obesity", "severe obesity due to excess calories"
+        - "Extreme obesity", "morbid obesity", "morbid obesity due to excess calories"
+        - "Morbid (severe) obesity with alveolar hypoventilation"
+        - ICD-style linked labels:
+          - "Morbid (severe) obesity due to excess calories (E66.01)"
+          - "Other obesity due to excess calories (E66.09)"
+          - "Extreme obesity (BMI ≥ 40) (Z68.41–Z68.45)" when present as part of dx
+
+      - Other adult obesity phrases:
+        - "Obesity associated with type 2 diabetes"
+        - "Obesity-related hypertension", "obesity-related dyslipidemia"
+        - "Obesity hypoventilation syndrome" (if clearly flagged as obesity-related dx)
+
+   2) BMI ≥ 27 kg/m² AND ≥ 1 WEIGHT-RELATED COMORBIDITY (OVERWEIGHT PATHWAY)
+
+      - Baseline or current BMI ≥ 27.0 and < 30.0 kg/m²
+      - PLUS documentation of at least ONE weight-related comorbidity from the
+        "WEIGHT-RELATED COMORBIDITIES THAT COUNT" list (see below)
+      - PLUS at least one adult excess-weight diagnosis string:
+
+      ADULT OVERWEIGHT / EXCESS-WEIGHT DIAGNOSIS STRINGS THAT COUNT:
+      - "Overweight"
+      - "Overweight, adult"
+      - "Overweight and obesity (E66.x)" with BMI 27–29.9
+      - "BMI 27–29.9"
+      - "Elevated BMI", "BMI above normal", "BMI > 27"
+      - Structured/ICD labels:
+        - "Overweight (E66.3)"
+        - "Overweight and obesity (E66.x)" where BMI ≥ 27 is documented
+        - BMI codes Z68.27–Z68.29 when present along with an overweight/obesity dx
+
+   *If BOTH 1) and 2) are met, treat the patient as qualifying under BOTH pathways.
+
+
+================================================================================
+WEIGHT-RELATED COMORBIDITIES THAT COUNT
+================================================================================
+
+Weight-related comorbidities that typically satisfy "BMI ≥ 27 + comorbidity" requirements.
+
+For each category, the following diagnosis strings should be treated as equivalent.
+
+1) HYPERTENSION / HIGH BLOOD PRESSURE
+
+   DIAGNOSIS STRINGS THAT COUNT:
+   - "Hypertension", "HTN"
+   - "High blood pressure", "elevated blood pressure"
+   - "Essential hypertension", "benign essential hypertension"
+   - "Primary hypertension"
+   - "Secondary hypertension", when chronic and related to obesity/metabolic risk
+   - "Hypertensive heart disease", "hypertensive kidney disease",
+     "hypertensive heart and renal disease"
+   - ICD-styled labels:
+     - "Hypertension (I10)"
+     - "Hypertensive heart disease (I11.x)"
+     - "Hypertensive kidney disease (I12.x)"
+     - "Hypertensive heart and chronic kidney disease (I13.x)"
+
+2) TYPE 2 DIABETES MELLITUS
+
+   DIAGNOSIS STRINGS THAT COUNT:
+   - "Type 2 diabetes mellitus", "type II diabetes mellitus"
+   - "Type 2 DM", "Type II DM", "T2DM", "DM2", "DMII"
+   - "Adult-onset diabetes mellitus", when clearly type 2
+   - "Non–insulin-dependent diabetes mellitus" (NIDDM) if clearly type 2
+   - "Type 2 diabetes with complications", e.g.:
+     - "Type 2 diabetes with nephropathy", "with neuropathy", "with retinopathy",
+       "with hyperglycemia", etc.
+   - ICD-style:
+     - "Type 2 diabetes mellitus without complications (E11.9)"
+     - "Type 2 diabetes mellitus with [complication] (E11.x)" where "E11" prefix present
+
+   NOTE: Isolated "Type 1 diabetes mellitus", "T1DM", "IDDM" alone is NOT counted as the
+   weight-related comorbidity for Wegovy BMI criteria (though it may be clinically relevant).
+
+3) DYSLIPIDEMIA / HYPERLIPIDEMIA
+
+   DIAGNOSIS STRINGS THAT COUNT:
+   - "Dyslipidemia", "dyslipidaemia"
+   - "Hyperlipidemia", "hyperlipidaemia", "HLD"
+   - "Hypercholesterolemia", "high cholesterol"
+   - "Hypertriglyceridemia", "high triglycerides"
+   - "Mixed hyperlipidemia"
+   - "Familial hypercholesterolemia", "familial combined hyperlipidemia"
+   - "Lipid disorder", "elevated LDL", "elevated non-HDL cholesterol"
+   - ICD-style:
+     - "Pure hypercholesterolemia (E78.0)"
+     - "Mixed hyperlipidemia (E78.2)"
+     - "Other hyperlipidemia (E78.4)"
+     - "Hyperlipidemia, unspecified (E78.5)"
+
+4) OBSTRUCTIVE SLEEP APNEA (OSA)
+
+   DIAGNOSIS STRINGS THAT COUNT:
+   - "Obstructive sleep apnea", "OSA"
+   - "Sleep apnea", when clearly obstructive and chronic
+   - "Obstructive sleep apnea syndrome"
+   - "Sleep apnea on CPAP", "sleep apnea on BiPAP"
+   - "Severe OSA", "moderate OSA", "mild OSA"
+   - ICD-style:
+     - "Obstructive sleep apnea (G47.33)"
+
+5) CARDIOVASCULAR DISEASE (ASCVD)
+
+   DIAGNOSIS STRINGS THAT COUNT:
+   - Coronary / ischemic disease:
+     - "Coronary artery disease", "CAD", "coronary heart disease"
+     - "Ischemic heart disease", "chronic ischemic heart disease"
+     - "Stable angina", "unstable angina", "variant angina"
+     - "History of MI", "prior MI", "old myocardial infarction"
+     - "Myocardial infarction", "STEMI", "NSTEMI", "acute coronary syndrome"
+
+   - Cerebrovascular disease:
+     - "Stroke", "CVA", "cerebrovascular accident"
+     - "Ischemic stroke", "hemorrhagic stroke"
+     - "Transient ischemic attack", "TIA"
+
+   - Peripheral arterial disease:
+     - "Peripheral arterial disease", "PAD"
+     - "Peripheral vascular disease", "PVD"
+     - "Claudication" when clearly atherosclerotic
+
+   - Heart failure:
+     - "Heart failure", "HF", "CHF", "congestive heart failure"
+     - "Systolic heart failure", "HFrEF"
+     - "Diastolic heart failure", "HFpEF"
+     - "Chronic heart failure", "acute on chronic heart failure"
+
+
+# SAFETY_EXCLUSIONS
+
+# CLINICAL NOTE:
+# The ONLY forms of cancer/carcinoma that qualify as Wegovy SAFETY_EXCLUSIONS are
+# "Personal or family history of Medullary Thyroid Carcinoma (MTC)" or
+# "Personal or family history of Multiple Endocrine Neoplasia syndrome type 2 (MEN 2)".
+# Papillary or Follicular cancer/carcinoma are NOT SAFETY_EXCLUSIONS.
+
+SAFETY_EXCLUSIONS (only these and their clear derivations/abbreviations count):
+
+- Personal or family history of Medullary Thyroid Carcinoma:
+  - "Personal or family history of Medullary Thyroid Carcinoma"
+  - "Medullary Thyroid Carcinoma (MTC)", "MTC"
+  - "Medullary carcinoma of thyroid", "medullary thyroid cancer"
+
+- Personal or family history of Multiple Endocrine Neoplasia syndrome type 2:
+  - "Multiple Endocrine Neoplasia syndrome type 2", "MEN 2", "MEN2", "MEN-2"
+  - "MEN type 2", "MEN type II"
+
+- Pregnant or currently nursing:
+  - "Pregnant", "currently pregnant", "pregnancy"
+  - "Breastfeeding", "breast-feeding", "nursing mother", "nursing"
+  - "Lactating", "lactation"
+  - Planned pregnancy while on Wegovy (needs discontinuation ≥2 months prior)
+
+- Prior serious hypersensitivity to semaglutide or Wegovy components:
+  - "Serious hypersensitivity reaction to semaglutide"
+  - "Anaphylaxis to Wegovy/semaglutide"
+  - "Angioedema due to semaglutide"
+  - "Severe allergic reaction to Wegovy/semaglutide"
+
+- No Concurrent GLP-1 or GLP-1/GIP Use:
+  - The patient cannot be on any other medication that is a GLP-1 receptor agonist
+    or GLP-1/GIP agonist, including combination products.
+
+  GLP-1 / GLP-1/GIP agents to flag:
+    - Dulaglutide: "Dulaglutide", "Trulicity"
+    - Exenatide: "Exenatide", "Byetta"
+    - Exenatide extended-release: "Bydureon", "Bydureon BCise"
+    - Liraglutide:
+        - "Liraglutide", "Victoza", "Saxenda"
+        - Combination: "Xultophy" (insulin degludec / liraglutide)
+    - Lixisenatide:
+        - "Lixisenatide", "Adlyxin"
+        - Combination: "Soliqua" (insulin glargine / lixisenatide)
+    - Semaglutide (other than Wegovy):
+        - Injection: "Ozempic"
+        - Tablets: "Rybelsus"
+        - Any other "semaglutide" entry not clearly Wegovy
+    - Tirzepatide (GLP-1/GIP dual agonist):
+        - "Tirzepatide", "Mounjaro", "Zepbound"
+    - Other GLP-1 RAs (legacy/rare):
+        - "Albiglutide", "Tanzeum"
+
+- Pancreatitis:
+  - "History of pancreatitis", "prior acute pancreatitis"
+  - "Chronic pancreatitis"
+  - "Pancreatitis while on GLP-1" (any agent)
+
+- Suicidality (label-based precaution):
+  - History of suicide attempt(s)
+  - Active suicidal ideation or self-harm behavior documented
+  - Explicit charted instruction to avoid GLP-1 / weight-loss meds due to suicidality
+
+- Severe GI motility disorder (label-based precaution):
+  - "Severe gastroparesis" or major GI motility disorder where GLP-1 is to be avoided
+
+
+================================================================================
+AMBIGUITY RULES
+================================================================================
+
+- Pattern: "sleep apnea" -> MANUAL_REVIEW (Note: Must specify obstructive or OSA to qualify.)
+- Pattern: "thyroid cancer" -> MANUAL_REVIEW (Note: Only medullary thyroid carcinoma is hard exclusion.)
+- Pattern: "papillary thyroid carcinoma" -> MANUAL_REVIEW
+- Pattern: "follicular thyroid carcinoma" -> MANUAL_REVIEW
+- Pattern: "thyroid carcinoma" -> MANUAL_REVIEW
+- Pattern: "malignant tumor of thyroid" -> MANUAL_REVIEW
+- Pattern: "type 1 diabetes" -> CONSERVATIVE_DENY (Note: Not a qualifying weight-related comorbidity for Wegovy BMI criteria.)
+- Pattern: "prediabetes" -> MANUAL_REVIEW
+- Pattern: "pre-diabetes" -> MANUAL_REVIEW
+- Pattern: "borderline diabetes" -> MANUAL_REVIEW
+- Pattern: "impaired fasting glucose" -> MANUAL_REVIEW
+- Pattern: "borderline hypertension" -> MANUAL_REVIEW
+- Pattern: "Elevated BP" -> MANUAL_REVIEW

@@ -4,9 +4,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
-venv/
-ENV/
 build/
 develop-eggs/
 dist/
@@ -22,32 +19,99 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# Virtual environments
-revenue_agent/
+# Virtual Env
+venv/
+env/
+ENV/
 
-# Chroma DB
+# Testing & Coverage
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
+
+# Linter & Type Checker Caches
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.dmypy.json
+dmypy.json
+
+# Project Artifacts (Generated at runtime)
+output/*
+!output/.gitkeep
 chroma_db/
+.last_model_trace.json
+dashboard_data.json
+governance_report.json
+orphan_report.json
+rag_sanity_out.json
 
-# Large files
+# Large Data Files (should be downloaded/generated, not committed)
+data_*.csv
 synthea-with-dependencies.jar
+*.jar
 
-# IDE
+# Benchmark Results (generated)
+benchmark_*.json
+benchmark_results.json
+
+# Patch Files (temporary)
+*.patch
+
+# Environment Variables (Security Critical)
+.env
+.env.local
+.env.*.local
+
+# IDEs & Editors
 .vscode/
 .idea/
+.trae/
 *.swp
 *.swo
-*~
+*.sublime-project
+*.sublime-workspace
+PriorAuth.code-workspace
 
-# OS
+# OS Junk
 .DS_Store
 Thumbs.db
+*Zone.Identifier
+desktop.ini
+
+# Dashboard/Node
+dashboard/node_modules/
+dashboard/dist/
+dashboard/.next/
+dashboard/out/
+dashboard/package-lock.json
 
 # Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Dashboard data
-dashboard_data.json
+# Local PDF/Image artifacts (should be in docs/assets if tracked)
+*.pdf
+*.png
+*.jpg
+!docs/assets/*.pdf
+!docs/assets/*.png
+!docs/assets/*.jpg
+!docs/assets/*.jpeg
+!docs/assets/*.webp
+!docs/assets/*.svg
 
-# Synthea output
-output/
+# Temporary/scratch files
+ignore.md
+questions.txt
+readme_updates.md
+**/repo_files.txt
+
+# Additional session/conversation artifacts
+additionalInfo/
