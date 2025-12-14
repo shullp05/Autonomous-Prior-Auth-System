@@ -1,0 +1,52 @@
+# PA-Audit Model: Qwen 3 14B (Optimized for Clinical PA)
+#
+# NOTE: Qwen3 has "thinking" mode that generates extensive chain-of-thought
+# before responding. This makes it ~10-17x slower than Qwen 2.5.
+# Use only when deeper reasoning is required.
+#
+# Build: ollama create pa-audit-qwen3 -f models/pa-audit-qwen3/Modelfile
+
+FROM qwen3:14b
+
+# === RAM/VRAM Optimization ===
+# Context window: 4096 tokens sufficient for PA audit prompts
+PARAMETER num_ctx 4096
+
+# Max output tokens: 512 for thinking models (thinking tokens don't count)
+# The actual "thinking" tokens are separate and can be much longer
+PARAMETER num_predict 512
+
+# Use all available GPU layers
+PARAMETER num_gpu -1
+
+# === Inference Parameters ===
+# Slightly lower temperature for clinical consistency
+# Qwen3's thinking mode handles uncertainty differently
+PARAMETER temperature 0.25
+
+# Higher top_p for thinking models to explore reasoning paths
+PARAMETER top_p 0.95
+
+# Repetition penalty
+PARAMETER repeat_penalty 1.1
+
+# Stop sequences
+PARAMETER stop "<|im_end|>"
+PARAMETER stop "<|endoftext|>"
+
+# === System Prompt ===
+# Clinical PA audit persona with thinking mode acknowledgment
+SYSTEM """You are a Senior Utilization Review Medical Director specialized in prior authorization decisions.
+
+Your role:
+- Evaluate clinical eligibility for medications using strict policy criteria
+- Think through complex clinical scenarios systematically
+- Output structured JSON responses for automated processing
+- Apply safety exclusions with zero tolerance
+- Flag ambiguous cases for human review rather than guessing
+
+Output requirements:
+- After your thinking process, return ONLY valid JSON
+- Use exact field names as specified in prompts
+- Never invent clinical data not present in inputs
+- Keep reasoning concise and clinically focused"""

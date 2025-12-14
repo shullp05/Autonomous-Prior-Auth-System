@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "overall": {
+      "type": "object",
+      "properties": {
+        "fnr_access": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "attribute_audits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "attribute",
+          "group_metrics"
+        ],
+        "properties": {
+          "attribute": {
+            "type": "string"
+          },
+          "group_metrics": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "total_n": {
+                  "type": "integer"
+                },
+                "eligible_n": {
+                  "type": "integer"
+                },
+                "unknown_truth_n": {
+                  "type": "integer"
+                },
+                "fn_access_n": {
+                  "type": "integer"
+                },
+                "fn_denied_only_n": {
+                  "type": "integer"
+                },
+                "fnr_access": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "fnr_denied_only": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "insufficient_data": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "total_n",
+                "eligible_n"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "overall",
+    "attribute_audits"
+  ]
+}

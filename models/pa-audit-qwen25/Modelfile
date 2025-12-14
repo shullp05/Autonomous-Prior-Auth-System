@@ -1,0 +1,51 @@
+# PA-Audit Model: Qwen 2.5 14B Instruct (Optimized for Clinical PA)
+# 
+# This model is optimized for:
+# - Structured JSON output for clinical audit decisions
+# - Fast inference without "thinking" overhead
+# - Low temperature for deterministic clinical decisions
+# - Constrained context/output for RAM efficiency
+#
+# Build: ollama create pa-audit-qwen25 -f models/pa-audit-qwen25/Modelfile
+
+FROM qwen2.5:14b-instruct-q4_K_M
+
+# === RAM/VRAM Optimization ===
+# Context window: 4096 tokens is sufficient for PA audit prompts
+# This significantly reduces VRAM usage vs default 32K
+PARAMETER num_ctx 4096
+
+# Max output tokens: 768 is enough for JSON response + reasoning
+PARAMETER num_predict 768
+
+# Use all available GPU layers for performance
+PARAMETER num_gpu -1
+
+# === Inference Parameters ===
+# Low temperature for consistent, deterministic clinical decisions
+PARAMETER temperature 0.3
+
+# Moderate top_p for controlled sampling
+PARAMETER top_p 0.9
+
+# Slight repetition penalty to avoid verbose loops
+PARAMETER repeat_penalty 1.1
+
+# Stop sequences for JSON mode
+PARAMETER stop "<|im_end|>"
+PARAMETER stop "<|endoftext|>"
+
+# === System Prompt ===
+# Clinical PA audit persona - embedded for consistency
+SYSTEM """You are a Senior Utilization Review Medical Director specialized in prior authorization decisions.
+
+Your role:
+- Evaluate clinical eligibility for medications using strict policy criteria
+- Output structured JSON responses for automated processing
+- Apply safety exclusions with zero tolerance
+- Flag ambiguous cases for human review rather than guessing
+
+Output requirements:
+- Return ONLY valid JSON, no markdown or explanatory text
+- Use exact field names as specified in prompts
+- Never invent clinical data not present in inputs"""

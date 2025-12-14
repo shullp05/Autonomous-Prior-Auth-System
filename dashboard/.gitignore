@@ -1,24 +1,81 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Tooling caches
+.coverage
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+repo_files.txt
 
-node_modules
-dist
-dist-ssr
-*.local
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# Virtual environments
+revenue_agent/
+
+# Environment/config secrets
+.env
+.env.*
+
+# Chroma DB
+chroma_db/
+
+# Large files
+synthea-with-dependencies.jar
+
+# IDE & editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS cruft
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+Thumbs.db
+
+# Logs
+*.log
+
+# Generated clinical data
+dashboard_data.json
+governance_report.json
+.last_model_trace.json
+data_patients.csv
+data_conditions.csv
+data_medications.csv
+data_observations.csv
+
+# Dashboard runtime mirrors
+dashboard/public/dashboard_data.json
+dashboard/public/governance_report.json
+dashboard/public/.last_model_trace.json
+
+# Synthea output
+output/
+
+# Frontend artifacts
+node_modules/
+dashboard/node_modules/
+dashboard/dist/
+dashboard/.vite

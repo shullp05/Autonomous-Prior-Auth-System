@@ -1,6 +1,26 @@
-# React + Vite
+# PriorAuth Dashboard (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This React/Vite app renders the outputs produced by `batch_runner.py`. After each batch run, the backend automatically mirrors `dashboard_data.json`, `governance_report.json`, and `.last_model_trace.json` into this folder’s `public/` directory so the UI always reflects the latest snapshot—no manual `cp` required.
+
+## Development Workflow
+
+1. Generate data from the root project:
+   ```bash
+   cd ..  # repo root
+   make batch-run      # or python batch_runner.py
+   ```
+   This refreshes:
+   - `dashboard/public/dashboard_data.json` (decision log + metadata)
+   - `dashboard/public/governance_report.json` (FNR parity report)
+   - `dashboard/public/.last_model_trace.json` (TraceBanner telemetry)
+
+2. Start the dashboard:
+   ```bash
+   cd dashboard
+   npm install
+   npm run dev
+   ```
+   `TraceBanner` will show the last model invocation, KPI cards will use the new totals, and the governance card/Sankey will update automatically.
 
 Currently, two official plugins are available:
 
@@ -10,6 +30,31 @@ Currently, two official plugins are available:
 ## React Compiler
 
 The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Moving Toward Live APIs
+
+The dashboard currently reads static JSON. When you switch to live APIs:
+
+1. **Centralize fetching** – create hooks like `useDashboardData()` or use React Query to encapsulate `/api/dashboard` and `/api/governance` calls, including auth headers and retries.
+2. **Validate payloads** – use client-side schemas (e.g., Zod) matching the JSON Schemas already used on the backend. Reject malformed responses before they reach `App.jsx` or `SankeyChart.jsx`.
+3. **Handle loading/errors** – show skeletons/spinners while data arrives, and guard the chart/table against `null` data to avoid runtime crashes.
+4. **Add streaming support** – if you plan to push live deltas, batch updates and memoize heavy layouts (Sankey already uses `useMemo`) to keep renders smooth.
+
+Example (React Query + Zod):
+```ts
+const DashboardSchema = z.object({
+  metadata: z.object({ timestamp: z.string(), total_claims: z.number() }),
+  results: z.array(z.object({ patient_id: z.string(), status: z.string() }))
+});
+
+export function useDashboardData() {
+  return useQuery({
+    queryKey: ['dashboard'],
+    queryFn: async () => DashboardSchema.parse(await (await fetch('/api/dashboard')).json())
+  });
+}
+```
+Replace the current `fetch("/dashboard_data.json")` call with this hook and wire in `isLoading`/`error` states. Add auth (bearer tokens or session cookies) and CSRF protection consistent with your backend.
 
 ## Expanding the ESLint configuration
 

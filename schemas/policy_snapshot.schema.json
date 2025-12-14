@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Policy Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policy_id",
+    "title",
+    "effective_date",
+    "scope",
+    "excluded_scopes",
+    "source_file",
+    "source_hash",
+    "eligibility",
+    "diagnosis_strings",
+    "comorbidities",
+    "safety_exclusions",
+    "drug_conflicts",
+    "documentation_requirements",
+    "ambiguities",
+    "notes"
+  ],
+  "properties": {
+    "policy_id": { "type": "string" },
+    "title": { "type": "string" },
+    "effective_date": { "type": "string" },
+    "scope": { "type": "string" },
+    "excluded_scopes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "source_file": { "type": "string" },
+    "source_hash": { "type": "string" },
+    "eligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adult_min_age", "pathways"],
+      "properties": {
+        "adult_min_age": { "type": "integer" },
+        "pathways": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "bmi_min",
+              "bmi_max",
+              "required_diagnosis_strings",
+              "required_comorbidity_categories"
+            ],
+            "properties": {
+              "name": { "type": "string" },
+              "bmi_min": { "type": "number" },
+              "bmi_max": { "type": ["number", "null"] },
+              "required_diagnosis_strings": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "required_comorbidity_categories": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "diagnosis_strings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adult_obesity", "adult_excess_weight"],
+      "properties": {
+        "adult_obesity": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "adult_excess_weight": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "comorbidities": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "accepted_strings"],
+        "properties": {
+          "label": { "type": "string" },
+          "accepted_strings": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "safety_exclusions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["category", "accepted_strings", "deny_type"],
+        "properties": {
+          "category": { "type": "string" },
+          "accepted_strings": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "deny_type": { "type": "string", "enum": ["HARD_DENY"] }
+        }
+      }
+    },
+    "drug_conflicts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["glp1_or_glp1_gip_agents"],
+      "properties": {
+        "glp1_or_glp1_gip_agents": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "documentation_requirements": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "ambiguities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pattern", "action"],
+        "properties": {
+          "pattern": { "type": "string" },
+          "action": {
+            "type": "string",
+            "enum": ["REQUEST_INFO", "MANUAL_REVIEW", "CONSERVATIVE_DENY"]
+          },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
