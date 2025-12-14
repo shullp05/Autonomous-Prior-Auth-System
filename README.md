@@ -22,29 +22,31 @@ This system solves a critical healthcare inefficiency: manual review of prior au
 
 The system utilizes a **Stateful Graph Workflow (LangGraph)** to orchestrate the decision process, ensuring auditability and retrievability at every step.
 
+## Workflow Diagram
+
 ```mermaid
 graph TD
     User([User / API Request]) -->|Patient ID + Drug| GraphStart
-    
-    subgraph "Core Agent Workflow (LangGraph)"
-        GraphStart --> NodeRetrieval[🔍 Policy Retrieval (RAG)];
-        NodeRetrieval -->|Docs + Scores| NodeAudit[🧠 Clinical Audit (LLM)];
-        NodeAudit -->|Extraction + Reasoning| NodeDecision[⚖️ Decision Engine];
-        
-        subgraph "Split-Brain Verification"
-            NodeDecision -->|Check 1| Guardrails{Safety Checks?};
-            Guardrails -->|Fail| VerdictDenySafety[❌ Deny: Safety];
-            Guardrails -->|Pass| DeterministicLogic{Rule Engine};
-            DeterministicLogic -->|Match| VerdictApprove[✅ Approve];
-            DeterministicLogic -->|Mismatch| VeridctDenyClinical[❌ Deny: Clinical];
+
+    subgraph Core["Core Agent Workflow (LangGraph)"]
+        GraphStart --> NodeRetrieval["Policy Retrieval (RAG)"]
+        NodeRetrieval -->|Docs + Scores| NodeAudit["Clinical Audit (LLM)"]
+        NodeAudit -->|Extraction + Reasoning| NodeDecision["Decision Engine"]
+
+        subgraph Verify["Split-Brain Verification"]
+            NodeDecision -->|Check 1| Guardrails{Safety Checks?}
+            Guardrails -->|Fail| VerdictDenySafety["Deny: Safety"]
+            Guardrails -->|Pass| DeterministicLogic{Rule Engine}
+            DeterministicLogic -->|Match| VerdictApprove["Approve"]
+            DeterministicLogic -->|Mismatch| VerdictDenyClinical["Deny: Clinical"]
         end
     end
 
-    VerdictApprove --> OutputGen[📝 Generate Report];
-    VerdictDenySafety --> OutputGen;
-    VeridctDenyClinical --> OutputGen;
-    
-    OutputGen -->|JSON + PDF| Dashboard((Analytics Dashboard));
+    VerdictApprove --> OutputGen["Generate Report"]
+    VerdictDenySafety --> OutputGen
+    VerdictDenyClinical --> OutputGen
+
+    OutputGen -->|JSON + PDF| Dashboard((Analytics Dashboard))
 ```
 
 ### Data Flow
