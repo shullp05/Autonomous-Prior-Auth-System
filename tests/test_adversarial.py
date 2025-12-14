@@ -195,9 +195,11 @@ class TestAmbiguousTermsManualReview:
             "conditions": [ambiguous_term],
             "meds": [],
         })
-        if "borderline" in ambiguous_term.lower():
+        if "borderline" in ambiguous_term.lower() or "bp" in ambiguous_term.lower():
+            # Elevated BP is in the ambiguity list, so it triggers manual review
             assert result.verdict == "MANUAL_REVIEW", f"'{ambiguous_term}' should trigger MANUAL_REVIEW"
         else:
+            # Elevated blood pressure is a qualifying term
             assert result.verdict == "APPROVED"
     
     def test_generic_sleep_apnea_triggers_manual_review(self):
