@@ -112,7 +112,7 @@ SQLAlchemy==2.0.44
 sympy==1.14.0
 tenacity==9.1.2
 tokenizers==0.22.1
-transformers>=4.45,<5
+transformers
 sentencepiece>=0.2,<1
 safetensors>=0.4,<1
 torch>=2.2,<3
@@ -134,4 +134,4 @@ xxhash==3.6.0
 yarl==1.22.0
 zipp==3.23.0
 zstandard==0.25.0
-BCEmbedding==0.1.5
+BCEmbedding
