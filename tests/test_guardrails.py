@@ -236,8 +236,8 @@ class TestAmbiguousTerms:
         result = guardrails_func(audit)
         assert result["verdict"] == "APPROVED"
 
-    def test_elevated_bp_counts_per_policy(self, guardrails_func):
-        """Elevated BP is included in hypertension strings for BMI 27-29.9."""
+    def test_elevated_bp_triggers_manual_review(self, guardrails_func):
+        """Elevated BP is an ambiguous term per policy and should trigger MANUAL_REVIEW."""
         audit = {
             "verdict": "APPROVED",
             "bmi_numeric": 28.0,
@@ -247,7 +247,7 @@ class TestAmbiguousTerms:
             "reasoning": "LLM incorrectly treated elevated BP.",
         }
         result = guardrails_func(audit)
-        assert result["verdict"] == "APPROVED"
+        assert result["verdict"] == "MANUAL_REVIEW"
 
 
 class TestSafetyExclusions:
