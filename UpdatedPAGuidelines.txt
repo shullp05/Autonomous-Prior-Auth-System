@@ -87,7 +87,7 @@ For each category, the following diagnosis strings should be treated as equivale
 
    DIAGNOSIS STRINGS THAT COUNT:
    - "Hypertension", "HTN"
-   - "High blood pressure", "elevated blood pressure"
+   - "High blood pressure"
    - "Essential hypertension", "benign essential hypertension"
    - "Primary hypertension"
    - "Secondary hypertension", when chronic and related to obesity/metabolic risk
@@ -255,3 +255,4 @@ AMBIGUITY RULES
 - Pattern: "impaired fasting glucose" -> MANUAL_REVIEW
 - Pattern: "borderline hypertension" -> MANUAL_REVIEW
 - Pattern: "Elevated BP" -> MANUAL_REVIEW
+- Pattern: "elevated blood pressure" -> MANUAL_REVIEW
