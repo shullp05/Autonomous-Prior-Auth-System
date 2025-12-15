@@ -189,18 +189,14 @@ class TestAmbiguousTermsManualReview:
         "Borderline hypertension",
     ])
     def test_ambiguous_bp_triggers_manual_review(self, ambiguous_term):
-        """Borderline hypertension should be manual review; elevated BP counts as hypertension per policy."""
+        """Borderline hypertension and Elevated BP/blood pressure should be manual review."""
         result = run_eval({
             "latest_bmi": "28.5",
             "conditions": [ambiguous_term],
             "meds": [],
         })
-        if "borderline" in ambiguous_term.lower() or "bp" in ambiguous_term.lower():
-            # Elevated BP is in the ambiguity list, so it triggers manual review
-            assert result.verdict == "MANUAL_REVIEW", f"'{ambiguous_term}' should trigger MANUAL_REVIEW"
-        else:
-            # Elevated blood pressure is a qualifying term
-            assert result.verdict == "APPROVED"
+        # All ambiguous terms in the list should now trigger MANUAL_REVIEW
+        assert result.verdict == "MANUAL_REVIEW", f"'{ambiguous_term}' should trigger MANUAL_REVIEW"
     
     def test_generic_sleep_apnea_triggers_manual_review(self):
         """Generic 'sleep apnea' without 'obstructive' should trigger manual review."""
