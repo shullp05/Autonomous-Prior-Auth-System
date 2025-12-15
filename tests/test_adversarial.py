@@ -185,7 +185,6 @@ class TestAmbiguousTermsManualReview:
     
     @pytest.mark.parametrize("ambiguous_term", [
         "Elevated blood pressure",
-        "Elevated BP",
         "Borderline hypertension",
     ])
     def test_ambiguous_bp_triggers_manual_review(self, ambiguous_term):
@@ -197,6 +196,15 @@ class TestAmbiguousTermsManualReview:
         })
         # All ambiguous terms in the list should now trigger MANUAL_REVIEW
         assert result.verdict == "MANUAL_REVIEW", f"'{ambiguous_term}' should trigger MANUAL_REVIEW"
+    
+    def test_elevated_bp_abbreviation_is_ambiguous(self):
+        """Per policy, 'Elevated BP' (abbreviation) is in ambiguities, not accepted strings."""
+        result = run_eval({
+            "latest_bmi": "28.5",
+            "conditions": ["Elevated BP"],
+            "meds": [],
+        })
+        assert result.verdict == "MANUAL_REVIEW", "'Elevated BP' is ambiguous per policy"
     
     def test_generic_sleep_apnea_triggers_manual_review(self):
         """Generic 'sleep apnea' without 'obstructive' should trigger manual review."""

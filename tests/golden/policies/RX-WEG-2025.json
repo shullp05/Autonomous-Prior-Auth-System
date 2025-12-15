@@ -54,6 +54,10 @@
     {
       "action": "MANUAL_REVIEW",
       "pattern": "Elevated BP"
+    },
+    {
+      "action": "MANUAL_REVIEW",
+      "pattern": "elevated blood pressure"
     }
   ],
   "comorbidities": {
@@ -130,7 +134,6 @@
         "Hypertension",
         "HTN",
         "High blood pressure",
-        "elevated blood pressure",
         "Essential hypertension",
         "benign essential hypertension",
         "Primary hypertension",
@@ -435,6 +438,6 @@
   ],
   "scope": "OBESITY / CHRONIC WEIGHT MANAGEMENT ONLY",
   "source_file": "UpdatedPAGuidelines.txt",
-  "source_hash": "22c7cd22c7ba69573c0f49bae03854298f192235cc2c3226e81db63c74fe1758",
+  "source_hash": "d24f81035667fbd768b6b3acfd1d21fd9f9ff78b6deb03d88e77a35b3c373220",
   "title": "PAYER POLICY: Chronic Weight Management (Wegovy/Semaglutide)"
 }

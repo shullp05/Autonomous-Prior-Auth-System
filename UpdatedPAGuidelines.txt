@@ -255,4 +255,4 @@ AMBIGUITY RULES
 - Pattern: "impaired fasting glucose" -> MANUAL_REVIEW
 - Pattern: "borderline hypertension" -> MANUAL_REVIEW
 - Pattern: "Elevated BP" -> MANUAL_REVIEW
-- Pattern: "Elevated Blood Pressure" -> MANUAL_REVIEW
+- Pattern: "elevated blood pressure" -> MANUAL_REVIEW

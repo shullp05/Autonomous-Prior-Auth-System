@@ -57,7 +57,7 @@
     },
     {
       "action": "MANUAL_REVIEW",
-      "pattern": "Elevated Blood Pressure"
+      "pattern": "elevated blood pressure"
     }
   ],
   "comorbidities": {
@@ -438,6 +438,6 @@
   ],
   "scope": "OBESITY / CHRONIC WEIGHT MANAGEMENT ONLY",
   "source_file": "UpdatedPAGuidelines.txt",
-  "source_hash": "bf41a0f766ed0344caec1f4456f3204ce3518a6242c8dbf64740c5501b90b1a5",
+  "source_hash": "d24f81035667fbd768b6b3acfd1d21fd9f9ff78b6deb03d88e77a35b3c373220",
   "title": "PAYER POLICY: Chronic Weight Management (Wegovy/Semaglutide)"
 }
