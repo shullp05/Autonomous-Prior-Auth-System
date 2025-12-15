@@ -188,22 +188,14 @@ class TestAmbiguousTermsManualReview:
         "Borderline hypertension",
     ])
     def test_ambiguous_bp_triggers_manual_review(self, ambiguous_term):
-        """
-        Per policy:
-        - 'elevated blood pressure' is in hypertension accepted strings -> APPROVED
-        - 'Elevated BP' is in ambiguities -> MANUAL_REVIEW
-        - 'Borderline hypertension' is in ambiguities -> MANUAL_REVIEW
-        """
+        """Borderline hypertension and Elevated BP/blood pressure should be manual review."""
         result = run_eval({
             "latest_bmi": "28.5",
             "conditions": [ambiguous_term],
             "meds": [],
         })
-        if "borderline" in ambiguous_term.lower():
-            assert result.verdict == "MANUAL_REVIEW", f"'{ambiguous_term}' should trigger MANUAL_REVIEW"
-        else:
-            # "elevated blood pressure" is explicitly in hypertension accepted strings
-            assert result.verdict == "APPROVED"
+        # All ambiguous terms in the list should now trigger MANUAL_REVIEW
+        assert result.verdict == "MANUAL_REVIEW", f"'{ambiguous_term}' should trigger MANUAL_REVIEW"
     
     def test_elevated_bp_abbreviation_is_ambiguous(self):
         """Per policy, 'Elevated BP' (abbreviation) is in ambiguities, not accepted strings."""
