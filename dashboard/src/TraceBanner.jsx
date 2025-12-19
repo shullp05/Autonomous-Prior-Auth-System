@@ -56,7 +56,9 @@ function TraceBanner({ metadata }) {
         <div>
           <span className="trace-label">Params</span>
           <span className="trace-value">
-            temp={params.temperature ?? "—"}, top_p={params.top_p ?? "—"}, max={params.num_predict ?? "—"}
+            <span className="trace-value">temp={params.temperature ?? "—"}</span>,
+            <span className="trace-value">top_p={params.top_p ?? "—"}</span>,
+            <span className="trace-value">max={params.num_predict ?? "—"}</span>
           </span>
         </div>
         <div>

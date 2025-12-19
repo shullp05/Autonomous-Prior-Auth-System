@@ -1,9 +1,13 @@
+# governance_audit.py
+
+from __future__ import annotations
+
 import json
 import logging
 import math
-import sys
+import os
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -15,6 +19,7 @@ from policy_constants import (
     BMI_OVERWEIGHT_THRESHOLD,
     BMI_MIN_REASONABLE,
     BMI_MAX_REASONABLE,
+    ADULT_OBESITY_DIAGNOSES,
     AMBIGUOUS_DIABETES,
     AMBIGUOUS_BP,
     AMBIGUOUS_OBESITY,
@@ -39,28 +44,32 @@ from policy_utils import normalize, has_word_boundary, matches_term, expand_safe
 logger = logging.getLogger(__name__)
 
 # --- CONFIGURATION ---
-# Enforce separation of artifacts from source code
-OUTPUT_DIR = Path("output")
+# Default locations align with your ETL + batch_runner + chaos_monkey outputs
+OUTPUT_DIR = Path(os.getenv("PA_OUTPUT_DIR", "output"))
 INPUT_FILE = OUTPUT_DIR / "dashboard_data.json"
 REPORT_FILE = OUTPUT_DIR / "governance_report.json"
+
+PATIENTS_CSV = OUTPUT_DIR / "data_patients.csv"
+OBS_CSV = OUTPUT_DIR / "data_observations.csv"
+CONDS_CSV = OUTPUT_DIR / "data_conditions.csv"
+MEDS_CSV = OUTPUT_DIR / "data_medications.csv"
 
 # -----------------------------
 # Policy thresholds dict (for backward compatibility)
 # Values now sourced from policy_constants.py
 # -----------------------------
 POLICY = {
-    "bmi_obesity_threshold": BMI_OBESE_THRESHOLD,
-    "bmi_overweight_threshold": BMI_OVERWEIGHT_THRESHOLD,
-    "max_reasonable_bmi": BMI_MAX_REASONABLE,
-    "min_reasonable_bmi": BMI_MIN_REASONABLE,
+    "bmi_obesity_threshold": float(BMI_OBESE_THRESHOLD),
+    "bmi_overweight_threshold": float(BMI_OVERWEIGHT_THRESHOLD),
+    "max_reasonable_bmi": float(BMI_MAX_REASONABLE),
+    "min_reasonable_bmi": float(BMI_MIN_REASONABLE),
 }
 
 
-
 def _any_match_in_conditions(conds: List[str], phrases: List[str]) -> Optional[str]:
-    """
-    Returns the first original condition string that matches any phrase (substring or boundary-ish).
-    """
+    """Return the first original condition string that matches any phrase."""
+    if not conds or not phrases:
+        return None
     for c in conds:
         c_norm = normalize(c)
         for p in phrases:
@@ -84,9 +93,7 @@ def _has_osa_specific(conds: List[str]) -> Optional[str]:
 
 
 def _is_generic_sleep_apnea_only(conds: List[str]) -> Optional[str]:
-    """
-    Detect generic 'sleep apnea' as an ambiguous term for audit/debug.
-    """
+    """Detect generic 'sleep apnea' as an ambiguous term for audit/debug."""
     for c in conds:
         c_norm = normalize(c)
         if "sleep apnea" in c_norm and ("obstruct" not in c_norm) and (not has_word_boundary(c_norm, "osa")):
@@ -95,9 +102,7 @@ def _is_generic_sleep_apnea_only(conds: List[str]) -> Optional[str]:
 
 
 def _is_t2_diabetes(conds: List[str]) -> Optional[str]:
-    """
-    T2DM qualifies; prediabetes terms explicitly do not.
-    """
+    """T2DM qualifies; prediabetes terms explicitly do not."""
     for c in conds:
         if _any_match_in_conditions([c], AMBIGUOUS_DIABETES):
             continue
@@ -133,12 +138,9 @@ def _is_cvd(conds: List[str]) -> Optional[str]:
 
 def _detect_safety_exclusion(conds: List[str], meds: List[str]) -> Tuple[bool, str]:
     """
-    Mirrors agent_logic intent using canonical policy constants.
+    Policy-aligned safety exclusion detection.
     Returns: (is_excluded, evidence_string)
     """
-    conds_norm = [normalize(c) for c in conds]
-    meds_norm = [normalize(m) for m in meds]
-
     # Condition-based exclusions
     exclusion_map = [
         (SAFETY_MTC_MEN2, "MTC/MEN2"),
@@ -155,38 +157,46 @@ def _detect_safety_exclusion(conds: List[str], meds: List[str]) -> Tuple[bool, s
             for term_raw in term_list:
                 for term in expand_safety_variants(term_raw):
                     if label == "Pregnancy":
-                        if "pregnan" in term or "breast" in term or "nursing" in term or "lactat" in term:
+                        if ("pregnan" in term) or ("breast" in term) or ("nursing" in term) or ("lactat" in term):
                             if is_snf_phrase(c):
                                 continue
-                    
                     if matches_term(c_norm, term):
                         return True, c
 
     # Duplicate therapy (med-based)
+    meds_norm = [normalize(m) for m in meds]
     has_wegovy = any("wegovy" in m for m in meds_norm)
+
     for m in meds:
         m_low = normalize(m)
         if "wegovy" in m_low:
             continue
         for bad in PROHIBITED_GLP1:
-             for variant in expand_safety_variants(bad):
+            for variant in expand_safety_variants(bad):
                 if matches_term(m_low, variant):
                     # protect against generic semaglutide strings if Wegovy is also present
                     if variant.startswith("semaglutide") and has_wegovy:
                         continue
                     return True, m
-    
+
     return False, ""
 
 
 def _get_latest_numeric_obs(df_obs: pd.DataFrame, pid: str, obs_type: str) -> Optional[float]:
+    if df_obs.empty:
+        return None
+    if "patient_id" not in df_obs.columns or "type" not in df_obs.columns:
+        return None
+
     p_obs = df_obs[df_obs["patient_id"] == pid].copy()
     p_obs = p_obs[p_obs["type"] == obs_type].copy()
     if p_obs.empty:
         return None
+
     if "date" in p_obs.columns:
         p_obs["date_parsed"] = pd.to_datetime(p_obs["date"], errors="coerce")
         p_obs = p_obs.sort_values(["date_parsed"], ascending=False)
+
     try:
         return float(p_obs.iloc[0]["value"])
     except Exception:
@@ -204,6 +214,7 @@ def _calculate_bmi_ground_truth(df_obs: pd.DataFrame, pid: str) -> Optional[floa
     ht = _get_latest_numeric_obs(df_obs, pid, "Height")
     if wt is None or ht is None:
         return None
+
     try:
         height_m = float(ht) / 100.0
         if height_m <= 0:
@@ -216,24 +227,44 @@ def _calculate_bmi_ground_truth(df_obs: pd.DataFrame, pid: str) -> Optional[floa
         return None
 
 
-def calculate_ground_truth_eligibility(pid: str, df_obs: pd.DataFrame, df_conds: pd.DataFrame, df_meds: pd.DataFrame) -> Dict[str, Any]:
+def calculate_ground_truth_eligibility(
+    pid: str,
+    df_obs: pd.DataFrame,
+    df_conds: pd.DataFrame,
+    df_meds: pd.DataFrame,
+) -> Dict[str, Any]:
     """
     Returns a policy-aligned deterministic truth object.
     - eligible: True / False / None (None means unknown due to missing BMI)
     - evidence: key string that drove decision (comorbidity or safety exclusion), when applicable
+
+    IMPORTANT: This is intended to match the CURRENT deterministic engine behavior:
+      - Safety exclusions deny
+      - BMI missing => unknown
+      - BMI >= obese threshold => requires adult obesity diagnosis string (per current policy_engine.py)
+      - BMI < overweight threshold => deny
+      - BMI 27–29.9 => requires non-ambiguous qualifying comorbidity
+      - Ambiguous terms => not eligible (audit/debug classification)
     """
-    conds = (
-        df_conds[df_conds["patient_id"] == pid]["condition_name"]
-        .dropna()
-        .astype(str)
-        .tolist()
-    )
-    meds = (
-        df_meds[df_meds["patient_id"] == pid]["medication_name"]
-        .dropna()
-        .astype(str)
-        .tolist()
-    )
+    if df_conds.empty or "condition_name" not in df_conds.columns:
+        conds = []
+    else:
+        conds = (
+            df_conds[df_conds["patient_id"] == pid]["condition_name"]
+            .dropna()
+            .astype(str)
+            .tolist()
+        )
+
+    if df_meds.empty or "medication_name" not in df_meds.columns:
+        meds = []
+    else:
+        meds = (
+            df_meds[df_meds["patient_id"] == pid]["medication_name"]
+            .dropna()
+            .astype(str)
+            .tolist()
+        )
 
     safety, safety_ev = _detect_safety_exclusion(conds, meds)
     if safety:
@@ -243,8 +274,12 @@ def calculate_ground_truth_eligibility(pid: str, df_obs: pd.DataFrame, df_conds:
     if bmi is None:
         return {"eligible": None, "reason": "MISSING_BMI", "evidence": ""}
 
+    # BMI >= obese threshold: align with current policy_engine.py requirement
     if bmi >= POLICY["bmi_obesity_threshold"]:
-        return {"eligible": True, "reason": "BMI_ONLY", "evidence": f"BMI {bmi}"}
+        dx_ev = _any_match_in_conditions(conds, ADULT_OBESITY_DIAGNOSES)
+        if dx_ev:
+            return {"eligible": True, "reason": "BMI30_OBESITY_WITH_DX", "evidence": dx_ev}
+        return {"eligible": False, "reason": "MISSING_OBESITY_DX", "evidence": f"BMI {bmi}"}
 
     if bmi < POLICY["bmi_overweight_threshold"]:
         return {"eligible": False, "reason": "BMI_BELOW_THRESHOLD", "evidence": f"BMI {bmi}"}
@@ -280,7 +315,7 @@ def calculate_ground_truth_eligibility(pid: str, df_obs: pd.DataFrame, df_conds:
         return {"eligible": False, "reason": "AMBIGUOUS_THYROID", "evidence": amb_thy}
 
     # Other ambiguous terms (still not eligible)
-    for amb_list in [AMBIGUOUS_BP, AMBIGUOUS_DIABETES, AMBIGUOUS_OBESITY]:
+    for amb_list in (AMBIGUOUS_BP, AMBIGUOUS_DIABETES, AMBIGUOUS_OBESITY, AMBIGUOUS_SLEEP_APNEA):
         amb_hit = _any_match_in_conditions(conds, amb_list)
         if amb_hit:
             return {"eligible": False, "reason": "AMBIGUOUS_TERM", "evidence": amb_hit}
@@ -329,74 +364,73 @@ def run_governance_audit(
     min_eligible_sample_size: int = 30,
     disparity_threshold: float = 0.10,
     alpha: float = 0.05,
-):
-    logger.info(f"Running clinical fairness audit (equal opportunity / FNR parity) on {ai_results_path}")
+) -> None:
+    logger.info("Running clinical fairness audit (equal opportunity / FNR parity) on %s", ai_results_path)
 
     # Ensure output directory exists
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
 
-    # Load Data
+    # Load AI results
     try:
         if not Path(ai_results_path).exists():
-            logger.error(f"Input file not found: {ai_results_path}")
+            logger.error("Input file not found: %s", ai_results_path)
             return
 
         with open(ai_results_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-            # Handle both nested structure (with "results" key) and flat list
-            if isinstance(data, dict) and "results" in data:
-                ai_results = data["results"]
-            elif isinstance(data, list):
-                ai_results = data
-            else:
-                logger.error(f"Invalid JSON structure in {ai_results_path}")
-                return
-        
+
+        if isinstance(data, dict) and "results" in data:
+            ai_results = data["results"]
+        elif isinstance(data, list):
+            ai_results = data
+        else:
+            logger.error("Invalid JSON structure in %s", ai_results_path)
+            return
+
         df_ai = pd.DataFrame(ai_results)
 
-        # Load raw data (assumed to be in CWD as per typical setup)
-        required_csvs = ["data_patients.csv", "data_observations.csv", "data_conditions.csv", "data_medications.csv"]
-        for csv in required_csvs:
-            if not Path(csv).exists():
-                logger.error(f"Missing required data file: {csv}")
-                return
+        # Load raw data from OUTPUT_DIR (not repo root)
+        required = [PATIENTS_CSV, OBS_CSV, CONDS_CSV, MEDS_CSV]
+        missing = [str(p) for p in required if not p.exists()]
+        if missing:
+            logger.error("Missing required data files: %s", missing)
+            return
 
-        df_pat = pd.read_csv("data_patients.csv")
-        df_obs = pd.read_csv("data_observations.csv")
-        df_conds = pd.read_csv("data_conditions.csv")
-        df_meds = pd.read_csv("data_medications.csv")
+        df_pat = pd.read_csv(PATIENTS_CSV)
+        df_obs = pd.read_csv(OBS_CSV)
+        df_conds = pd.read_csv(CONDS_CSV)
+        df_meds = pd.read_csv(MEDS_CSV)
 
     except Exception as e:
-        logger.error(f"Data Load Error: {e}")
+        logger.error("Data Load Error: %s", e)
         return
 
-    # Validate expected columns with graceful fallbacks
     if df_ai.empty:
         logger.warning("No AI results to audit.")
         return
 
     if "patient_id" not in df_ai.columns:
         raise ValueError("AI results must include 'patient_id' per record.")
-    
+
     status_col = "status" if "status" in df_ai.columns else ("final_decision" if "final_decision" in df_ai.columns else None)
     if status_col is None:
         raise ValueError("AI results must include 'status' or 'final_decision' per record.")
 
-    # CRITICAL: normalize IDs to string across all frames
+    # Normalize IDs to string across all frames
     for d in (df_ai, df_pat, df_obs, df_conds, df_meds):
         if not d.empty and "patient_id" in d.columns:
             d["patient_id"] = d["patient_id"].astype(str)
 
-    # Ground truth (tri-state) with policy-aligned logic
-    print("Calculating Ground Truth (policy-aligned)...")
+    # Ground truth (tri-state)
+    logger.info("Calculating Ground Truth (policy-aligned)...")
     truth_map: Dict[str, Optional[bool]] = {}
-    truth_meta: Dict[str, Dict] = {}
+    truth_meta: Dict[str, Dict[str, str]] = {}
 
     for pid in df_ai["patient_id"].dropna().unique():
         pid = str(pid)
         t = calculate_ground_truth_eligibility(pid, df_obs, df_conds, df_meds)
         truth_map[pid] = t["eligible"]  # True / False / None
-        truth_meta[pid] = {"reason": t["reason"], "evidence": t["evidence"]}
+        truth_meta[pid] = {"reason": str(t.get("reason", "")), "evidence": str(t.get("evidence", ""))}
 
     df_ai["ground_truth_eligible"] = df_ai["patient_id"].map(truth_map)
     df_ai["ground_truth_reason"] = df_ai["patient_id"].map(lambda x: truth_meta.get(str(x), {}).get("reason", ""))
@@ -405,10 +439,14 @@ def run_governance_audit(
     # Merge demographics
     df_merged = df_ai.merge(df_pat, on="patient_id", how="left")
 
-    # Vectorized false-negative definitions
-    df_merged["decision_norm"] = df_merged[status_col].astype(str).str.upper()
-    df_merged["fn_access"] = (df_merged["ground_truth_eligible"] == True) & (df_merged["decision_norm"] != "APPROVED")
-    df_merged["fn_denied_only"] = (df_merged["ground_truth_eligible"] == True) & (df_merged["decision_norm"] == "DENIED")
+    # Normalize decision labels
+    df_merged["decision_norm"] = df_merged[status_col].astype(str).str.upper().str.strip()
+    df_merged["is_approved"] = df_merged["decision_norm"] == "APPROVED"
+    df_merged["is_denied"] = df_merged["decision_norm"].str.startswith("DENIED")
+
+    # False negative definitions
+    df_merged["fn_access"] = (df_merged["ground_truth_eligible"] == True) & (~df_merged["is_approved"])
+    df_merged["fn_denied_only"] = (df_merged["ground_truth_eligible"] == True) & (df_merged["is_denied"])
 
     # Exclude unknown ground truth from parity denominators
     df_eval = df_merged[df_merged["ground_truth_eligible"].isin([True, False])].copy()
@@ -456,20 +494,23 @@ def run_governance_audit(
         if attr not in df_merged.columns:
             return {
                 "attribute": attr,
-                "error": f"Missing column '{attr}' in data_patients.csv; cannot audit this attribute.",
+                "error": f"Missing column '{attr}' in {PATIENTS_CSV.name}; cannot audit this attribute.",
                 "group_metrics": {},
                 "bias_detected": False,
                 "stop_ship_groups": [],
             }
 
-        metrics: dict[str, dict] = {}
+        metrics: Dict[str, dict] = {}
         groups = [g for g in df_eval[attr].dropna().unique()]
 
         for g in groups:
-            df_g = df_merged[df_merged[attr] == g]
-            metrics[str(g)] = compute_group_metrics(df_g)
+            df_g_all = df_merged[df_merged[attr] == g]
+            metrics[str(g)] = compute_group_metrics(df_g_all)
 
-        valid_groups = [k for k, v in metrics.items() if (not v.get("insufficient_data")) and (v.get("fnr_access") is not None)]
+        valid_groups = [
+            k for k, v in metrics.items()
+            if (not v.get("insufficient_data")) and (v.get("fnr_access") is not None)
+        ]
         m_tests = max(1, len(valid_groups))
         alpha_bonf = alpha / m_tests
 
@@ -506,7 +547,11 @@ def run_governance_audit(
             if significant:
                 stop_ship_groups.append(g)
 
-        valid_rates = {k: v["fnr_access"] for k, v in metrics.items() if isinstance(v.get("fnr_access"), float) and not v.get("insufficient_data")}
+        valid_rates = {
+            k: v["fnr_access"]
+            for k, v in metrics.items()
+            if isinstance(v.get("fnr_access"), float) and not v.get("insufficient_data")
+        }
         if valid_rates:
             worst_group = max(valid_rates, key=lambda k: valid_rates[k])
             best_group = min(valid_rates, key=lambda k: valid_rates[k])
@@ -528,8 +573,8 @@ def run_governance_audit(
             "attribute": attr,
             "definition": {
                 "ground_truth": "Deterministic Wegovy policy logic (BMI + qualifying comorbidity + safety exclusions).",
-                "false_negative_access": "Among truly-eligible patients: AI/system outcome != APPROVED (includes DENIED/FLAGGED/PROVIDER_ACTION_REQUIRED).",
-                "false_negative_denied_only": "Among truly-eligible patients: AI/system outcome == DENIED.",
+                "false_negative_access": "Among truly-eligible patients: system outcome != APPROVED (includes DENIED/FLAGGED/etc.).",
+                "false_negative_denied_only": "Among truly-eligible patients: system outcome startswith DENIED.",
                 "min_eligible_sample_size": min_eligible_sample_size,
                 "disparity_threshold": disparity_threshold,
                 "alpha": alpha,
@@ -546,7 +591,7 @@ def run_governance_audit(
             "bias_warning": warning,
         }
 
-    print(f"Analyzing Disparities (Minimum Eligible N={min_eligible_sample_size})...")
+    logger.info("Analyzing Disparities (Minimum Eligible N=%d)...", min_eligible_sample_size)
 
     audits = [audit_attribute(attr) for attr in ["race", "gender"]]
 
@@ -557,6 +602,13 @@ def run_governance_audit(
 
     report = {
         "metric_name": f"False Negative Rate Parity (Equality of Opportunity) | Min Eligible N={min_eligible_sample_size}",
+        "inputs": {
+            "ai_results_path": str(ai_results_path),
+            "patients_csv": str(PATIENTS_CSV),
+            "observations_csv": str(OBS_CSV),
+            "conditions_csv": str(CONDS_CSV),
+            "medications_csv": str(MEDS_CSV),
+        },
         "overall": {
             "eligible_n": overall_eligible_n,
             "fn_access_n": overall_fn_access_n,
@@ -567,10 +619,18 @@ def run_governance_audit(
         "attribute_audits": audits,
     }
 
+    # Optional schema validation (do not block report writing if schema evolves)
+    try:
+        validate_governance_report(report)  # if this expects a dict, great; if not, it will be caught
+    except Exception as e:
+        logger.warning("Governance report schema validation skipped/failed: %s", e)
+
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)
-    logger.info(f"Governance report saved to {out_path}")
-    logger.info(json.dumps(report, indent=2))
+
+    logger.info("Governance report saved to %s", out_path)
+    logger.debug(json.dumps(report, indent=2))
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

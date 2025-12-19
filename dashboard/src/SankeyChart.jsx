@@ -2,6 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { sankey, sankeyLinkHorizontal, sankeyLeft } from 'd3-sankey';
 import { COLORS } from './constants';
+import { getSankeyCategory } from './statusConfig';
+
+// Smart value formatting: $K for <$1M, $M with 2 decimals for ≥$1M
+function formatSankeyValue(value) {
+    if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
+    return `$${(value / 1_000).toFixed(1)}K`;
+}
 
 const SankeyChart = ({ data }) => {
     const svgRef = useRef(null);
@@ -28,15 +35,32 @@ const SankeyChart = ({ data }) => {
         const deniedData = [];
         const manualData = [];
 
+        // Breakdown counters for manual node tooltip
+        let needsClarificationCount = 0;
+        let missingDataCount = 0;
+        let safetySignalCount = 0;
+        let cdiCount = 0;
+
         for (const record of data) {
-            if (!record) continue; // Skip null/undefined records
-            const status = record?.status;
-            if (status === 'APPROVED') {
+            if (!record) continue;
+            const category = getSankeyCategory(record.status);
+
+            if (category === 'approved') {
                 approvedData.push(record);
-            } else if (status === 'DENIED') {
+            } else if (category === 'denied') {
                 deniedData.push(record);
             } else {
+                // "needs_review" / manual
                 manualData.push(record);
+
+                // Track sub-counts for tooltip
+                const status = (record.status || '').toUpperCase();
+                if (status === 'FLAGGED' || status === 'MANUAL_REVIEW') needsClarificationCount++;
+                else if (status === 'PROVIDER_ACTION_REQUIRED') missingDataCount++;
+                else if (status === 'SAFETY_SIGNAL_NEEDS_REVIEW') safetySignalCount++;
+                else if (status === 'CDI_REQUIRED') cdiCount++;
+                // Default fallback
+                else needsClarificationCount++;
             }
         }
 
@@ -49,19 +73,29 @@ const SankeyChart = ({ data }) => {
             { name: "Total Claims Pipeline" },
             { name: "AI Approved" },
             { name: "AI Denied" },
-            { name: "Manual Review" },
-            { name: "Revenue Recovered" },
+            { name: "Needs Action" }, // Renamed from "Manual Review"
+            { name: "Revenue Secured" },
             { name: "Cost Avoidance" },
             { name: "Pending Adjudication" }
         ];
 
         const rawLinks = [
+            // Sources -> AI Decisions
             { source: 0, target: 1, value: approvedVal, count: approvedData.length, type: 'approved' },
             { source: 0, target: 2, value: deniedVal, count: deniedData.length, type: 'denied' },
-            { source: 0, target: 3, value: manualVal, count: manualData.length, type: 'manual' },
+            {
+                source: 0, target: 3, value: manualVal, count: manualData.length, type: 'manual',
+                // Attach breakdown to link for tooltip usage
+                breakdown: { needsClarificationCount, missingDataCount, safetySignalCount, cdiCount }
+            },
+
+            // AI Decisions -> Outcomes
             { source: 1, target: 4, value: approvedVal, count: approvedData.length, type: 'approved' },
             { source: 2, target: 5, value: deniedVal, count: deniedData.length, type: 'denied' },
-            { source: 3, target: 6, value: manualVal, count: manualData.length, type: 'manual' }
+            {
+                source: 3, target: 6, value: manualVal, count: manualData.length, type: 'manual',
+                breakdown: { needsClarificationCount, missingDataCount, safetySignalCount, cdiCount }
+            }
         ];
 
         const filteredLinks = rawLinks.filter((link) => link.value > 0);
@@ -112,10 +146,13 @@ const SankeyChart = ({ data }) => {
         links.on("mouseover", function (event, d) {
             d3.select(this).attr("stroke-opacity", 0.6);
 
+            // Set content and visibility but relying on mousemove for position would be better,
+            // but we need initial position here or just wait for first move.
+            // Let's set initial position too.
             setTooltip({
                 visible: true,
-                x: event.pageX,
-                y: event.pageY,
+                x: event.clientX,
+                y: event.clientY,
                 content: (
                     <>
                         <div style={{ fontWeight: 600, marginBottom: 4, color: '#94A3B8', fontSize: 11, textTransform: 'uppercase' }}>Flow Logic</div>
@@ -127,13 +164,56 @@ const SankeyChart = ({ data }) => {
                             <span style={{ fontFamily: 'JetBrains Mono', textAlign: 'right' }}>{d.count} Claims</span>
                             <span style={{ color: '#64748B' }}>Value:</span>
                             <span style={{ fontFamily: 'JetBrains Mono', textAlign: 'right', fontWeight: 600 }}>
-                                ${d.value.toLocaleString()}
+                                {formatSankeyValue(d.value)}
                             </span>
                         </div>
+
+                        {/* Breakdown for 'Needs Action' links */}
+                        {
+                            d.type === 'manual' && d.breakdown && (
+                                <div style={{ marginTop: 12, paddingTop: 8, borderTop: '1px solid #E2E8F0' }}>
+                                    <div style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', marginBottom: 4 }}>BREAKDOWN</div>
+                                    <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: 12, color: '#475569' }}>
+                                        {d.breakdown.needsClarificationCount > 0 && (
+                                            <li style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <span>Needs Clarification</span>
+                                                <span style={{ fontWeight: 600 }}>{d.breakdown.needsClarificationCount}</span>
+                                            </li>
+                                        )}
+                                        {d.breakdown.missingDataCount > 0 && (
+                                            <li style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <span>Missing Data</span>
+                                                <span style={{ fontWeight: 600 }}>{d.breakdown.missingDataCount}</span>
+                                            </li>
+                                        )}
+                                        {d.breakdown.safetySignalCount > 0 && (
+                                            <li style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <span>Safety Signals</span>
+                                                <span style={{ fontWeight: 600 }}>{d.breakdown.safetySignalCount}</span>
+                                            </li>
+                                        )}
+                                        {d.breakdown.cdiCount > 0 && (
+                                            <li style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <span>CDI Query</span>
+                                                <span style={{ fontWeight: 600 }}>{d.breakdown.cdiCount}</span>
+                                            </li>
+                                        )}
+                                    </ul>
+                                </div>
+                            )
+                        }
                     </>
                 )
             });
         })
+            .on("mousemove", function (event) {
+                // Update position only
+                setTooltip(prev => ({
+                    ...prev,
+                    x: event.clientX,
+                    y: event.clientY
+                }));
+            })
             .on("mouseout", function () {
                 d3.select(this).attr("stroke-opacity", 0.15);
                 setTooltip(prev => ({ ...prev, visible: false }));
@@ -171,7 +251,7 @@ const SankeyChart = ({ data }) => {
             .attr("font-size", 11)
             .attr("x", d => d.x0 < width / 2 ? d.x1 + 10 : d.x0 - 10)
             .attr("dy", "1.4em")
-            .text(d => `$${(d.value / 1000000).toFixed(1)}M`);
+            .text(d => formatSankeyValue(d.value));
 
     }, [sankeyData, dimensions]);
 

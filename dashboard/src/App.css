@@ -2,31 +2,41 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  /* Semantic Palette */
+  /* Semantic Palette - Medical Grade */
   --bg-canvas: #F8FAFC;
   --bg-surface: #FFFFFF;
   --bg-element: #F1F5F9;
-  
+
   --text-primary: #0F172A;
   --text-secondary: #64748B;
   --text-tertiary: #94A3B8;
-  
-  --border-subtle: #E2E8F0;
-  
-  /* Status Tokens */
+
+  --border-subtle: #b5bed9f6;
+
+  /* Status Tokens - Medical Grade Palette */
   --status-green: #059669;
+  /* Emerald-600 */
   --status-green-bg: #ECFDF5;
-  --status-amber: #D97706;
+  /* Emerald-50 */
+  --status-amber: #F59E0B;
+  /* Amber-500 */
   --status-amber-bg: #FFFBEB;
-  --status-red: #DC2626;
-  --status-red-bg: #FEF2F2;
+  /* Amber-50 */
+  --status-red: #E11D48;
+  /* Rose-600 */
+  --status-red-bg: #FFF1F2;
+  /* Rose-50 */
   --status-blue: #2563EB;
+  /* Blue-600 */
   --status-blue-bg: #EFF6FF;
+  /* Blue-50 */
 
   --accent-primary: #2563EB;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   width: 100%;
   margin: 0;
   padding: 0;
@@ -42,6 +52,9 @@ body {
 
 /* --- Trace Banner --- */
 .trace-banner {
+  display: auto;
+  align-items: stretch;
+  justify-content: space-between;
   border: 1px solid var(--border-subtle);
   border-radius: 8px;
   background: var(--bg-surface);
@@ -51,18 +64,24 @@ body {
 
 .trace-meta {
   display: flex;
+  align-items: flex-start;
+  justify-content: space-evenly;
   flex-wrap: wrap;
-  gap: 16px 32px;
+  gap: 16px 16px;
 }
 
-.trace-meta > div {
-  display: flex;
+.trace-meta>div {
+  display: block;
+  align-items: flex-start;
+  justify-content: space-evenly;
   flex-direction: column;
-  min-width: 160px;
+  min-width: fit-content;
 }
 
 .trace-label {
-  font-size: 10px;
+  position: relative;
+  font-size: 14px;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-tertiary);
@@ -70,13 +89,17 @@ body {
 }
 
 .trace-value {
+  position: relative;
+  margin-bottom: 4px;
+  margin-left: 10px;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .trace-ram-required {
-  font-size: 12px;
+  position: relative;
+  font-size: 14px;
   color: var(--text-secondary);
   font-weight: 500;
 }
@@ -130,11 +153,30 @@ h1 {
 }
 
 .kpi-card {
+  position: relative;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 24px;
   transition: border-color 0.2s ease;
+}
+
+.kpi-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.info-icon {
+  color: var(--text-secondary);
+  cursor: help;
+  transition: color 0.2s ease;
+}
+
+.info-icon:hover {
+  color: var(--accent-primary);
 }
 
 .kpi-card:hover {
@@ -188,8 +230,15 @@ h1 {
   font-weight: 600;
 }
 
-.badge-green { background: var(--status-green-bg); color: var(--status-green); }
-.badge-red { background: var(--status-red-bg); color: var(--status-red); }
+.badge-green {
+  background: var(--status-green-bg);
+  color: var(--status-green);
+}
+
+.badge-red {
+  background: var(--status-red-bg);
+  color: var(--status-red);
+}
 
 .chip {
   background: var(--bg-element);
@@ -202,8 +251,15 @@ h1 {
   font-weight: 500;
 }
 
-.chip:hover { border-color: var(--text-tertiary); }
-.chip-active { background: var(--text-primary); color: white; border-color: var(--text-primary); }
+.chip:hover {
+  border-color: var(--text-tertiary);
+}
+
+.chip-active {
+  background: var(--text-primary);
+  color: white;
+  border-color: var(--text-primary);
+}
 
 .status-pill {
   display: inline-block;
@@ -214,10 +270,51 @@ h1 {
   text-transform: uppercase;
 }
 
-.status-approved { background: var(--status-green-bg); color: var(--status-green); }
-.status-denied { background: var(--status-red-bg); color: var(--status-red); }
-.status-flagged { background: var(--status-amber-bg); color: var(--status-amber); }
-.status-provider_action_required { background: var(--status-blue-bg); color: var(--status-blue); }
+.status-approved {
+  background: var(--status-green-bg);
+  color: var(--status-green);
+}
+
+.status-denied {
+  background: var(--status-red-bg);
+  color: var(--status-red);
+}
+
+.status-flagged {
+  background: var(--status-amber-bg);
+  color: var(--status-amber);
+}
+
+.status-provider_action_required {
+  background: var(--status-blue-bg);
+  color: var(--status-blue);
+}
+
+/* Safety Contraindication - distinct dark red pill for HARD STOP cases */
+.status-safety_contraindication {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.status-safety_signal {
+  background-color: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fdba74;
+}
+
+/* CDI Required - Distinct Violet/Purple for administrative hold */
+.status-cdi_required {
+  background-color: #F5F3FF;
+  color: #7C3AED;
+  border: 1px solid #DDD6FE;
+}
+
+/* Not Eligible - standard denial styling */
+.status-not_eligible {
+  background: var(--status-red-bg);
+  color: var(--status-red);
+}
 
 .link-button {
   background: none;
@@ -229,7 +326,10 @@ h1 {
   font-size: 12px;
   font-weight: 500;
 }
-.link-button:hover { background: var(--status-blue-bg); }
+
+.link-button:hover {
+  background: var(--status-blue-bg);
+}
 
 /* --- Table --- */
 .table-wrap {
@@ -260,24 +360,38 @@ h1 {
   color: var(--text-primary);
 }
 
-.claims-table tr:last-child td { border-bottom: none; }
+.claims-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Custom Tooltip */
+.truncated-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
 
 /* --- Modal --- */
 .modal-overlay {
-  position: fixed; inset: 0;
+  position: fixed;
+  inset: 0;
   background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(4px);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 100;
 }
 
 .modal {
   background: white;
-  width: 100%; max-width: 600px;
+  width: 100%;
+  max-width: 600px;
   max-height: 85vh;
   border-radius: 12px;
   padding: 32px;
-  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
 }
 
@@ -305,30 +419,41 @@ h1 {
 }
 
 @media (max-width: 1200px) {
-  .split-layout { grid-template-columns: 1fr; }
-  .dashboard-content { max-width: 100%; }
+  .split-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-content {
+    max-width: 100%;
+  }
 }
 
 /* --- Professional Modal Styles --- */
 
 /* 1. The Canvas */
 .modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(15, 23, 42, 0.75); /* Darker, higher contrast backdrop */
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  /* Darker, higher contrast backdrop */
   backdrop-filter: blur(8px);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 999;
   padding: 40px;
 }
 
 .modal-workspace {
-  width: 100%; max-width: 1200px;
+  width: 100%;
+  max-width: 1200px;
   height: 85vh;
   background: var(--bg-surface);
   border-radius: 12px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   display: flex;
-  overflow: hidden; /* Contains the scrollable areas */
+  overflow: hidden;
+  /* Contains the scrollable areas */
   border: 1px solid #334155;
 }
 
@@ -337,7 +462,8 @@ h1 {
   width: 350px;
   background: #F8FAFC;
   border-right: 1px solid var(--border-subtle);
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   flex-shrink: 0;
 }
 
@@ -356,29 +482,41 @@ h1 {
   padding: 24px;
   border-top: 1px solid var(--border-subtle);
   background: white;
-  display: flex; flex-direction: column; gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* 3. Right Panel: The Document Preview */
 .modal-document-area {
   flex: 1;
-  background: #52525B; /* Dark grey "desk" background */
+  background: #52525B;
+  /* Dark grey "desk" background */
   padding: 40px;
   overflow-y: auto;
-  display: flex; justify-content: center;
+  display: flex;
+  justify-content: center;
 }
 
 .document-sheet {
-  width: 100%; max-width: 800px; /* Standard Letter width relative */
-  min-height: 1000px; /* Visual paper height */
+  width: 100%;
+  max-width: 800px;
+  /* Standard Letter width relative */
+  height: fit-content;
+  /* Let paper grow with content */
+  min-height: 600px;
+  /* Minimum visual height for short letters */
   background: white;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   padding: 60px;
-  font-family: 'Times New Roman', serif; /* Clinical letter font */
+  font-family: 'Times New Roman', serif;
+  /* Clinical letter font */
   font-size: 16px;
   line-height: 1.6;
   color: #111;
   position: relative;
+  margin-bottom: 40px;
+  /* Space at bottom when scrolling */
 }
 
 /* 4. Details Typography */
@@ -391,7 +529,10 @@ h1 {
   margin-bottom: 8px;
   margin-top: 20px;
 }
-.detail-label:first-child { margin-top: 0; }
+
+.detail-label:first-child {
+  margin-top: 0;
+}
 
 .detail-value {
   font-size: 14px;
@@ -414,30 +555,393 @@ h1 {
   border-bottom: 2px solid #000;
   margin-bottom: 40px;
   padding-bottom: 20px;
-  display: flex; justify-content: space-between; align-items: flex-end;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
 }
-.letter-logo { font-weight: bold; font-size: 24px; font-family: 'Inter', sans-serif; letter-spacing: -1px; }
-.letter-meta { text-align: right; font-size: 12px; color: #666; font-family: 'Inter', sans-serif; }
-.runtime-stats { margin-top: 16px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
-.runtime-stats h3 { margin: 0 0 8px 0; font-size: 14px; }
+
+.letter-logo {
+  font-weight: bold;
+  font-size: 24px;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -1px;
+}
+
+.letter-meta {
+  text-align: right;
+  font-size: 12px;
+  color: #666;
+  font-family: 'Inter', sans-serif;
+}
+
+.runtime-stats {
+  height: auto;
+  padding-bottom: 12px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--bg-surface);
+}
+
+.runtime-stats h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
 .runtime-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px 24px;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px 18px;
 }
+
 .runtime-row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
+
 .runtime-label {
-  font-size: 11px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-tertiary);
 }
+
 .runtime-value {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+/* --- System Status & Live Indicators --- */
+.system-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-element);
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--status-green);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+}
+
+/* --- Action Icons (Ghost Icons) --- */
+.action-icon {
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: transparent;
+  border: none;
+}
+
+.action-icon:hover {
+  background: var(--bg-element);
+}
+
+.action-icon--approved {
+  color: var(--text-tertiary);
+}
+
+.action-icon--approved:hover {
+  color: var(--status-green);
+  background: var(--status-green-bg);
+}
+
+.action-icon--denied {
+  color: var(--text-tertiary);
+}
+
+.action-icon--denied:hover {
+  color: var(--status-red);
+  background: var(--status-red-bg);
+}
+
+/* Action icon tooltip */
+.action-icon .tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: var(--text-primary);
+  color: white;
+  font-size: 11px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+  margin-bottom: 4px;
+}
+
+.action-icon:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Protocol Badge */
+.protocol-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--status-blue-bg);
+  color: var(--status-blue);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Metric Tooltip Styles - Medical Grade Design */
+
+.metric-tooltip-trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Hover State: Visible */
+.metric-tooltip-trigger:hover .metric-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* The little triangle arrow pointing up */
+.metric-tooltip::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 14px;
+  /* Matches the icon position */
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-top: 1px solid var(--border-subtle);
+  border-left: 1px solid var(--border-subtle);
+  transform: rotate(45deg);
+}
+
+.metric-tooltip {
+  /* Positioning */
+  position: absolute;
+  top: 100%;
+  /* Push below the icon */
+  right: -10px;
+  /* Align right edge slightly offset */
+  margin-top: 12px;
+  /* Visual gap */
+  z-index: 9999;
+
+  /* Sizing */
+  width: 280px;
+
+  /* Visuals (Medical Grade) */
+  background: #ffffff;
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+  /* Animation State: Hidden */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+/* Pinned state - always visible */
+.metric-tooltip.is-pinned,
+.metric-tooltip-trigger.is-pinned .metric-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Icon button styling */
+.metric-tooltip-icon {
+  background: transparent;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.metric-tooltip-icon:hover {
+  color: var(--accent-primary);
+  background: var(--bg-element);
+}
+
+.metric-tooltip-icon:focus {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+.metric-tooltip-icon:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Close button for pinned tooltip */
+.metric-tooltip-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.metric-tooltip-close:hover {
+  background: var(--bg-element);
+  color: var(--text-primary);
+}
+
+.metric-tooltip::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 12px;
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border-left: 1px solid #E2E8F0;
+  border-top: 1px solid #E2E8F0;
+  transform: rotate(45deg);
+}
+
+/* --- Typography Overrides (Ensuring Specificity) --- */
+.tooltip-header {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--bg-element);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Tooltip Sections */
+
+.tooltip-section {
+  margin-bottom: 12px;
+}
+
+.tooltip-label {
+  font-size: 12px;
+  font-weight: 900;
+  color: #2d354e;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 4px 0;
+}
+
+.tooltip-value {
+  font-size: 13px;
+  color: #706e77;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.tooltip-value strong {
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+/* Live Math Box */
+
+.tooltip-math-box {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-top: 4px;
+}
+
+.tooltip-math-header {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #94A3B8;
+  margin-bottom: 4px;
+}
+
+.tooltip-math-values {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.tooltip-math-result {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #E2E8F0;
+}
+
+.tooltip-result-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--status-green);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.tooltip-result-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--status-green);
 }

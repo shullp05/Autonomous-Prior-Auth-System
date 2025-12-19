@@ -197,8 +197,7 @@
       "BMI above normal",
       "BMI > 27",
       "Overweight (E66.3)",
-      "Overweight and obesity (E66.x)",
-      "BMI codes Z68.27\u2013Z68.29 when present along with an overweight/obesity dx"
+      "BMI codes Z68.27\u2013Z68.29 when present along with an overweight/obesity dx *If BOTH 1) and 2) are met, treat the patient as qualifying under BOTH pathways. ================================================================================"
     ],
     "adult_obesity": [
       "Obesity",
@@ -249,22 +248,7 @@
       "Exenatide",
       "Byetta",
       "Bydureon",
-      "Bydureon BCise",
-      "Liraglutide",
-      "Victoza",
-      "Saxenda",
-      "Xultophy",
-      "Lixisenatide",
-      "Adlyxin",
-      "Soliqua",
-      "Ozempic",
-      "Rybelsus",
-      "semaglutide",
-      "Tirzepatide",
-      "Mounjaro",
-      "Zepbound",
-      "Albiglutide",
-      "Tanzeum"
+      "Bydureon BCise"
     ]
   },
   "effective_date": "2025-01-01",
@@ -333,8 +317,7 @@
           "BMI above normal",
           "BMI > 27",
           "Overweight (E66.3)",
-          "Overweight and obesity (E66.x)",
-          "BMI codes Z68.27\u2013Z68.29 when present along with an overweight/obesity dx"
+          "BMI codes Z68.27\u2013Z68.29 when present along with an overweight/obesity dx *If BOTH 1) and 2) are met, treat the patient as qualifying under BOTH pathways. ================================================================================"
         ]
       }
     ]
@@ -347,7 +330,8 @@
   "notes": [
     "Height/weight that clearly calculate to the thresholds below count the same as explicit BMI.",
     "Diagnosis strings include BOTH free-text labels and structured problem-list / ICD-based text.",
-    "Isolated Type 1 diabetes mellitus (T1DM/IDDM) is not counted as the weight-related comorbidity for Wegovy BMI criteria."
+    "Isolated Type 1 diabetes mellitus (T1DM/IDDM) is not counted as the weight-related comorbidity for Wegovy BMI criteria.",
+    "Isolated \"Type 1 diabetes mellitus\", \"T1DM\", \"IDDM\" alone is NOT counted as the"
   ],
   "policy_id": "RX-WEG-2025",
   "safety_exclusions": [
@@ -409,6 +393,51 @@
     },
     {
       "accepted_strings": [
+        "Liraglutide",
+        "Victoza",
+        "Saxenda",
+        "Xultophy"
+      ],
+      "category": "Liraglutide",
+      "deny_type": "HARD_DENY"
+    },
+    {
+      "accepted_strings": [
+        "Lixisenatide",
+        "Adlyxin",
+        "Soliqua"
+      ],
+      "category": "Lixisenatide",
+      "deny_type": "HARD_DENY"
+    },
+    {
+      "accepted_strings": [
+        "Ozempic",
+        "Rybelsus",
+        "semaglutide"
+      ],
+      "category": "Semaglutide (other than Wegovy)",
+      "deny_type": "HARD_DENY"
+    },
+    {
+      "accepted_strings": [
+        "Tirzepatide",
+        "Mounjaro",
+        "Zepbound"
+      ],
+      "category": "Tirzepatide (GLP-1/GIP dual agonist)",
+      "deny_type": "HARD_DENY"
+    },
+    {
+      "accepted_strings": [
+        "Albiglutide",
+        "Tanzeum"
+      ],
+      "category": "Other GLP-1 RAs (legacy/rare)",
+      "deny_type": "HARD_DENY"
+    },
+    {
+      "accepted_strings": [
         "History of pancreatitis",
         "prior acute pancreatitis",
         "Chronic pancreatitis",
@@ -436,7 +465,7 @@
       "deny_type": "HARD_DENY"
     }
   ],
-  "scope": "OBESITY / CHRONIC WEIGHT MANAGEMENT ONLY",
+  "scope": "OBESITY/ CHRONIC WEIGHT MANAGEMENT  - NOT CV-RISK OR MASH PATHWAYS",
   "source_file": "UpdatedPAGuidelines.txt",
   "source_hash": "d24f81035667fbd768b6b3acfd1d21fd9f9ff78b6deb03d88e77a35b3c373220",
   "title": "PAYER POLICY: Chronic Weight Management (Wegovy/Semaglutide)"

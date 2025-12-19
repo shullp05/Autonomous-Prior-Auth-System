@@ -1,57 +1,90 @@
 """
 config.py - Centralized Configuration for PriorAuth Agent
 
-This module defines all environment variables, model names, and system thresholds.
-It is the single source of truth for configuration to prevent "magic strings" 
-and hardcoded values scattered across the codebase.
+Single source of truth for environment variables, model names, and thresholds.
 """
 
 import os
-from typing import Dict, Any
+from typing import Dict, Any, List
+
 
 # =============================================================================
 # ENVIRONMENT VARIABLES
 # =============================================================================
-USE_RAW_MODELS = os.getenv("PA_USE_RAW_MODELS", "false").lower() == "true"
-AUDIT_MODEL_FLAVOR = os.getenv("PA_AUDIT_MODEL_FLAVOR", "qwen25")
-USE_DETERMINISTIC = os.getenv("PA_USE_DETERMINISTIC", "false").lower() == "true"
+
+def _as_bool(name: str, default: str = "false") -> bool:
+    return os.getenv(name, default).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+# IMPORTANT: True means use RAW upstream Ollama model names; False means use custom Modelfile-built aliases.
+USE_RAW_MODELS = _as_bool("PA_USE_RAW_MODELS", "false")  # FIXED (was inverted)
+AUDIT_MODEL_FLAVOR = os.getenv("PA_AUDIT_MODEL_FLAVOR", "qwen25").strip()
+USE_DETERMINISTIC = _as_bool("PA_USE_DETERMINISTIC", "false")
+OFFLINE_MODE = _as_bool("PA_OFFLINE_MODE", "false")
 
 # -----------------------------------------------------------------------------
 # Repository discovery configuration
 # -----------------------------------------------------------------------------
-# MAX_SEARCH_DEPTH controls how deep file discovery traverses the tree when
-# listing repository contents for audits and orphan detection. Hidden directories
-# and files (those starting with a dot) are excluded via the pattern '*/.*'.
-# This aligns with zero‑trust principles by avoiding scanning of hidden VCS or
-# environment folders.
-MAX_SEARCH_DEPTH: int = int(os.getenv("PA_MAX_SEARCH_DEPTH", "5"))
+MAX_SEARCH_DEPTH: int = int(os.getenv("PA_MAX_SEARCH_DEPTH", "8"))
+
+
+# =============================================================================
+# PROVIDER / PRACTICE CONTEXT (PCP OFFICE, PROVIDER-FACING)
+# =============================================================================
+PA_PROVIDER_NAME = os.getenv("PA_PROVIDER_NAME", "Peter Shull").strip()
+PA_PROVIDER_CREDENTIALS = os.getenv("PA_PROVIDER_CREDENTIALS", "PharmD").strip()
+PA_PRACTICE_NAME = os.getenv("PA_PRACTICE_NAME", "Clearview Medical Group").strip()
+PA_PROVIDER_NPI = os.getenv("PA_PROVIDER_NPI", "1234567890").strip()
+PA_PRACTICE_PHONE = os.getenv("PA_PRACTICE_PHONE", "555-555-5555").strip()
+PA_PRACTICE_FAX = os.getenv("PA_PRACTICE_FAX", "555-555-5556").strip()
+PA_PRACTICE_ADDRESS = os.getenv("PA_PRACTICE_ADDRESS", "123 Main St, Anytown, USA").strip()
+
+# Recipient defaults for payer-ready letters (override per client/demo)
+PA_UM_RECIPIENT_ORG = os.getenv("PA_UM_RECIPIENT_ORG", "Utilization Management").strip() or "Utilization Management"
+PA_UM_RECIPIENT_DEPT = os.getenv("PA_UM_RECIPIENT_DEPT", "Utilization Management Department").strip() or "Utilization Management Department"
+PA_UM_ATTENTION = os.getenv("PA_UM_ATTENTION", "Medical Director").strip() or "Medical Director"
+
+def require_provider_context() -> Dict[str, str]:
+    """
+    Enforce that we have enough real-world identifiers to generate payer-ready letters
+    WITHOUT placeholders. Fail fast if missing.
+    """
+    required = {
+        "PA_PROVIDER_NAME": PA_PROVIDER_NAME,
+        "PA_PRACTICE_NAME": PA_PRACTICE_NAME,
+        "PA_PROVIDER_NPI": PA_PROVIDER_NPI,
+        "PA_PRACTICE_PHONE": PA_PRACTICE_PHONE,
+        "PA_PRACTICE_FAX": PA_PRACTICE_FAX,
+    }
+    missing = [k for k, v in required.items() if not v]
+    if missing:
+        raise RuntimeError(
+            f"Provider context missing required fields: {missing}. "
+            "Set PA_PROVIDER_* and PA_PRACTICE_* env vars to generate payer-ready letters without placeholders."
+        )
+    return {
+        "provider_name": PA_PROVIDER_NAME,
+        "provider_credentials": PA_PROVIDER_CREDENTIALS,
+        "practice_name": PA_PRACTICE_NAME,
+        "npi": PA_PROVIDER_NPI,
+        "phone": PA_PRACTICE_PHONE,
+        "fax": PA_PRACTICE_FAX,
+        "address": PA_PRACTICE_ADDRESS,
+    }
+
 
 # =============================================================================
 # MODEL DEFINITIONS
 # =============================================================================
-# Models are built from Modelfiles with optimized settings:
-#   - Context window: 4096 tokens (RAM efficient)
-#   - Temperature/top_p/num_predict baked in
-#   - System prompts for clinical PA evaluation
-# 
-# Build models: ./models/build_models.sh
+# Build custom models: ./models/build_models.sh
 
 MODEL_MAP_CUSTOM: Dict[str, Dict[str, Any]] = {
-    "mistral": {
-        "name": "pa-audit-mistral",
-        "options": {},  # All settings baked into Modelfile
-        "ram_gb": 8,    # Approximate RAM requirement
-    },
+    "mistral": {"name": "pa-audit-mistral", "options": {}, "ram_gb": 8},
     "qwen25": {
         "name": "pa-audit-qwen25",
-        "options": {},
+        "options": {"temperature": 0.3, "top_p": 0.9, "num_predict": 768, "num_ctx": 4096},
         "ram_gb": 10,
     },
-    "qwen3": {
-        "name": "pa-audit-qwen3",
-        "options": {},
-        "ram_gb": 12,
-    },
+    "qwen3": {"name": "pa-audit-qwen3", "options": {}, "ram_gb": 12},
 }
 
 MODEL_MAP_RAW: Dict[str, Dict[str, Any]] = {
@@ -72,40 +105,40 @@ MODEL_MAP_RAW: Dict[str, Dict[str, Any]] = {
     },
 }
 
-# Select map based on environment
 MODEL_MAP = MODEL_MAP_RAW if USE_RAW_MODELS else MODEL_MAP_CUSTOM
 
-# Fallback to 'mistral' if unknown flavor requested
 if AUDIT_MODEL_FLAVOR not in MODEL_MAP:
-    print(f"[WARN] Unknown model flavor '{AUDIT_MODEL_FLAVOR}', defaulting to 'qwen25'")
+    # Avoid print-on-import in libraries; prefer raising or logging in the entrypoint.
     AUDIT_MODEL_FLAVOR = "qwen25"
 
-# Active Model Config
 ACTIVE_MODEL_CONFIG = MODEL_MAP[AUDIT_MODEL_FLAVOR]
 AUDIT_MODEL_NAME = ACTIVE_MODEL_CONFIG["name"]
 AUDIT_MODEL_OPTIONS = ACTIVE_MODEL_CONFIG["options"]
 AUDIT_MODEL_RAM_GB = ACTIVE_MODEL_CONFIG["ram_gb"]
 
 # Specialized Models (can be overridden if needed)
-APPEAL_MODEL_NAME = os.getenv("PA_APPEAL_MODEL", AUDIT_MODEL_NAME)
-EMBED_MODEL_NAME = os.getenv("PA_EMBED_MODEL", "kronos483/MedEmbed-large-v0.1:latest")
-PA_RERANK_MODEL = os.getenv("PA_RERANK_MODEL", "maidalun1020/bce-reranker-base_v1")
-PA_ENABLE_RERANK = os.getenv("PA_ENABLE_RERANK", "true").lower() == "true"
-PA_RERANK_DEVICE = os.getenv("PA_RERANK_DEVICE", "cuda").lower()
+APPEAL_MODEL_NAME = os.getenv("PA_APPEAL_MODEL", AUDIT_MODEL_NAME).strip()
+EMBED_MODEL_NAME = os.getenv("PA_EMBED_MODEL", "kronos483/MedEmbed-large-v0.1:latest").strip()
+
+PA_RERANK_MODEL = os.getenv("PA_RERANK_MODEL", "maidalun1020/bce-reranker-base_v1").strip()
+PA_ENABLE_RERANK = _as_bool("PA_ENABLE_RERANK", "true")
+PA_RERANK_DEVICE = os.getenv("PA_RERANK_DEVICE", "cuda").strip().lower()
+
 PA_RAG_K_VECTOR = int(os.getenv("PA_RAG_K_VECTOR", "25"))
 PA_RAG_TOP_K_DOCS = int(os.getenv("PA_RAG_TOP_K_DOCS", "8"))
 PA_RAG_SCORE_FLOOR = float(os.getenv("PA_RAG_SCORE_FLOOR", "0.35"))
 PA_RAG_MIN_DOCS = int(os.getenv("PA_RAG_MIN_DOCS", "3"))
-POLICY_ID = os.getenv("PA_POLICY_ID", "RX-WEG-2025")
 
+POLICY_ID = os.getenv("PA_POLICY_ID", "RX-WEG-2025").strip()
 
 
 # =============================================================================
 # SYSTEM THRESHOLDS
 # =============================================================================
-FNR_ALERT_THRESHOLD = 0.10  # Governance audit: 10% discrepancy triggers alert
-CLAIM_VALUE_USD = 1350.00   # Average claim value for revenue calculations
-DEFAULT_CLAIM_RATE = 0.15   # Default claim rate for chaos_monkey scenario generation
+FNR_ALERT_THRESHOLD = 0.10
+CLAIM_VALUE_USD = 1350.00
+DEFAULT_CLAIM_RATE = 0.15
+
 
 # =============================================================================
 # CLINICAL CODING CONSTANTS

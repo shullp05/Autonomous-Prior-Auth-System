@@ -63,12 +63,20 @@ I implemented a multi-layer safety net to prevent AI errors from harming patient
 *   **Bias Auditing (`governance_audit.py`)**: Automated statistical tests (Wilson Score Interval, Z-tests) run on every batch to detect **False Negative Rate (FNR) Disparity** across demographics.
 *   **Compliance**: The system proactively flags potential bias *before* deployment, aligning with emerging FDA and NIST AI frameworks.
 
+#### 5. "Credibility Hardening" (Phases 10-14)
+*Demonstrates: Advanced Verification, Clinical UX, Offline Security*
+
+*   **Offline Enforcement**: Implemented a **"Dead-Man Switch"** (`offline_mode.py`) that strictly forbids network access at runtime, ensuring data sovereignty.
+*   **Tamper-Evident Audit**: Architected a cryptographic log (`audit_logger.py`) using **SHA-256 hash chaining** to ensure decision history is immutable and verifiable.
+*   **Coding Integrity Overlay**: Differentiates between "Clinically Eligible" and "Administratively Ready," automating the generation of precise **Physician Queries** for missing codes (e.g., E66.9) rather than issuing flat denials.
+
+
 ---
 
 ## 🛠 Tech Stack & Implementation Details
 
 *   **Languages:** Python 3.11 (Strict Typing), JavaScript (React)
-*   **AI Frameworks:** LangChain, LangGraph, Ollama (Local LLMs: Qwen2.5, Mistral-Nemo)
+*   **AI Frameworks:** LangChain, LangGraph, Ollama (Local LLMs: Qwen2.5:14b, Llama 3)
 *   **Vector Database:** ChromaDB (Local, Zero-Trust)
 *   **Testing:** Pytest (148+ tests), Chaos Engineering principles
 *   **Infrastructure:** Docker, GitHub Actions (CI/CD), Makefiles

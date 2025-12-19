@@ -16,22 +16,24 @@ export default function RuntimeStats({ metadata }) {
     { label: "Model", value: metadata.model_name ?? "—" },
     { label: "Model Flavor", value: metadata.model_flavor ?? "—" },
     { label: "Claims Processed", value: formatNumber(metadata.total_claims) },
-    { label: "Drug", value: metadata.drug_queried ?? "—" },
-    { label: "p50 / p95 (ms)", value: metadata.p50_duration_ms && metadata.p95_duration_ms ? `${metadata.p50_duration_ms.toFixed(2)} / ${metadata.p95_duration_ms.toFixed(2)}` : "—" },
+    { label: "Medication", value: metadata.drug_queried ?? "—" },
+    { label: "Response Time (Typ / Max)", value: metadata.p50_duration_ms && metadata.p95_duration_ms ? `${(metadata.p50_duration_ms / 1000).toFixed(1)}s / ${(metadata.p95_duration_ms / 1000).toFixed(1)}s` : "—" },
   ];
 
   return (
-    <div className="runtime-stats">
+    <>
       <h3>Run Telemetry</h3>
-      <div className="runtime-grid">
-        {rows.map((row) => (
-          <div key={row.label} className="runtime-row">
-            <span className="runtime-label">{row.label}</span>
-            <span className="runtime-value">{row.value}</span>
-          </div>
-        ))}
+      <div className="runtime-stats">
+        <div className="runtime-grid">
+          {rows.map((row) => (
+            <div key={row.label} className="runtime-row">
+              <span className="runtime-label">{row.label}</span>
+              <span className="runtime-value">{row.value}</span>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

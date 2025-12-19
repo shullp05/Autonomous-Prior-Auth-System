@@ -1,0 +1,20 @@
+{
+  "runID": "73473ddb-9e2d-4b60-aec3-d9e4bfa06498",
+  "seed": 67890,
+  "clinicianSeed": 1764773145136,
+  "referenceTime": "20251203",
+  "endTime": "20251203",
+  "version": "v3.1.0-496-g055bdcfee\n",
+  "patientCount": 1000,
+  "providerCount": 1327,
+  "payerCount": 9,
+  "javaVersion": "11.0.29",
+  "generate.thread_pool_size": -1,
+  "generatorThreads": 10,
+  "runStartTime": "2025-12-03T14:45:45Z",
+  "runTimeInSeconds": 19,
+  "exporter.years_of_history": "10",
+  "age": "30-80",
+  "state": "Massachusetts",
+  "modules": "thyroid_cancer,obesity"
+}

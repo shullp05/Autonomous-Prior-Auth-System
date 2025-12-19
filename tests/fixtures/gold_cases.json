@@ -1,0 +1,213 @@
+[
+    {
+        "id": "GOLD_001_APPROVE_BMI30",
+        "data": {
+            "latest_bmi": "32.5",
+            "conditions": [
+                "Hypertension (I10)",
+                "Obesity, unspecified (E66.9)"
+            ],
+            "meds": [
+                "Lisinopril"
+            ]
+        },
+        "expected": {
+            "verdict": "APPROVED",
+            "decision_type": "APPROVED",
+            "safety_flag": "CLEAR"
+        }
+    },
+    {
+        "id": "GOLD_002_APPROVE_BMI27_COMORB",
+        "data": {
+            "latest_bmi": "28.0",
+            "conditions": [
+                "Type 2 diabetes mellitus (E11.9)",
+                "Overweight (E66.3)"
+            ],
+            "meds": [
+                "Metformin"
+            ]
+        },
+        "expected": {
+            "verdict": "APPROVED",
+            "decision_type": "APPROVED",
+            "safety_flag": "CLEAR"
+        }
+    },
+    {
+        "id": "GOLD_003_DENY_LOW_BMI",
+        "data": {
+            "latest_bmi": "24.9",
+            "conditions": [
+                "Hypertension"
+            ],
+            "meds": []
+        },
+        "expected": {
+            "verdict": "DENIED_CLINICAL",
+            "decision_type": "DENIED_BMI_THRESHOLD",
+            "safety_flag": "CLEAR"
+        }
+    },
+    {
+        "id": "GOLD_004_DENY_BMI28_NO_COMORB",
+        "data": {
+            "latest_bmi": "28.5",
+            "conditions": [
+                "Migraine",
+                "Anxiety"
+            ],
+            "meds": []
+        },
+        "expected": {
+            "verdict": "DENIED_CLINICAL",
+            "decision_type": "DENIED_NO_COMORBIDITY",
+            "safety_flag": "CLEAR"
+        }
+    },
+    {
+        "id": "GOLD_005_SAFETY_PREGNANCY_ACTIVE",
+        "data": {
+            "latest_bmi": "35.0",
+            "conditions": [
+                "Obesity",
+                "Pregnancy, incidental finding"
+            ],
+            "meds": []
+        },
+        "expected": {
+            "verdict": "DENIED_SAFETY",
+            "decision_type": "DENIED_HARD_STOP",
+            "safety_flag": "DETECTED"
+        }
+    },
+    {
+        "id": "GOLD_006_SAFETY_PREGNANCY_HISTORY",
+        "data": {
+            "latest_bmi": "35.0",
+            "conditions": [
+                "Obesity",
+                "History of pregnancy complications",
+                "Obesity, unspecified (E66.9)"
+            ],
+            "meds": []
+        },
+        "expected": {
+            "verdict": "SAFETY_SIGNAL_NEEDS_REVIEW",
+            "decision_type": "FLAGGED_SAFETY_WARNING",
+            "safety_flag": "DETECTED"
+        }
+    },
+    {
+        "id": "GOLD_007_SAFETY_MTC_HISTORY",
+        "data": {
+            "latest_bmi": "33.0",
+            "conditions": [
+                "Obesity",
+                "Personal history of medullary thyroid carcinoma"
+            ],
+            "meds": []
+        },
+        "expected": {
+            "verdict": "SAFETY_SIGNAL_NEEDS_REVIEW",
+            "decision_type": "FLAGGED_SAFETY_WARNING",
+            "safety_flag": "DETECTED"
+        }
+    },
+    {
+        "id": "GOLD_008_SAFETY_MTC_ACTIVE",
+        "data": {
+            "latest_bmi": "33.0",
+            "conditions": [
+                "Obesity",
+                "Medullary thyroid carcinoma"
+            ],
+            "meds": []
+        },
+        "expected": {
+            "verdict": "DENIED_SAFETY",
+            "decision_type": "DENIED_HARD_STOP",
+            "safety_flag": "DETECTED"
+        }
+    },
+    {
+        "id": "GOLD_009_SAFETY_GLP1_CONCURRENT",
+        "data": {
+            "latest_bmi": "36.0",
+            "conditions": [
+                "Obesity"
+            ],
+            "meds": [
+                "Trulicity"
+            ]
+        },
+        "expected": {
+            "verdict": "DENIED_SAFETY",
+            "decision_type": "DENIED_HARD_STOP",
+            "safety_flag": "DETECTED"
+        }
+    },
+    {
+        "id": "GOLD_010_CDI_REQUIRED_BMI30",
+        "data": {
+            "latest_bmi": "36.0",
+            "conditions": [
+                "Hypertension (I10)"
+            ],
+            "meds": []
+        },
+        "expected": {
+            "verdict": "CDI_REQUIRED",
+            "decision_type": "CDI_REQUIRED",
+            "safety_flag": "CLEAR"
+        }
+    },
+    {
+        "id": "GOLD_011_CDI_REQUIRED_BMI27",
+        "data": {
+            "latest_bmi": "28.0",
+            "conditions": [
+                "Hypertension (I10)"
+            ],
+            "meds": []
+        },
+        "expected": {
+            "verdict": "CDI_REQUIRED",
+            "decision_type": "CDI_REQUIRED",
+            "safety_flag": "CLEAR"
+        }
+    },
+    {
+        "id": "GOLD_012_AMBIGUITY_THYROID",
+        "data": {
+            "latest_bmi": "31.0",
+            "conditions": [
+                "Obesity",
+                "Thyroid carcinoma"
+            ],
+            "meds": []
+        },
+        "expected": {
+            "verdict": "MANUAL_REVIEW",
+            "decision_type": "FLAGGED_AMBIGUITY",
+            "safety_flag": "CLEAR"
+        }
+    },
+    {
+        "id": "GOLD_013_SAFETY_NEGATED_PREGNANCY",
+        "data": {
+            "latest_bmi": "34.0",
+            "conditions": [
+                "Obesity (E66.9)",
+                "Patient denies pregnancy"
+            ],
+            "meds": []
+        },
+        "expected": {
+            "verdict": "APPROVED",
+            "decision_type": "APPROVED",
+            "safety_flag": "CLEAR"
+        }
+    }
+]

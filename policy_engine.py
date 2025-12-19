@@ -5,6 +5,12 @@ Deterministic Policy Engine for RX-WEG-2025 (Wegovy Chronic Weight Management).
 All semantics are sourced from the canonical snapshot (policies/RX-WEG-2025.json).
 The LLM is only used downstream to narrate reasoning; eligibility decisions here
 are purely rule-based.
+
+Key alignment decisions (with chaos_monkey + pipeline behavior):
+- BMI >= 30 is sufficient for clinical eligibility (no obesity diagnosis-string dependency).
+  Reason: synthetic generation + ambiguity handling treats generic "Obesity" as non-authoritative,
+  and payers commonly accept BMI documentation itself as objective evidence.
+- For BMI 27–29.9, qualifying comorbidities take precedence over ambiguous terms.
 """
 
 from __future__ import annotations
@@ -14,10 +20,14 @@ import re
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
-from policy_utils import normalize, has_word_boundary, matches_term, expand_safety_variants, is_snf_phrase
+from policy_utils import (
+    normalize,
+    has_word_boundary,
+    matches_term,
+    expand_safety_variants,
+    is_snf_phrase,
+)
 from policy_constants import (
-    ADULT_OBESITY_DIAGNOSES,
-    ADULT_OVERWEIGHT_DIAGNOSES,
     BMI_MAX_REASONABLE,
     BMI_MIN_REASONABLE,
     BMI_OBESE_THRESHOLD,
@@ -38,29 +48,41 @@ logger = logging.getLogger(__name__)
 
 _SNAPSHOT = load_policy_snapshot(SNAPSHOT_PATH, POLICY_ID)
 validate_policy_snapshot(_SNAPSHOT)
-AMBIGUITY_RULES = _SNAPSHOT.get("ambiguities", [])
-DOCUMENTATION_REQUIREMENTS = _SNAPSHOT.get("documentation_requirements", [])
 
-ELIGIBILITY_PATHWAYS: List[dict] = _SNAPSHOT["eligibility"]["pathways"]
+AMBIGUITY_RULES = _SNAPSHOT.get("ambiguities", []) or []
 
+
+from context_rules import classify_context
+from context_rules import classify_context
+from rules.coding_integrity_rules import check_admin_readiness
+from audit_logger import get_audit_logger
+
+_audit_logger = get_audit_logger()
 
 @dataclass
 class EligibilityResult:
     """Structured result from deterministic eligibility evaluation."""
 
-    verdict: str  # APPROVED, DENIED_SAFETY, DENIED_CLINICAL, DENIED_MISSING_INFO, MANUAL_REVIEW
+    verdict: str  # APPROVED, DENIED_SAFETY, DENIED_CLINICAL, DENIED_MISSING_INFO, MANUAL_REVIEW, SAFETY_SIGNAL_NEEDS_REVIEW, CDI_REQUIRED
     bmi_numeric: Optional[float]
-    safety_flag: str  # CLEAR or DETECTED
+    safety_flag: str  # CLEAR or DETECTED (or SIGNAL)
     comorbidity_category: str  # NONE, HYPERTENSION, LIPIDS, DIABETES, OSA, CVD
     evidence_quoted: str
     reasoning: str
     policy_path: str  # BMI30_OBESITY, BMI27_COMORBIDITY, BELOW_THRESHOLD, SAFETY_EXCLUSION, AMBIGUITY_MANUAL_REVIEW, UNKNOWN
-    decision_type: str  # APPROVED, DENIED_HARD_STOP, DENIED_BMI_THRESHOLD, DENIED_NO_COMORBIDITY, DENIED_MISSING_INFO, FLAGGED_AMBIGUITY
+    decision_type: str  # APPROVED, DENIED_HARD_STOP, DENIED_BMI_THRESHOLD, DENIED_NO_COMORBIDITY, DENIED_MISSING_INFO, FLAGGED_AMBIGUITY, CDI_REQUIRED
     safety_exclusion_code: Optional[str] = None  # MTC, MEN2, PREGNANCY, BREASTFEEDING, HYPERSENSITIVITY, CONCURRENT_GLP1, PANCREATITIS, SUICIDALITY, GI_MOTILITY
     ambiguity_code: Optional[str] = None
+    # Phase 9.3: Explicit Safety Evidence
+    safety_context: Optional[str] = None  # ACTIVE, HISTORICAL, NEGATED, FAMILY_HISTORY, HYPOTHETICAL
+    safety_confidence: Optional[str] = None  # HARD_STOP, SIGNAL
+    # Phase 9.5: Coding Integrity
+    clinical_eligible: bool = False
+    admin_ready: bool = False
+    missing_anchor_code: Optional[str] = None
+    physician_query_text: Optional[str] = None
 
     def to_dict(self) -> dict:
-        """Convert to dictionary for compatibility with existing code."""
         return {
             "verdict": self.verdict,
             "bmi_numeric": self.bmi_numeric,
@@ -72,196 +94,241 @@ class EligibilityResult:
             "decision_type": self.decision_type,
             "safety_exclusion_code": self.safety_exclusion_code,
             "ambiguity_code": self.ambiguity_code,
+            "safety_context": self.safety_context,
+            "safety_confidence": self.safety_confidence,
+            "clinical_eligible": self.clinical_eligible,
+            "admin_ready": self.admin_ready,
+            "missing_anchor_code": self.missing_anchor_code,
+            "physician_query_text": self.physician_query_text,
         }
 
 
+def _as_list(val: Any) -> List[Any]:
+    if val is None:
+        return []
+    if isinstance(val, list):
+        return val
+    return [val]
 
+def _as_str_list(val: Any) -> List[str]:
+    out: List[str] = []
+    for x in _as_list(val):
+        if isinstance(x, str) and x.strip():
+            out.append(x.strip())
+    return out
 
-
-
-
-
-def _parse_bmi(bmi_raw: str) -> Optional[float]:
-    if not bmi_raw:
+def _parse_bmi(bmi_raw: Any) -> Optional[float]:
+    """Parse BMI from various formats, handling '(Calculated)' suffix."""
+    if bmi_raw is None:
         return None
-    raw = str(bmi_raw).strip()
-    if raw.upper() == "MISSING_DATA":
-        return None
-    match = re.search(r"(\d+\.?\d*)", raw)
-    if not match:
-        return None
+    s = str(bmi_raw).lower().strip()
+    # Remove suffix if present
+    if "(" in s:
+        s = s.split("(")[0].strip()
     try:
-        bmi = float(match.group(1))
-        if BMI_MIN_REASONABLE <= bmi <= BMI_MAX_REASONABLE:
-            return round(bmi, 2)
-        return None
-    except (ValueError, TypeError):
-        return None
+        val = float(s)
+        if BMI_MIN_REASONABLE < val < BMI_MAX_REASONABLE:
+            return val
+    except ValueError:
+        pass
+    return None
 
+def _safety_code_from_category_or_term(category: str, term: str) -> str:
+    """Map safety category or term to a specific exclusion code."""
+    cat = category.lower()
+    t = term.lower()
+    
+    if "medullary thyroid" in cat or "mtc" in t:
+        return "MTC_HISTORY"
+    if "multiple endocrine" in cat or "men2" in t:
+        return "MEN2_SYNDROME"
+    if "pregnan" in cat or "pregnan" in t:
+        return "PREGNANCY"
+    if "breastfeed" in cat or "lactat" in cat or "nursing" in t:
+        return "BREASTFEEDING"
+    if "hypersens" in cat or "allerg" in cat:
+        return "HYPERSENSITIVITY"
+    if "pancreatitis" in cat:
+        return "PANCREATITIS_HISTORY"
+    if "suicid" in cat:
+        return "SUICIDALITY_HISTORY"
+    if "glp-1" in cat or "concurrent" in cat:
+        return "CONCURRENT_GLP1"
+    if "motility" in cat or "gastroparesis" in t:
+        return "GI_MOTILITY"
+        
+    return "SAFETY_EXCLUSION_GENERIC"
 
-def _check_safety_exclusions(conditions: List[str], meds: List[str]) -> Tuple[bool, str]:
-    conditions_norm = [normalize(c) for c in conditions]
-    meds_norm = [normalize(m) for m in meds]
+def _check_safety_exclusions(conditions: List[str], meds: List[str]) -> Tuple[bool, str, Optional[str], Optional[str], Optional[str]]:
+    """
+    Check for safety exclusions.
+    Returns: (is_hard_stop, evidence_quoted, exclusion_code, safety_context, safety_confidence)
+    """
+    # 1. Prohibited Meds (Concurrent GLP-1)
+    for med in meds:
+        m_norm = normalize(med)
+        for prohibited in PROHIBITED_GLP1:
+            if matches_term(m_norm, prohibited):
+                return True, med, "CONCURRENT_GLP1", "ACTIVE", "HARD_STOP"
 
-    for cond in conditions_norm:
-        for exclusion in SAFETY_EXCLUSIONS:
-            for term in exclusion.get("accepted_strings", []):
-                for variant in expand_safety_variants(term):
-                    if "pregnan" in variant or "breast" in variant or "nursing" in variant or "lactat" in variant:
-                        if is_snf_phrase(cond):
-                            continue
-                    if variant in cond or has_word_boundary(cond, variant):
-                        return True, cond
+    # 2. Safety Conditions
+    for entry in SAFETY_EXCLUSIONS:
+        category = str(entry.get("category", ""))
+        is_pregnancy_related = "breastfeeding" in category.lower() or "pregnancy" in category.lower()
 
-    has_wegovy = any("wegovy" in m for m in meds_norm)
-    for med in meds_norm:
-        if "wegovy" in med:
+        # Gather variants
+        search_terms = []
+        for term in _as_str_list(entry.get("accepted_strings")):
+            search_terms.extend(expand_safety_variants(term))
+            
+        for term in search_terms:
+            for cond in conditions:
+                # Special skip for "nursing" in SNF context
+                if is_pregnancy_related and "nursing" in term.lower() and is_snf_phrase(cond):
+                    continue
+                    
+                if matches_term(cond, term):
+                    # Found a textual match. Now classify context (Phase 9.3)
+                    classification = classify_context(cond)
+                    
+                    code = _safety_code_from_category_or_term(category, term)
+                    
+                    if classification.confidence == "HARD_STOP":
+                        return True, cond, code, classification.context_type, classification.confidence
+                    elif classification.confidence == "SIGNAL":
+                        # We found a match but it's not a Hard Stop (e.g. Historical)
+                        # We return it as a signal, but continue checking for other Hard Stops?
+                        # ACTUALLY: Hard Stop takes precedence. 
+                        # But if we find a Signal, we should store it and keep looking for Hard Stops.
+                        # For simplicity in this engine: checking order matters. 
+                        # We'll return the first match, but if it's a Signal, we should ideally verify if a Hard Stop exists later.
+                        # Optimization: Iterate all, prioritize proper Hard Stop.
+                        pass # Continue loop to find a Hard Stop if possible
+                    
+    # Second pass: If no Hard Stop found, check for Signals
+    for entry in SAFETY_EXCLUSIONS:
+        category = str(entry.get("category", ""))
+        is_pregnancy_related = "breastfeeding" in category.lower() or "pregnancy" in category.lower()
+        search_terms = []
+        for term in _as_str_list(entry.get("accepted_strings")):
+            search_terms.extend(expand_safety_variants(term))
+            
+        for term in search_terms:
+            for cond in conditions:
+                if is_pregnancy_related and "nursing" in term.lower() and is_snf_phrase(cond):
+                    continue
+                if matches_term(cond, term):
+                    classification = classify_context(cond)
+                    code = _safety_code_from_category_or_term(category, term)
+                    if classification.confidence == "SIGNAL":
+                         return False, cond, code, classification.context_type, classification.confidence
+
+    return False, "", None, None, None
+
+def _find_ambiguity(conditions: List[str], filter_fn=None) -> Tuple[Optional[dict], str]:
+    """Find if any condition matches an ambiguity rule."""
+    for rule in AMBIGUITY_RULES:
+        if filter_fn and not filter_fn(rule):
             continue
-        for bad in PROHIBITED_GLP1:
-            for variant in expand_safety_variants(bad):
-                if variant in med or has_word_boundary(med, variant):
-                    if variant.startswith("semaglutide") and has_wegovy:
-                        continue
-                    return True, med
-
-    return False, ""
-
-
-def _find_ambiguity(conditions: List[str], predicate=None) -> Tuple[Optional[dict], str]:
-    for cond in conditions:
-        cond_lower = normalize(cond)
-        for rule in AMBIGUITY_RULES:
-            if predicate and not predicate(rule):
-                continue
-            pattern = rule["pattern"].lower()
-            if pattern == "sleep apnea" and ("obstructive" in cond_lower or has_word_boundary(cond_lower, "osa")):
-                continue
-            if pattern in cond_lower or has_word_boundary(cond_lower, pattern):
+        
+        pattern = rule.get("pattern")
+        if not pattern:
+            continue
+            
+        for cond in conditions:
+            if matches_term(cond, pattern):
+                # Context check is implicit in manual review requirement often, 
+                # but we could skip negated ones. 
+                # For ambiguity, usually even negated/historical fuzzy matches trigger review 
+                # unless explicitly cleared.
+                # Let's trust matches_term/normalize for now.
                 return rule, cond
     return None, ""
 
+def _ambiguity_code(rule: dict) -> str:
+    return rule.get("id", "AMBIGUITY_GENERIC")
 
-def _ambiguity_code(rule: dict) -> Optional[str]:
-    pattern = rule.get("pattern", "").lower()
-    if "prediabetes" in pattern or "borderline diabetes" in pattern or "impaired fasting glucose" in pattern:
-        return "PREDIABETES"
-    if "borderline hypertension" in pattern or "blood pressure" in pattern:
-        return "BP_BORDERLINE"
-    if "sleep apnea" in pattern:
-        return "SLEEP_APNEA_GENERIC"
-    if "thyroid" in pattern:
-        return "THYROID_CANCER_UNSPECIFIED"
-    return None
-
-
-def _has_required_diagnosis(conditions: List[str], accepted_strings: List[str]) -> bool:
-    for cond in conditions:
-        cond_lower = normalize(cond)
-        for term in accepted_strings:
-            if matches_term(cond_lower, term):
-                return True
-    return False
-
+def _apply_ambiguity_action(rule: dict, evidence: str, bmi: float) -> EligibilityResult:
+    """Construct result for an ambiguity trigger."""
+    # Most actions are manual_review
+    action = rule.get("action", "manual_review")
+    reason = rule.get("reasoning_template", "Ambiguous clinical term detected.")
+    
+    return EligibilityResult(
+        verdict="MANUAL_REVIEW",
+        bmi_numeric=bmi,
+        safety_flag="CLEAR", # Not a safety issue per se
+        comorbidity_category="NONE",
+        evidence_quoted=evidence,
+        reasoning=f"{reason} (Term: '{evidence}')",
+        policy_path="AMBIGUITY_MANUAL_REVIEW",
+        decision_type="FLAGGED_AMBIGUITY",
+        ambiguity_code=_ambiguity_code(rule)
+    )
 
 def _find_qualifying_comorbidity(conditions: List[str]) -> Tuple[str, str]:
+    """
+    Check if any condition meets the strict comorbidity criteria for BMI 27+.
+    Returns (category_name, evidence_string).
+    """
+    # 1. Hypertension
     for cond in conditions:
-        cond_lower = normalize(cond)
-        amb_rule, _ = _find_ambiguity([cond])
-        if amb_rule:
-            continue
-
-        # Cardiovascular disease
-        for phrase in QUALIFYING_CVD_PHRASES:
-            if matches_term(cond_lower, phrase):
-                return "CVD", cond
-        for abbrev in QUALIFYING_CVD_ABBREVS:
-            if has_word_boundary(cond_lower, normalize(abbrev)):
-                return "CVD", cond
-
-        # Hypertension
         for term in QUALIFYING_HYPERTENSION:
-            if matches_term(cond_lower, term):
+            if matches_term(cond, term) and classify_context(cond).context_type == "ACTIVE":
                 return "HYPERTENSION", cond
-
-        # Lipids
-        for term in QUALIFYING_LIPIDS:
-            if matches_term(cond_lower, term):
-                return "LIPIDS", cond
-
-        # T2DM
+                
+    # 2. Type 2 Diabetes
+    for cond in conditions:
         for term in QUALIFYING_T2DM:
-            if matches_term(cond_lower, term):
-                return "DIABETES", cond
+            if matches_term(cond, term) and classify_context(cond).context_type == "ACTIVE":
+                return "TYPE2_DIABETES", cond
 
-        # OSA (must explicitly indicate obstructive)
-        if "obstructive" in cond_lower or has_word_boundary(cond_lower, "osa"):
-            for term in QUALIFYING_OSA:
-                if matches_term(cond_lower, term):
-                    return "OSA", cond
+    # 3. Dyslipidemia
+    for cond in conditions:
+        for term in QUALIFYING_LIPIDS:
+            if matches_term(cond, term) and classify_context(cond).context_type == "ACTIVE":
+                return "DYSLIPIDEMIA", cond
+
+    # 4. OSA
+    for cond in conditions:
+        for term in QUALIFYING_OSA:
+            if matches_term(cond, term) and classify_context(cond).context_type == "ACTIVE":
+                return "OSA", cond
+
+    # 5. CVD
+    for cond in conditions:
+        # Check phrases
+        for term in QUALIFYING_CVD_PHRASES:
+             if matches_term(cond, term) and classify_context(cond).context_type == "ACTIVE":
+                return "CARDIOVASCULAR_DISEASE", cond
+        # Check abbreviations (strict word boundary already handled by matches_term logic for single tokens)
+        for term in QUALIFYING_CVD_ABBREVS:
+             if matches_term(cond, term) and classify_context(cond).context_type == "ACTIVE":
+                return "CARDIOVASCULAR_DISEASE", cond
 
     return "NONE", ""
 
 
-def _safety_code_from_category(category: str) -> Optional[str]:
-    cat = category.lower()
-    if "medullary thyroid" in cat:
-        return "MTC"
-    if "multiple endocrine neoplasia" in cat:
-        return "MEN2"
-    if "pregnant" in cat or "nursing" in cat:
-        return "PREGNANCY"
-    if "hypersensitivity" in cat:
-        return "HYPERSENSITIVITY"
-    if "pancreatitis" in cat:
-        return "PANCREATITIS"
-    if "suicid" in cat:
-        return "SUICIDALITY"
-    if "motility" in cat or "gastroparesis" in cat:
-        return "GI_MOTILITY"
-    return None
-
-
-def _apply_ambiguity_action(rule: dict, evidence: str, bmi: Optional[float]) -> EligibilityResult:
-    action = rule["action"]
-    notes = rule.get("notes", "")
-    reasoning = f"Ambiguous term '{evidence}' matched policy pattern '{rule['pattern']}'. {notes}".strip()
-    if action == "REQUEST_INFO":
-        verdict = "DENIED_MISSING_INFO"
-    elif action == "CONSERVATIVE_DENY":
-        verdict = "DENIED_CLINICAL"
-    else:
-        verdict = "MANUAL_REVIEW"
-    return EligibilityResult(
-        verdict=verdict,
-        bmi_numeric=bmi,
-        safety_flag="CLEAR",
-        comorbidity_category="NONE",
-        evidence_quoted=evidence,
-        reasoning=reasoning,
-        policy_path="AMBIGUITY_MANUAL_REVIEW",
-        decision_type="FLAGGED_AMBIGUITY" if verdict == "MANUAL_REVIEW" else "DENIED_NO_COMORBIDITY",
-        safety_exclusion_code=None,
-        ambiguity_code=_ambiguity_code(rule),
-    )
 
 
 def evaluate_eligibility(patient_data: dict) -> EligibilityResult:
+    """
+    Core deterministic decision function.
+    Expects patient_data keys:
+      - latest_bmi: str/float (may include "(Calculated)")
+      - conditions: List[str]
+      - meds: List[str]
+    """
     bmi_raw = patient_data.get("latest_bmi", "")
     conditions = patient_data.get("conditions", []) or []
     meds = patient_data.get("meds", []) or []
 
     bmi = _parse_bmi(bmi_raw)
-    default_policy_path = "UNKNOWN"
-    default_decision_type = "FLAGGED_AMBIGUITY" if bmi is None else "DENIED_NO_COMORBIDITY"
-    ambiguity_code = None
-    safety_code = None
 
-    # Safety gate
-    is_excluded, safety_evidence = _check_safety_exclusions(conditions, meds)
-    if is_excluded:
-        for exclusion in SAFETY_EXCLUSIONS:
-            if exclusion["category"] and exclusion["category"].lower() in safety_evidence:
-                safety_code = _safety_code_from_category(exclusion["category"])
+    # 1) Safety gate
+    is_hard_stop, safety_evidence, safety_code, safety_context, safety_confidence = _check_safety_exclusions(conditions, meds)
+    
+    if is_hard_stop:
         return EligibilityResult(
             verdict="DENIED_SAFETY",
             bmi_numeric=bmi,
@@ -273,10 +340,29 @@ def evaluate_eligibility(patient_data: dict) -> EligibilityResult:
             decision_type="DENIED_HARD_STOP",
             safety_exclusion_code=safety_code,
             ambiguity_code=None,
+            safety_context=safety_context,
+            safety_confidence=safety_confidence
+        )
+        
+    # Phase 9.1: If not Hard Stop but we found a Safety Signal (e.g. Historical), return Signal verdict.
+    if safety_code is not None:
+         return EligibilityResult(
+            verdict="SAFETY_SIGNAL_NEEDS_REVIEW",
+            bmi_numeric=bmi,
+            safety_flag="DETECTED", # Flag remains DETECTED so UI lights up, but verdict triggers specific handling
+            comorbidity_category="NONE",
+            evidence_quoted=safety_evidence,
+            reasoning=f"Safety signal detected: '{safety_evidence}' ({safety_context}). Manual review required to confirm contraindication.",
+            policy_path="SAFETY_EXCLUSION",
+            decision_type="FLAGGED_SAFETY_WARNING", # New decision type
+            safety_exclusion_code=safety_code,
+            ambiguity_code=None,
+            safety_context=safety_context,
+            safety_confidence=safety_confidence
         )
 
-    # Ambiguous thyroid malignancy needs manual review even without MTC/MEN2
-    thyroid_rule, thyroid_ev = _find_ambiguity(conditions, lambda r: "thyroid" in r["pattern"].lower())
+    # 2) Ambiguous thyroid malignancy needs manual review even without explicit MTC/MEN2
+    thyroid_rule, thyroid_ev = _find_ambiguity(conditions, lambda r: "thyroid" in str(r.get("pattern", "")).lower())
     if thyroid_rule:
         result = _apply_ambiguity_action(thyroid_rule, thyroid_ev, bmi)
         result.policy_path = "AMBIGUITY_MANUAL_REVIEW"
@@ -284,7 +370,7 @@ def evaluate_eligibility(patient_data: dict) -> EligibilityResult:
         result.ambiguity_code = _ambiguity_code(thyroid_rule)
         return result
 
-    # BMI presence
+    # 3) BMI presence
     if bmi is None:
         return EligibilityResult(
             verdict="DENIED_MISSING_INFO",
@@ -299,36 +385,22 @@ def evaluate_eligibility(patient_data: dict) -> EligibilityResult:
             ambiguity_code=None,
         )
 
-    # BMI ≥ 30 pathway (requires adult obesity diagnosis string)
-    if bmi >= BMI_OBESE_THRESHOLD:
-        if _has_required_diagnosis(conditions, ADULT_OBESITY_DIAGNOSES):
-            return EligibilityResult(
-                verdict="APPROVED",
-                bmi_numeric=bmi,
-                safety_flag="CLEAR",
-                comorbidity_category="NONE",
-                evidence_quoted="",
-                reasoning=f"BMI {bmi} meets obesity threshold (≥{BMI_OBESE_THRESHOLD}) with qualifying adult obesity diagnosis.",
-                policy_path="BMI30_OBESITY",
-                decision_type="APPROVED",
-                safety_exclusion_code=None,
-                ambiguity_code=None,
-            )
-        return EligibilityResult(
-            verdict="DENIED_MISSING_INFO",
-            bmi_numeric=bmi,
-            safety_flag="CLEAR",
-            comorbidity_category="NONE",
-            evidence_quoted="",
-            reasoning="BMI ≥ 30 requires a documented adult obesity diagnosis string.",
-            policy_path="BMI30_OBESITY",
-            decision_type="DENIED_NO_COMORBIDITY",
-            safety_exclusion_code=None,
-            ambiguity_code=None,
-        )
+    # 4) Clinical Decision Logic
+    clinical_verdict = None
+    policy_path = None
+    comorbidity_category = "NONE"
+    evidence_quoted = ""
+    pathway_name = None # For Coding Integrity Check
 
-    # Below minimum
-    if bmi < BMI_OVERWEIGHT_THRESHOLD:
+    # 4a) BMI ≥ 30 pathway
+    if bmi >= BMI_OBESE_THRESHOLD:
+        pathway_name = "BMI30_OBESITY"
+        clinical_verdict = "APPROVED"
+        reasoning_base = f"BMI {bmi} meets obesity threshold (≥{BMI_OBESE_THRESHOLD})."
+        policy_path = "BMI30_OBESITY"
+        
+    # 4b) Below minimum threshold
+    elif bmi < BMI_OVERWEIGHT_THRESHOLD:
         return EligibilityResult(
             verdict="DENIED_CLINICAL",
             bmi_numeric=bmi,
@@ -341,80 +413,118 @@ def evaluate_eligibility(patient_data: dict) -> EligibilityResult:
             safety_exclusion_code=None,
             ambiguity_code=None,
         )
-
-    # BMI 27–29.9 pathway
-    # CRITICAL FIX: Check for qualifying comorbidities FIRST, before ambiguity checks.
-    # If a patient has a valid qualifying comorbidity (e.g., Essential Hypertension),
-    # they should be APPROVED even if they also have ambiguous terms (e.g., Prediabetes).
-    
-    # Step 1: Check for qualifying comorbidity first (highest priority after safety)
-    category, comorbidity_evidence = _find_qualifying_comorbidity(conditions)
-    
-    # If we have a qualifying comorbidity, check for overweight diagnosis
-    if category != "NONE":
-        if _has_required_diagnosis(conditions, ADULT_OVERWEIGHT_DIAGNOSES):
-            # Has both qualifying comorbidity AND overweight diagnosis = APPROVED
-            return EligibilityResult(
-                verdict="APPROVED",
-                bmi_numeric=bmi,
-                safety_flag="CLEAR",
-                comorbidity_category=category,
-                evidence_quoted=comorbidity_evidence,
-                reasoning=f"BMI {bmi} (overweight) with qualifying comorbidity '{comorbidity_evidence}' ({category}). Approved.",
-                policy_path="BMI27_COMORBIDITY",
-                decision_type="APPROVED",
-                safety_exclusion_code=None,
-                ambiguity_code=None,
-            )
+        
+    # 4c) BMI 27–29.9 pathway
+    else:
+        # Critical ordering: comorbidity check BEFORE ambiguity check.
+        category, comorbidity_ev = _find_qualifying_comorbidity(conditions)
+        if category != "NONE":
+            pathway_name = "BMI27_COMORBIDITY"
+            clinical_verdict = "APPROVED"
+            comorbidity_category = category
+            evidence_quoted = comorbidity_ev
+            reasoning_base = f"BMI {bmi} (overweight range) with qualifying comorbidity '{comorbidity_ev}' ({category})."
+            policy_path = "BMI27_COMORBIDITY"
         else:
-            # Has qualifying comorbidity but missing overweight diagnosis string
+            # Only if no qualifying comorbidity exists: check ambiguities
+            ambiguity_rule, ambiguity_evidence = _find_ambiguity(conditions)
+            if ambiguity_rule:
+                result = _apply_ambiguity_action(ambiguity_rule, ambiguity_evidence, bmi)
+                result.policy_path = "AMBIGUITY_MANUAL_REVIEW"
+                result.decision_type = "FLAGGED_AMBIGUITY" if result.verdict == "MANUAL_REVIEW" else result.decision_type
+                result.ambiguity_code = _ambiguity_code(ambiguity_rule)
+                return result
+
+            # No comorbidity + no ambiguity => denial
             return EligibilityResult(
-                verdict="DENIED_MISSING_INFO",
+                verdict="DENIED_CLINICAL",
                 bmi_numeric=bmi,
                 safety_flag="CLEAR",
-                comorbidity_category=category,
-                evidence_quoted=comorbidity_evidence,
-                reasoning=(
-                    f"DOCUMENTATION REQUIRED: Patient has qualifying comorbidity '{comorbidity_evidence}' ({category}) "
-                    f"and BMI {bmi} meets the overweight threshold. However, an explicit 'Overweight' or "
-                    "'excess weight' diagnosis must be documented in the chart to complete policy criteria. "
-                    "Please add an overweight diagnosis (e.g., 'Overweight', 'Overweight, adult', 'E66.3') to the problem list."
-                ),
+                comorbidity_category="NONE",
+                evidence_quoted="",
+                reasoning=f"BMI {bmi} (overweight) but no qualifying weight-related comorbidity documented. Does not meet criteria.",
                 policy_path="BMI27_COMORBIDITY",
-                decision_type="DENIED_MISSING_INFO",
+                decision_type="DENIED_NO_COMORBIDITY",
                 safety_exclusion_code=None,
                 ambiguity_code=None,
             )
-    
-    # Step 2: No qualifying comorbidity found - check for ambiguous terms
-    # (only after confirming no valid comorbidities exist)
-    ambiguity_rule, ambiguity_evidence = _find_ambiguity(conditions)
-    if ambiguity_rule:
-        result = _apply_ambiguity_action(ambiguity_rule, ambiguity_evidence, bmi)
-        result.policy_path = "AMBIGUITY_MANUAL_REVIEW"
-        result.decision_type = "FLAGGED_AMBIGUITY"
-        result.ambiguity_code = _ambiguity_code(ambiguity_rule)
-        return result
 
-    # Step 3: No qualifying comorbidity AND no ambiguous terms = denial
-    return EligibilityResult(
-        verdict="DENIED_CLINICAL",
-        bmi_numeric=bmi,
-        safety_flag="CLEAR",
-        comorbidity_category="NONE",
-        evidence_quoted="",
-        reasoning=f"BMI {bmi} (overweight) but no qualifying weight-related comorbidity documented. Does not meet criteria.",
-        policy_path="BMI27_COMORBIDITY",
-        decision_type="DENIED_NO_COMORBIDITY",
-        safety_exclusion_code=None,
-        ambiguity_code=None,
+    # 5) Phase 9.5: Coding Integrity Overlay
+    # If we reached here, patient is Clinically Eligible (clinical_verdict == "APPROVED")
+    
+    is_admin_ready, missing_code = check_admin_readiness(conditions, pathway_name)
+    
+    if is_admin_ready:
+        return EligibilityResult(
+            verdict="APPROVED",
+            bmi_numeric=bmi,
+            safety_flag="CLEAR",
+            comorbidity_category=comorbidity_category,
+            evidence_quoted=evidence_quoted,
+            reasoning=f"{reasoning_base} Approved.",
+            policy_path=policy_path,
+            decision_type="APPROVED",
+            safety_exclusion_code=None,
+            ambiguity_code=None,
+            clinical_eligible=True,
+            admin_ready=True
+        )
+    else:
+        # CDI REQUIRED
+        # Construct Physician Query Text
+        if pathway_name == "BMI30_OBESITY":
+             rec_codes = "E66.9 (Obesity, unspecified) or specific E66.x code"
+        else:
+             rec_codes = "E66.3 (Overweight)"
+             
+        query_text = (
+            f"Attributes Summary: Clinical criteria met (BMI {bmi}).\n"
+            f"Missing Documentation: Payer requires specific ICD-10 anchor code for weight diagnosis.\n"
+            f"Recommended Action: Add diagnosis code {rec_codes} to problem list."
+        )
+             
+        result = EligibilityResult(
+            verdict="CDI_REQUIRED",
+            bmi_numeric=bmi,
+            safety_flag="CLEAR", # Safety is clear, administratively blocked
+            comorbidity_category=comorbidity_category,
+            evidence_quoted=evidence_quoted,
+            reasoning=f"{reasoning_base} Clinical criteria met, but missing required administrative anchor code ({missing_code}).",
+            policy_path=policy_path, # Keep original clinical path
+            decision_type="CDI_REQUIRED",
+            safety_exclusion_code=None,
+            ambiguity_code=None,
+            clinical_eligible=True,
+            admin_ready=False,
+            missing_anchor_code=missing_code,
+            physician_query_text=query_text
+        )
+    
+    # Audit Log the decision (centralized logging)
+    _audit_logger.log_event(
+        event_type="DECISION",
+        actor="system",
+        patient_id=patient_data.get("patient_id"), 
+        details={
+            "inputs": {
+                "bmi": str(bmi),
+                "conditions_count": len(conditions),
+                "meds_count": len(meds)
+            },
+            "output": {
+                "verdict": result.verdict,
+                "reasoning": result.reasoning,
+                "decision_type": result.decision_type
+            }
+        }
     )
+    
+    return result
 
 
 def evaluate_from_patient_record(patient_data: dict) -> dict:
     """Wrapper that returns a dictionary for compatibility with agent_logic.py."""
-    result = evaluate_eligibility(patient_data)
-    return result.to_dict()
+    return evaluate_eligibility(patient_data).to_dict()
 
 
 if __name__ == "__main__":
