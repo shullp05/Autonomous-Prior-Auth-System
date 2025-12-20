@@ -60,8 +60,6 @@ pillow>=10.0.0,<13
 httpx>=0.28.0,<1
 requests>=2.32.0,<3
 aiohttp>=3.10.0,<4
-fastapi>=0.115.0,<1
-uvicorn>=0.30.0,<1
 flask>=3.0.0,<4
 flask-cors>=6.0.0,<7
 
