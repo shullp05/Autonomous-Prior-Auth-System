@@ -10,39 +10,48 @@ jobs:
   test:
     name: Test & Audit
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
-        cache: 'pip'
-        
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-cov
+      - uses: actions/checkout@v4
 
-    - name: Run Tests with Coverage
-      # Skips slow LLM tests and tests requiring Ollama (not available in CI)
-      # Uses pytest markers to exclude: slow, requires_ollama, requires_chromadb
-      run: |
-        pytest tests/ -v --cov=. --cov-report=xml \
-          --ignore=tests/test_rag_rerank_sanity.py \
-          --ignore=tests/test_rag_sections.py \
-          -m "not slow"
-    
-    - name: Verify Policy Snapshot Syntax
-      # Ensures policy snapshot is valid JSON
-      run: |
-        python -c "import json; json.load(open('policies/RX-WEG-2025.json'))"
+      - name: Free space
+        run: |
+          # remove large preinstalled items that are safe to remove on the runner
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost || true
+          # clean apt caches and lists
+          sudo apt-get clean || true
+          sudo rm -rf /var/lib/apt/lists/* || true
+          # show remaining disk space
+          df -h
 
-    # Optional: Upload coverage artifact
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v4.0.1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-      continue-on-error: true
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run Tests with Coverage
+        # Skips slow LLM tests and tests requiring Ollama (not available in CI)
+        # Uses pytest markers to exclude: slow, requires_ollama, requires_chromadb
+        run: |
+          pytest tests/ -v --cov=. --cov-report=xml \
+            --ignore=tests/test_rag_rerank_sanity.py \
+            --ignore=tests/test_rag_sections.py \
+            -m "not slow"
+
+      - name: Verify Policy Snapshot Syntax
+        # Ensures policy snapshot is valid JSON
+        run: |
+          python -c "import json,sys; json.load(open('policies/RX-WEG-2025.json')); print('Policy JSON OK')"
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+        continue-on-error: true
