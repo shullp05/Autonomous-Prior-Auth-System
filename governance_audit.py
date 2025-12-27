@@ -7,39 +7,37 @@ import logging
 import math
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import pandas as pd
 
-from schema_validation import validate_governance_report
-
 # Centralized policy constants (single source of truth)
 from policy_constants import (
-    BMI_OBESE_THRESHOLD,
-    BMI_OVERWEIGHT_THRESHOLD,
-    BMI_MIN_REASONABLE,
-    BMI_MAX_REASONABLE,
-    ADULT_OBESITY_DIAGNOSES,
-    AMBIGUOUS_DIABETES,
     AMBIGUOUS_BP,
+    AMBIGUOUS_DIABETES,
     AMBIGUOUS_OBESITY,
     AMBIGUOUS_SLEEP_APNEA,
     AMBIGUOUS_THYROID,
-    SAFETY_PREGNANCY_LACTATION,
+    BMI_MAX_REASONABLE,
+    BMI_MIN_REASONABLE,
+    BMI_OBESE_THRESHOLD,
+    BMI_OVERWEIGHT_THRESHOLD,
     PROHIBITED_GLP1,
-    SAFETY_MTC_MEN2,
-    SAFETY_HYPERSENSITIVITY,
-    SAFETY_PANCREATITIS,
-    SAFETY_SUICIDALITY,
-    SAFETY_GI_MOTILITY,
-    QUALIFYING_CVD_PHRASES,
     QUALIFYING_CVD_ABBREVS,
+    QUALIFYING_CVD_PHRASES,
     QUALIFYING_HYPERTENSION,
     QUALIFYING_LIPIDS,
-    QUALIFYING_T2DM,
     QUALIFYING_OSA,
+    QUALIFYING_T2DM,
+    SAFETY_GI_MOTILITY,
+    SAFETY_HYPERSENSITIVITY,
+    SAFETY_MTC_MEN2,
+    SAFETY_PANCREATITIS,
+    SAFETY_PREGNANCY_LACTATION,
+    SAFETY_SUICIDALITY,
 )
-from policy_utils import normalize, has_word_boundary, matches_term, expand_safety_variants, is_snf_phrase
+from policy_utils import expand_safety_variants, has_word_boundary, is_snf_phrase, matches_term, normalize
+from schema_validation import validate_governance_report
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +64,7 @@ POLICY = {
 }
 
 
-def _any_match_in_conditions(conds: List[str], phrases: List[str]) -> Optional[str]:
+def _any_match_in_conditions(conds: list[str], phrases: list[str]) -> str | None:
     """Return the first original condition string that matches any phrase."""
     if not conds or not phrases:
         return None
@@ -78,7 +76,7 @@ def _any_match_in_conditions(conds: List[str], phrases: List[str]) -> Optional[s
     return None
 
 
-def _has_osa_specific(conds: List[str]) -> Optional[str]:
+def _has_osa_specific(conds: list[str]) -> str | None:
     """
     Only Obstructive Sleep Apnea qualifies: must include 'obstructive' or explicit 'OSA'.
     Generic 'sleep apnea' alone is ambiguous and should NOT qualify.
@@ -92,7 +90,7 @@ def _has_osa_specific(conds: List[str]) -> Optional[str]:
     return None
 
 
-def _is_generic_sleep_apnea_only(conds: List[str]) -> Optional[str]:
+def _is_generic_sleep_apnea_only(conds: list[str]) -> str | None:
     """Detect generic 'sleep apnea' as an ambiguous term for audit/debug."""
     for c in conds:
         c_norm = normalize(c)
@@ -101,7 +99,7 @@ def _is_generic_sleep_apnea_only(conds: List[str]) -> Optional[str]:
     return None
 
 
-def _is_t2_diabetes(conds: List[str]) -> Optional[str]:
+def _is_t2_diabetes(conds: list[str]) -> str | None:
     """T2DM qualifies; prediabetes terms explicitly do not."""
     for c in conds:
         if _any_match_in_conditions([c], AMBIGUOUS_DIABETES):
@@ -111,7 +109,7 @@ def _is_t2_diabetes(conds: List[str]) -> Optional[str]:
     return None
 
 
-def _is_hypertension(conds: List[str]) -> Optional[str]:
+def _is_hypertension(conds: list[str]) -> str | None:
     for c in conds:
         if _any_match_in_conditions([c], AMBIGUOUS_BP):
             continue
@@ -120,11 +118,11 @@ def _is_hypertension(conds: List[str]) -> Optional[str]:
     return None
 
 
-def _is_lipids(conds: List[str]) -> Optional[str]:
+def _is_lipids(conds: list[str]) -> str | None:
     return _any_match_in_conditions(conds, QUALIFYING_LIPIDS)
 
 
-def _is_cvd(conds: List[str]) -> Optional[str]:
+def _is_cvd(conds: list[str]) -> str | None:
     for c in conds:
         c_norm = normalize(c)
         for phrase in QUALIFYING_CVD_PHRASES:
@@ -136,7 +134,7 @@ def _is_cvd(conds: List[str]) -> Optional[str]:
     return None
 
 
-def _detect_safety_exclusion(conds: List[str], meds: List[str]) -> Tuple[bool, str]:
+def _detect_safety_exclusion(conds: list[str], meds: list[str]) -> tuple[bool, str]:
     """
     Policy-aligned safety exclusion detection.
     Returns: (is_excluded, evidence_string)
@@ -182,7 +180,7 @@ def _detect_safety_exclusion(conds: List[str], meds: List[str]) -> Tuple[bool, s
     return False, ""
 
 
-def _get_latest_numeric_obs(df_obs: pd.DataFrame, pid: str, obs_type: str) -> Optional[float]:
+def _get_latest_numeric_obs(df_obs: pd.DataFrame, pid: str, obs_type: str) -> float | None:
     if df_obs.empty:
         return None
     if "patient_id" not in df_obs.columns or "type" not in df_obs.columns:
@@ -203,7 +201,7 @@ def _get_latest_numeric_obs(df_obs: pd.DataFrame, pid: str, obs_type: str) -> Op
         return None
 
 
-def _calculate_bmi_ground_truth(df_obs: pd.DataFrame, pid: str) -> Optional[float]:
+def _calculate_bmi_ground_truth(df_obs: pd.DataFrame, pid: str) -> float | None:
     bmi = _get_latest_numeric_obs(df_obs, pid, "BMI")
     if bmi is not None:
         if POLICY["min_reasonable_bmi"] <= bmi <= POLICY["max_reasonable_bmi"]:
@@ -232,7 +230,7 @@ def calculate_ground_truth_eligibility(
     df_obs: pd.DataFrame,
     df_conds: pd.DataFrame,
     df_meds: pd.DataFrame,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Returns a policy-aligned deterministic truth object.
     - eligible: True / False / None (None means unknown due to missing BMI)
@@ -275,11 +273,12 @@ def calculate_ground_truth_eligibility(
         return {"eligible": None, "reason": "MISSING_BMI", "evidence": ""}
 
     # BMI >= obese threshold: align with current policy_engine.py requirement
+    # BMI >= obese threshold: align with current policy_engine.py requirement
+    # Engine Logic: BMI >= 30 is sufficient for clinical eligibility (verdict=APPROVED or CDI_REQUIRED).
+    # We mark them as eligible=True regardless of the text string presence, because
+    # the lack of a string is an administrative (CDI) issue, not a clinical eligibility failure.
     if bmi >= POLICY["bmi_obesity_threshold"]:
-        dx_ev = _any_match_in_conditions(conds, ADULT_OBESITY_DIAGNOSES)
-        if dx_ev:
-            return {"eligible": True, "reason": "BMI30_OBESITY_WITH_DX", "evidence": dx_ev}
-        return {"eligible": False, "reason": "MISSING_OBESITY_DX", "evidence": f"BMI {bmi}"}
+        return {"eligible": True, "reason": "BMI30_OBESITY", "evidence": f"BMI {bmi}"}
 
     if bmi < POLICY["bmi_overweight_threshold"]:
         return {"eligible": False, "reason": "BMI_BELOW_THRESHOLD", "evidence": f"BMI {bmi}"}
@@ -326,7 +325,7 @@ def calculate_ground_truth_eligibility(
 # -----------------------------
 # Stats helpers (robust FNR parity)
 # -----------------------------
-def wilson_ci(k: int, n: int, z: float = 1.96) -> Tuple[float, float]:
+def wilson_ci(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
     if n <= 0:
         return (float("nan"), float("nan"))
     p = k / n
@@ -342,7 +341,7 @@ def norm_cdf(x: float) -> float:
     return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
 
 
-def two_proportion_z_pvalue(k1: int, n1: int, k2: int, n2: int) -> Optional[float]:
+def two_proportion_z_pvalue(k1: int, n1: int, k2: int, n2: int) -> float | None:
     if n1 <= 0 or n2 <= 0:
         return None
     p_pool = (k1 + k2) / (n1 + n2)
@@ -376,7 +375,7 @@ def run_governance_audit(
             logger.error("Input file not found: %s", ai_results_path)
             return
 
-        with open(ai_results_path, "r", encoding="utf-8") as f:
+        with open(ai_results_path, encoding="utf-8") as f:
             data = json.load(f)
 
         if isinstance(data, dict) and "results" in data:
@@ -423,8 +422,8 @@ def run_governance_audit(
 
     # Ground truth (tri-state)
     logger.info("Calculating Ground Truth (policy-aligned)...")
-    truth_map: Dict[str, Optional[bool]] = {}
-    truth_meta: Dict[str, Dict[str, str]] = {}
+    truth_map: dict[str, bool | None] = {}
+    truth_meta: dict[str, dict[str, str]] = {}
 
     for pid in df_ai["patient_id"].dropna().unique():
         pid = str(pid)
@@ -500,7 +499,7 @@ def run_governance_audit(
                 "stop_ship_groups": [],
             }
 
-        metrics: Dict[str, dict] = {}
+        metrics: dict[str, dict] = {}
         groups = [g for g in df_eval[attr].dropna().unique()]
 
         for g in groups:
@@ -514,7 +513,7 @@ def run_governance_audit(
         m_tests = max(1, len(valid_groups))
         alpha_bonf = alpha / m_tests
 
-        stop_ship_groups: List[str] = []
+        stop_ship_groups: list[str] = []
 
         for g in valid_groups:
             df_g = df_eval[df_eval[attr] == g]

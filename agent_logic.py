@@ -37,10 +37,10 @@ from __future__ import annotations
 import json
 import logging
 import os
-import re
 import time
+from typing import List, Dict, Any, Optional, Literal, Union
 from pathlib import Path
-from typing import Any, List, Literal, Optional, Tuple, TypedDict
+from typing import Any, Literal, TypedDict
 
 import pandas as pd
 import psutil
@@ -48,7 +48,7 @@ from dotenv import load_dotenv
 from langchain_core.documents import Document
 from langchain_ollama import ChatOllama
 from langgraph.graph import END, StateGraph
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 # IMPORTANT: load .env BEFORE importing config (config may read env at import time)
 load_dotenv()
@@ -56,14 +56,12 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 # ---- Policy snapshot / deterministic engine (single source of truth) ----
-from policy_constants import (  # noqa: E402
-    AMBIGUOUS_APPEAL_TERMS,
-    BMI_OBESE_THRESHOLD,
-    BMI_OVERWEIGHT_THRESHOLD,
-)
-from policy_engine import _parse_bmi, evaluate_eligibility  # noqa: E402
-from policy_snapshot import SNAPSHOT_PATH, load_policy_snapshot  # noqa: E402
-from schema_validation import validate_policy_snapshot  # noqa: E402
+from policy_utils import normalize, format_criteria_list
+from audit_logger import get_audit_logger  # noqa: E402
+
+# ---- Optional reranker (safe-to-import wrapper) ----
+# This module is designed to not blow up imports if BCEmbedding isn't installed.
+from bce_reranker import rerank_bce  # noqa: E402
 
 # ---- Central config ----
 from config import (  # noqa: E402
@@ -79,15 +77,18 @@ from config import (  # noqa: E402
     PA_RAG_TOP_K_DOCS,
     PA_RERANK_DEVICE,
     PA_RERANK_MODEL,
-    POLICY_ID as ACTIVE_POLICY_ID,
-    PA_PROVIDER_NAME,
-    PA_PROVIDER_NPI,
-    PA_PRACTICE_NAME,
 )
-
-# ---- Optional reranker (safe-to-import wrapper) ----
-# This module is designed to not blow up imports if BCEmbedding isn't installed.
-from bce_reranker import rerank_bce  # noqa: E402
+from config import (
+    POLICY_ID as ACTIVE_POLICY_ID,
+)
+from policy_constants import (  # noqa: E402
+    AMBIGUOUS_APPEAL_TERMS,
+    BMI_OBESE_THRESHOLD,
+    BMI_OVERWEIGHT_THRESHOLD,
+)
+from policy_engine import _parse_bmi, evaluate_eligibility  # noqa: E402
+from policy_snapshot import SNAPSHOT_PATH, load_policy_snapshot  # noqa: E402
+from schema_validation import validate_policy_snapshot  # noqa: E402
 
 # =========================
 # CONFIG (easy model swap)
@@ -102,8 +103,7 @@ EMBED_MODEL = EMBED_MODEL_NAME
 RERANK_MODEL = PA_RERANK_MODEL
 RERANK_DEVICE_DEFAULT = (PA_RERANK_DEVICE or "cpu").lower()
 
-ENABLE_RERANK = os.getenv("PA_ENABLE_RERANK", "true").lower() == "true"
-PA_ENABLE_RERANK = ENABLE_RERANK  # backward-compat alias
+from config import PA_ENABLE_RERANK as ENABLE_RERANK
 
 # RAG scoring knobs: config defaults, env override supported
 RAG_SCORE_FLOOR = float(os.getenv("PA_RAG_SCORE_FLOOR", str(PA_RAG_SCORE_FLOOR)))
@@ -113,10 +113,10 @@ SNAPSHOT = load_policy_snapshot(SNAPSHOT_PATH, ACTIVE_POLICY_ID)
 validate_policy_snapshot(SNAPSHOT)
 
 # --- DATA LOADING (lazy) ---
-df_patients: Optional[pd.DataFrame] = None
-df_meds: Optional[pd.DataFrame] = None
-df_conditions: Optional[pd.DataFrame] = None
-df_obs: Optional[pd.DataFrame] = None
+df_patients: pd.DataFrame | None = None
+df_meds: pd.DataFrame | None = None
+df_conditions: pd.DataFrame | None = None
+df_obs: pd.DataFrame | None = None
 
 _DATA_DIR = Path(os.getenv("ETL_OUTPUT_DIR", "output"))
 _PAT_PATH = _DATA_DIR / "data_patients.csv"
@@ -129,10 +129,10 @@ def _coerce_pid(x: Any) -> str:
     return str(x).strip()
 
 
-def _clean_str_list(values: Any) -> List[str]:
+def _clean_str_list(values: Any) -> list[str]:
     if values is None:
         return []
-    out: List[str] = []
+    out: list[str] = []
     for v in values:
         if v is None:
             continue
@@ -177,7 +177,7 @@ def _ensure_data_loaded() -> None:
         logger.error("Data Load Error: %s", e)
 
 
-def write_model_trace(model_name: str, role: str, params: dict, required_ram_gb: Optional[float] = None) -> None:
+def write_model_trace(model_name: str, role: str, params: dict, required_ram_gb: float | None = None) -> None:
     trace = {
         "model_name": model_name,
         "role": role,
@@ -196,7 +196,7 @@ def _make_llm(
     model: str,
     temperature: float = 0.0,
     prefer_json: bool = False,
-    options: Optional[dict] = None,
+    options: dict | None = None,
 ) -> ChatOllama:
     """
     Create ChatOllama instance with optional format and low-level tuning.
@@ -215,7 +215,7 @@ def _make_llm(
 
 
 # --- BMI CALCULATION ---
-def calculate_bmi_if_missing(patient_id: str, df_obs_in: Optional[pd.DataFrame]) -> str:
+def calculate_bmi_if_missing(patient_id: str, df_obs_in: pd.DataFrame | None) -> str:
     """
     Retrieve or calculate BMI for a patient.
 
@@ -268,7 +268,7 @@ def calculate_bmi_if_missing(patient_id: str, df_obs_in: Optional[pd.DataFrame])
 
 
 # --- PATIENT LOOKUP ---
-def look_up_patient_data(patient_id: str) -> Optional[dict]:
+def look_up_patient_data(patient_id: str) -> dict | None:
     """
     Retrieve patient data from loaded CSVs. Returns None if data not loaded or patient missing.
     """
@@ -286,15 +286,22 @@ def look_up_patient_data(patient_id: str) -> Optional[dict]:
 
     pat = pat_rows[0]
 
-    meds: List[str] = []
+    meds: list[str] = []
     if df_meds is not None and not getattr(df_meds, "empty", True):
         meds_series = df_meds[df_meds["patient_id"].astype(str) == pid]["medication_name"]
         meds = _clean_str_list(meds_series.dropna().astype(str).tolist())
 
-    conds: List[str] = []
+    conds: list[dict] = []
     if df_conditions is not None and not getattr(df_conditions, "empty", True):
-        cond_series = df_conditions[df_conditions["patient_id"].astype(str) == pid]["condition_name"]
-        conds = _clean_str_list(cond_series.dropna().astype(str).tolist())
+        c_rows = df_conditions[df_conditions["patient_id"].astype(str) == pid]
+        # Extract full objects for Coding Integrity
+        cols = ["condition_name"]
+        if "icd10_dx" in c_rows.columns:
+            cols.append("icd10_dx")
+        if "icd10_bmi" in c_rows.columns:
+            cols.append("icd10_bmi")
+
+        conds = c_rows[cols].to_dict(orient="records")
 
     latest_bmi = calculate_bmi_if_missing(pid, df_obs)
 
@@ -356,12 +363,30 @@ class PARequestLetterInput(BaseModel):
     bmi_date: str = ""
     qualifying_pathway: Literal["BMI_30_PLUS", "BMI_27_29_WITH_COMORBIDITY"]
     qualifying_comorbidity: str = ""
-    contraindications_checked: List[str] = Field(default_factory=list)
-    contraindications_found: List[str] = Field(default_factory=list)
+
+    # Triple-Key / Code-level requirements
+    adult_obesity_diags: list[str] = Field(default_factory=list)
+    adult_overweight_diags: list[str] = Field(default_factory=list)
+    qualifying_obesity_icd10_codes: list[str] = Field(default_factory=list)
+    qualifying_obesity_icd_z_codes: list[str] = Field(default_factory=list)
+    qualifying_overweight_icd10_codes: list[str] = Field(default_factory=list)
+    qualifying_overweight_icd_z_codes: list[str] = Field(default_factory=list)
+
+    # Specific Found Evidence (for letter specificity)
+    found_diagnosis_string: Optional[str] = None
+    found_e66_code: Optional[str] = None
+    found_z68_code: Optional[str] = None
+    found_comorbidity_evidence: Optional[str] = None
+    found_e66_code: Optional[str] = None
+    found_z68_code: Optional[str] = None
+    found_comorbidity_evidence: Optional[str] = None
+
+    contraindications_checked: list[str] = Field(default_factory=list)
+    contraindications_found: list[str] = Field(default_factory=list)
 
     requested_action: str = "Request prior authorization coverage for Wegovy as prescribed"
 
-    attachments: List[str] = Field(default_factory=list)
+    attachments: list[str] = Field(default_factory=list)
 
 
 class PARequestLetterDraft(BaseModel):
@@ -375,11 +400,11 @@ class PARequestLetterDraft(BaseModel):
     subject_line: str
 
     opening_paragraph: str
-    clinical_summary_bullets: List[str]
-    criteria_bullets: List[str]
+    clinical_summary_bullets: list[str]
+    criteria_bullets: list[str]
     safety_paragraph: str
     requested_action_paragraph: str
-    attachments_bullets: List[str]
+    attachments_bullets: list[str]
 
 
 def _require_provider_context() -> ProviderContext:
@@ -480,7 +505,7 @@ Please provide documentation of a qualifying weight-related comorbidity:
 
 
 # --- APPEAL / CLARIFICATION GENERATOR ---
-def generate_appeal_letter(patient_data: dict, denial_reason: str, findings: dict) -> Optional[str]:
+def generate_appeal_letter(patient_data: dict, denial_reason: str, findings: dict) -> str | None:
     """
     Generate a provider-facing clarification / documentation letter for DENIED/FLAGGED cases.
     Returns None for safety denials or if generation fails (caller may fall back to templates).
@@ -563,8 +588,8 @@ Do NOT include markdown. Do NOT include placeholders in brackets."""
                 parsed = json.loads(text)
                 if isinstance(parsed, dict) and isinstance(parsed.get("letter"), str):
                     text = parsed["letter"].strip()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("Failed to parse JSON wrapper in appeal letter: %s", e)
 
         if "\\n" in text:
             text = text.replace("\\n", "\n")
@@ -605,8 +630,8 @@ def _generate_fallback_pa_template(patient_data: dict, reason: str, findings: di
                 bmi_analysis = "Patient meets BMI threshold (≥27) but requires documented qualifying comorbidity."
             else:
                 bmi_analysis = "Patient BMI is below coverage threshold (<27). Coverage unlikely without exceptional circumstances."
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to parse BMI in fallback template: %s", e)
 
     if is_ambiguity_case and evidence:
         cond_text = f'FLAGGED TERM REQUIRING CLARIFICATION: "{evidence}"'
@@ -640,7 +665,7 @@ Provider Signature / Date
 
 
 # --- APPROVED LETTER GENERATOR ---
-def generate_approved_letter(patient_data: dict, approval_reasoning: str, findings: dict) -> Optional[str]:
+def generate_approved_letter(patient_data: dict, approval_reasoning: str, findings: dict) -> str | None:
     """
     Generate a payer-ready Prior Authorization Request / Letter of Medical Necessity
     for cases that meet criteria.
@@ -674,11 +699,24 @@ def generate_approved_letter(patient_data: dict, approval_reasoning: str, findin
 
     comorbidity = str((findings or {}).get("comorbidity_category", "NONE") or "NONE").upper()
 
+    adult_obesity_diags = []
+    adult_overweight_diags = []
+    qualifying_obesity_icd10_codes = []
+    qualifying_obesity_icd_z_codes = []
+    qualifying_overweight_icd10_codes = []
+    qualifying_overweight_icd_z_codes = []
+
     if bmi_value_f >= 30.0:
         pathway = "BMI_30_PLUS"
+        adult_obesity_diags = ["obesity", "obes"]
+        qualifying_obesity_icd10_codes = ["E66.01", "E66.9", "E66.09", "E66.0", "E66.x"]
+        qualifying_obesity_icd_z_codes = ["Z68.27", "Z68.28", "Z68.29", "Z68.41", "Z68.42", "Z68.43", "Z68.44", "Z68.45", "Z68.x"]
         qualifying_comorbidity = ""
     else:
         pathway = "BMI_27_29_WITH_COMORBIDITY"
+        adult_overweight_diags = ["overweight", "overwt"]
+        qualifying_overweight_icd10_codes = ["E66.3", "E66.x"]
+        qualifying_overweight_icd_z_codes = ["Z68.27", "Z68.28", "Z68.29", "Z68.x"]
         qualifying_comorbidity = (
             "Hypertension" if comorbidity == "HYPERTENSION" else ("Type 2 Diabetes Mellitus" if comorbidity == "DIABETES" else comorbidity.title())
         )
@@ -689,6 +727,12 @@ def generate_approved_letter(patient_data: dict, approval_reasoning: str, findin
         patient_id=patient_id,
         bmi_value=bmi_value_f,
         qualifying_pathway=pathway,
+        adult_obesity_diags=adult_obesity_diags,
+        adult_overweight_diags=adult_overweight_diags,
+        qualifying_obesity_icd10_codes=qualifying_obesity_icd10_codes,
+        qualifying_obesity_icd_z_codes=qualifying_obesity_icd_z_codes,
+        qualifying_overweight_icd_z_codes=qualifying_overweight_icd_z_codes,
+        qualifying_overweight_icd10_codes=qualifying_overweight_icd10_codes,
         qualifying_comorbidity=qualifying_comorbidity,
         contraindications_checked=[
             "pregnancy/lactation",
@@ -702,6 +746,10 @@ def generate_approved_letter(patient_data: dict, approval_reasoning: str, findin
             "Problem list reflecting qualifying comorbidity (if applicable)",
             "Medication list",
         ],
+        found_diagnosis_string=(findings or {}).get("found_diagnosis_string"),
+        found_e66_code=(findings or {}).get("found_e66_code"),
+        found_z68_code=(findings or {}).get("found_z68_code"),
+        found_comorbidity_evidence=(findings or {}).get("found_comorbidity_evidence") or (findings or {}).get("evidence_quoted"),
     )
 
     llm = _make_llm(model=APPEAL_MODEL, temperature=0.0, prefer_json=True)
@@ -714,6 +762,13 @@ HARD RULES:
 - Do NOT invent facts, labs, diagnoses, prior therapies, dates, or contraindications. Use only the provided JSON.
 - Safety language must be non-absolute. Use: "No contraindications were identified in the reviewed record" if none found.
 - Output MUST be a single valid JSON object matching the schema. No markdown. No extra text.
+- IMPORTANT: You MUST explicitly list the following specific criteria values found in the patient record:
+  1. Documented BMI Value
+  2. Diagnosis String used (found_diagnosis_string)
+  3. ICD-10 E66 Code found (found_e66_code)
+  4. ICD-10 Z68 Code found (found_z68_code)
+  5. Qualifying Documented Comorbidity (found_comorbidity_evidence) - NOTE: If BMI >= 30, write "Not Applicable (BMI >= 30)". If found_comorbidity_evidence is missing/empty but BMI < 30, state "None Documented".
+  Include these in the 'criteria_bullets' section.
 
 STYLE:
 - Professional, concise, clinical-administrative tone.
@@ -768,7 +823,7 @@ OUTPUT JSON SCHEMA (exact keys):
 
         recipient_block = "\n".join([draft.recipient_department, f"Attn: {draft.attention_line}", draft.recipient_org])
 
-        def bullets(items: List[str]) -> str:
+        def bullets(items: list[str]) -> str:
             return "\n".join([f"- {str(i).strip()}" for i in items if str(i).strip()])
 
         letter_text = f"""{practice_block}
@@ -827,8 +882,8 @@ def _generate_fallback_approved_letter(patient_data: dict, approval_reasoning: s
     try:
         if bmi is not None:
             bmi_text = f"{float(bmi):.1f} kg/m²"
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Failed to format BMI in fallback approved letter: %s", e)
 
     template = f"""LETTER OF MEDICAL NECESSITY
 Prior Authorization Request — Wegovy (Semaglutide)
@@ -848,6 +903,12 @@ CLINICAL JUSTIFICATION:
 
 Current BMI: {bmi_text}
 {f"Qualifying Comorbidity: {comorbidity}" if comorbidity and comorbidity.upper() != "NONE" else ""}
+
+SPECIFIC CRITERIA:
+- Diagnosis String: {findings.get('found_diagnosis_string', 'N/A')}
+- ICD-10 Code (E66): {findings.get('found_e66_code', 'N/A')}
+- BMI Z-Code (Z68): {findings.get('found_z68_code', 'N/A')}
+- Qualifying Comorbidity: {findings.get('found_comorbidity_evidence') if findings.get('bmi_numeric', 30) < 30 else "Not Applicable (BMI >= 30)"}
 
 I respectfully request authorization coverage consistent with the applicable policy criteria.
 
@@ -893,10 +954,10 @@ _STATIC_POLICY_FALLBACK = POLICY_SUMMARY_TEXT
 
 
 def _apply_score_floor(
-    scored_docs: List[Tuple[Document, float]],
+    scored_docs: list[tuple[Document, float]],
     floor: float,
     min_docs: int,
-) -> Tuple[List[Document], List[float]]:
+) -> tuple[list[Document], list[float]]:
     """
     Filter by BCE score floor while enforcing a minimum number of documents.
 
@@ -909,8 +970,8 @@ def _apply_score_floor(
     docs = list(docs)
     scores = [float(s) for s in scores]
 
-    filtered_docs: List[Document] = []
-    filtered_scores: List[float] = []
+    filtered_docs: list[Document] = []
+    filtered_scores: list[float] = []
     for d, s in zip(docs, scores):
         if s >= floor:
             filtered_docs.append(d)
@@ -923,7 +984,7 @@ def _apply_score_floor(
     return filtered_docs, filtered_scores
 
 
-def _policy_bucket(section: str, policy_path: Optional[str]) -> int:
+def _policy_bucket(section: str, policy_path: str | None) -> int:
     """
     Assign a coarse priority bucket to a policy section.
     Lower number = higher priority for LLM evidence.
@@ -979,7 +1040,7 @@ def _policy_bucket(section: str, policy_path: Optional[str]) -> int:
     return 5
 
 
-def _policy_aware_sort_docs(docs: List[Document], scores: List[float], policy_path: Optional[str]) -> List[Document]:
+def _policy_aware_sort_docs(docs: list[Document], scores: list[float], policy_path: str | None) -> list[Document]:
     """
     Reorder documents so the most policy-relevant sections for the current
     deterministic policy path appear first, while respecting BCE scores
@@ -988,7 +1049,7 @@ def _policy_aware_sort_docs(docs: List[Document], scores: List[float], policy_pa
     if not docs:
         return []
 
-    indexed: List[Tuple[int, float, int, Document]] = []
+    indexed: list[tuple[int, float, int, Document]] = []
     for idx, (d, s) in enumerate(zip(docs, scores)):
         section = (d.metadata or {}).get("section") or ""
         bucket = _policy_bucket(str(section), policy_path)
@@ -999,7 +1060,7 @@ def _policy_aware_sort_docs(docs: List[Document], scores: List[float], policy_pa
 
 
 # --- RETRIEVAL NODE HELPERS ---
-def _build_policy_query(det_result: Any, patient_data: Optional[dict], drug: str) -> str:
+def _build_policy_query(det_result: Any, patient_data: dict | None, drug: str) -> str:
     drug = drug or "Wegovy"
     if det_result:
         bmi = getattr(det_result, "bmi_numeric", None)
@@ -1010,7 +1071,7 @@ def _build_policy_query(det_result: Any, patient_data: Optional[dict], drug: str
         return (
             f"{drug} prior authorization policy evidence for {path} with verdict {verdict}; "
             f"BMI {bmi}; comorbidity {category}; safety {safety}. "
-            "Return diagnosis strings, comorbidity rules, safety exclusions, and documentation requirements."
+            "Return diagnosis strings (including ICD-10/Z-codes), comorbidity rules, safety exclusions, and documentation requirements."
         )
     bmi_hint = (patient_data or {}).get("latest_bmi") if patient_data else "unknown"
     return (
@@ -1019,10 +1080,10 @@ def _build_policy_query(det_result: Any, patient_data: Optional[dict], drug: str
     )
 
 
-def _format_policy_evidence(docs: List[Document]) -> str:
+def _format_policy_evidence(docs: list[Document]) -> str:
     if not docs:
         return _STATIC_POLICY_FALLBACK
-    blocks: List[str] = []
+    blocks: list[str] = []
     for idx, doc in enumerate(docs, start=1):
         section = (doc.metadata or {}).get("section", "unknown")
         blocks.append(f"=== POLICY EVIDENCE {idx} ===\n[section: {section}]\n{doc.page_content.strip()}")
@@ -1042,8 +1103,8 @@ def retrieve_policy(state: AgentState) -> dict:
 
     det_result = evaluate_eligibility(patient_data) if patient_data else None
 
-    policy_text: Optional[str] = None
-    policy_docs: List[Document] = []
+    policy_text: str | None = None
+    policy_docs: list[Document] = []
 
     if os.path.exists("./chroma_db"):
         try:
@@ -1060,7 +1121,7 @@ def retrieve_policy(state: AgentState) -> dict:
             query = _build_policy_query(det_result, patient_data, drug)
 
             t0 = time.perf_counter()
-            vector_docs: List[Document] = vectordb.similarity_search(
+            vector_docs: list[Document] = vectordb.similarity_search(
                 query,
                 k=PA_RAG_K_VECTOR,
                 filter={"policy_id": str(ACTIVE_POLICY_ID)},
@@ -1155,6 +1216,7 @@ def _extract_json_object(text: str) -> dict:
         if isinstance(obj, dict):
             return obj
     except Exception:
+        # Fallthrough to robust extraction
         pass
 
     first_brace = raw.find("{")
@@ -1184,8 +1246,17 @@ class AuditResult(BaseModel):
         "MANUAL_REVIEW",
         "DENIED_BENEFIT_EXCLUSION",
         "DENIED_OTHER",
+        "CDI_REQUIRED",
+        "SAFETY_SIGNAL_NEEDS_REVIEW",
     ] = "MANUAL_REVIEW"
     reasoning: str = ""
+
+    @field_validator("comorbidity_category", mode="before")
+    @classmethod
+    def normalize_category(cls, v: str) -> str:
+        if isinstance(v, str) and v.upper() == "CARDIOVASCULAR_DISEASE":
+            return "CVD"
+        return v
 
 
 def _merge_deterministic_over_llm(det: dict, llm_obj: Optional[dict]) -> dict:
@@ -1244,7 +1315,7 @@ def clinical_audit(state: AgentState) -> dict:
     # Optional LLM advisory audit (kept for transparency / debugging / narration)
     policy_text = str(state.get("policy_text") or _STATIC_POLICY_FALLBACK)
 
-    llm_audit_dict: Optional[dict] = None
+    llm_audit_dict: dict | None = None
     try:
         det_bmi = _parse_bmi(p_data.get("latest_bmi"))
         det_bmi_str = str(det_bmi) if det_bmi is not None else "null"
@@ -1275,7 +1346,7 @@ Return ONE strict JSON object. No markdown. No extra text.
                 "safety_flag": "CLEAR|DETECTED",
                 "comorbidity_category": "NONE|HYPERTENSION|LIPIDS|DIABETES|OSA|CVD",
                 "evidence_quoted": "string",
-                "verdict": "APPROVED|DENIED_SAFETY|DENIED_CLINICAL|DENIED_MISSING_INFO|MANUAL_REVIEW|DENIED_BENEFIT_EXCLUSION|DENIED_OTHER",
+                "verdict": "APPROVED|DENIED_SAFETY|DENIED_CLINICAL|DENIED_MISSING_INFO|MANUAL_REVIEW|DENIED_BENEFIT_EXCLUSION|DENIED_OTHER|CDI_REQUIRED|SAFETY_SIGNAL_NEEDS_REVIEW",
                 "reasoning": "string",
             },
         }
@@ -1333,8 +1404,8 @@ def make_decision(state: AgentState) -> dict:
     verdict = str(f.get("verdict", "MANUAL_REVIEW")).upper()
     model_used = state.get("audit_model_flavor", "unknown")
 
-    appeal_letter: Optional[str] = None
-    appeal_note: Optional[str] = None
+    appeal_letter: str | None = None
+    appeal_note: str | None = None
     final_status = "DENIED"
 
     bmi = None
@@ -1346,7 +1417,7 @@ def make_decision(state: AgentState) -> dict:
         bmi = None
 
     evidence = str(f.get("evidence_quoted") or "").strip()
-    safety_flag = str(f.get("safety_flag", "CLEAR")).upper()
+    # safety_flag = str(f.get("safety_flag", "CLEAR")).upper()  # Unused variable removed
     reasoning_src = str(f.get("reasoning") or "").strip()
 
     def with_bmi_prefix(text: str) -> str:
@@ -1386,9 +1457,38 @@ def make_decision(state: AgentState) -> dict:
         base = reasoning_src or "Denied because BMI and/or qualifying comorbidities do not meet policy criteria."
         reason = with_bmi_prefix(f"Denied. {base}")
 
+        # Detailed criteria list for Denial
+        criteria_list = format_criteria_list(
+            bmi,
+            f.get("found_diagnosis_string"),
+            f.get("found_e66_code"),
+            f.get("found_z68_code"),
+            evidence,
+            f.get("missing_anchor_code"),
+            f.get("ambiguity_code")
+        )
+
+        # For BMI 27–29.9 with non-qualifying/ambiguous evidence, generate documentation guidance
         # For BMI 27–29.9 with non-qualifying/ambiguous evidence, generate documentation guidance
         if bmi is not None and BMI_OVERWEIGHT_THRESHOLD <= bmi < BMI_OBESE_THRESHOLD:
-            appeal_letter = generate_appeal_letter(p_data, reason, f)
+             # Just use the template for consistency
+             appeal_letter = f"""PRIOR AUTHORIZATION DENIAL NOTIFICATION
+DENIAL REASON:
+{reason}
+
+{criteria_list}
+
+APPEAL RIGHTS:
+You may appeal this determination by submitting additional clinical documentation that addresses the criteria not met.
+"""
+        else:
+             # Standard denial template
+             appeal_letter = f"""PRIOR AUTHORIZATION DENIAL NOTIFICATION
+DENIAL REASON:
+{reason}
+
+{criteria_list}
+"""
 
     elif verdict == "MANUAL_REVIEW":
         final_status = "FLAGGED"
@@ -1397,6 +1497,17 @@ def make_decision(state: AgentState) -> dict:
         if evidence:
             detail += f" Evidence term: '{evidence}'."
         reason = detail.strip()
+
+        # Detailed criteria list
+        criteria_list = format_criteria_list(
+            bmi,
+            f.get("found_diagnosis_string"),
+            f.get("found_e66_code"),
+            f.get("found_z68_code"),
+            evidence,
+            f.get("missing_anchor_code"),
+            f.get("ambiguity_code")
+        )
 
         ambiguous_hit = evidence and any(term in (evidence.lower()) for term in (AMBIGUOUS_APPEAL_TERMS or []))
         if ambiguous_hit:
@@ -1411,7 +1522,58 @@ def make_decision(state: AgentState) -> dict:
                 "and safety exclusions; document findings clearly before resubmission."
             )
 
-        appeal_letter = generate_appeal_letter(p_data, reason, f) or _generate_fallback_pa_template(p_data, reason, f)
+        # Generate Template Letter with Criteria
+        appeal_letter = f"""MANUAL REVIEW REQUIRED
+Status: FLAGGED
+Reason: {reason}
+
+{criteria_list}
+"""
+
+    elif verdict == "CDI_REQUIRED":
+        final_status = "CDI_REQUIRED"
+        base = reasoning_src or "Clinical criteria met, but administrative Coding Documentation Integrity (CDI) required."
+        reason = with_bmi_prefix(base)
+
+        # Repurpose appeal_letter to carry the physician query text
+        query_text = f.get("physician_query_text") or (
+            "Physician Query: Please clarify diagnosis codes. "
+            "Patient meets clinical criteria for weight management therapy, "
+            "but requires specific ICD-10 anchor code (e.g., E66.9 Obesity) for payer compliance."
+        )
+
+        criteria_list = format_criteria_list(
+            bmi,
+            f.get("found_diagnosis_string"),
+            f.get("found_e66_code"),
+            f.get("found_z68_code"),
+            evidence,
+            f.get("missing_anchor_code"),
+            None
+        )
+
+        appeal_letter = f"""PHYSICIAN QUERY / CDI ALERT
+{query_text}
+
+{criteria_list}
+"""
+
+    elif verdict == "SAFETY_SIGNAL_NEEDS_REVIEW":
+        final_status = "SAFETY_SIGNAL_NEEDS_REVIEW"
+        base = reasoning_src or "Safety signal detected requiring manual clinical review."
+        reason = with_bmi_prefix(f"SAFETY SIGNAL: {base}")
+
+        # Generate a safety warning note
+        context = f.get("safety_context", "UNKNOWN")
+        confidence = f.get("safety_confidence", "SIGNAL")
+        exclusion_code = f.get("safety_exclusion_code", "GENERIC")
+
+        appeal_note = (
+            f"Safety Signal Detected ({context}/{confidence}). Code: {exclusion_code}. "
+            f"Evidence: '{evidence}'. "
+            "Verify patient history and clinical appropriateness before proceeding. "
+            "This is not a hard denial, but a required safety checkpoint."
+        )
 
     elif verdict in ("DENIED_BENEFIT_EXCLUSION", "DENIED_OTHER"):
         final_status = "DENIED"
@@ -1421,6 +1583,23 @@ def make_decision(state: AgentState) -> dict:
     else:
         final_status = "FLAGGED"
         reason = f"Unknown verdict '{verdict}'. Route to manual utilization review."
+
+    logger.info("Decision: %s (Reason: %s)", final_status, reason)
+
+    # --- AUDIT LOGGING (CRITICAL) ---
+    get_audit_logger().log_event(
+        event_type="DECISION",
+        details={
+            "patient_id": p_data.get("patient_id"),
+            "verdict": final_status,
+            "raw_verdict": verdict,
+            "reasoning": reason,
+            "model_used": model_used,
+            "policy_path": f.get("policy_path", "UNKNOWN"),
+            "bmi": bmi,
+        },
+        patient_id=p_data.get("patient_id")
+    )
 
     return {
         "final_decision": final_status,

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 import re
-from typing import Any, List
+from typing import Any, Optional
 
 
 def normalize(text: Any) -> str:
@@ -69,7 +69,7 @@ def matches_term(text: str, term: str) -> bool:
     return bool(re.search(pattern, t, re.IGNORECASE))
 
 
-def expand_safety_variants(term: str) -> List[str]:
+def expand_safety_variants(term: str) -> list[str]:
     """
     Expand complex safety strings into individual checkable variants.
     Examples handled:
@@ -113,7 +113,7 @@ def expand_safety_variants(term: str) -> List[str]:
     out = [v for v in (normalize(v) for v in variants) if v]
     # Deduplicate while preserving order
     seen = set()
-    ordered: List[str] = []
+    ordered: list[str] = []
     for v in out:
         if v not in seen:
             seen.add(v)
@@ -147,3 +147,64 @@ def is_snf_phrase(text: str) -> bool:
             if term in t:
                 return True
     return False
+
+
+def format_criteria_list(
+    bmi_val: Optional[float],
+    found_text: Optional[str],
+    found_e66: Optional[str],
+    found_z68: Optional[str],
+    found_comorb: Optional[str],
+    missing_anchor: Optional[str],
+    ambiguity_code: Optional[str]
+) -> str:
+    """
+    Generate the 5-point criteria list for letters, highlighting actions needed.
+    """
+    lines = ["Medical Necessity & Coverage Criteria:"]
+
+    # 1. BMI
+    if bmi_val is not None:
+        lines.append(f"- Documented BMI Value: {bmi_val}")
+    else:
+        lines.append("- Documented BMI Value: MISSING [Action: Document current BMI]")
+
+    # 2. Diagnosis String
+    if found_text:
+        lines.append(f"- Diagnosis String used: {found_text}")
+    elif missing_anchor and "Diagnosis Text" in missing_anchor:
+        lines.append("- Diagnosis String used: MISSING [Action: Document 'Obesity' or 'Overweight']")
+    else:
+        lines.append(f"- Diagnosis String used: {found_text if found_text else 'N/A'}")
+
+    # 3. E66 Code
+    if found_e66:
+        lines.append(f"- ICD-10 E66 Code found: {found_e66}")
+    elif missing_anchor and "E66" in missing_anchor:
+        lines.append("- ICD-10 E66 Code found: MISSING [Action: Add E66 code]")
+    else:
+        lines.append(f"- ICD-10 E66 Code found: {found_e66 if found_e66 else 'N/A'}")
+
+    # 4. Z68 Code
+    if found_z68:
+        lines.append(f"- ICD-10 Z68 Code found: {found_z68}")
+    elif missing_anchor and "Z68" in missing_anchor:
+        lines.append("- ICD-10 Z68 Code found: MISSING [Action: Add Z68 code matching BMI]")
+    else:
+        lines.append(f"- ICD-10 Z68 Code found: {found_z68 if found_z68 else 'N/A'}")
+
+    # 5. Comorbidity
+    if bmi_val and bmi_val >= 30:
+        lines.append("- Qualifying Documented Comorbidity: Not Applicable (BMI >= 30)")
+    else:
+        if ambiguity_code:
+             term_display = found_comorb if found_comorb else ambiguity_code
+             lines.append(f"- Qualifying Documented Comorbidity: AMBIGUOUS TERM '{term_display}' [Action: Clarify diagnosis]")
+        elif found_comorb:
+            lines.append(f"- Qualifying Documented Comorbidity: {found_comorb}")
+        elif bmi_val and bmi_val < 27:
+             lines.append("- Qualifying Documented Comorbidity: N/A (BMI < 27)")
+        else:
+             lines.append("- Qualifying Documented Comorbidity: NOT FOUND [Action: Document qualifying comorbidity for BMI 27-29.9]")
+
+    return "\\n".join(lines)

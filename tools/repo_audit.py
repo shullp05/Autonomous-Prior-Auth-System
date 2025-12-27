@@ -2,7 +2,7 @@ import json
 import os
 import re
 import subprocess
-from typing import Iterable, List, Set, Tuple
+from collections.abc import Iterable
 
 from config import MAX_SEARCH_DEPTH
 
@@ -12,7 +12,7 @@ def _is_hidden(path: str) -> bool:
     return any(p.startswith(".") for p in parts if p)
 
 
-def _safe_find(root: str = ".") -> List[str]:
+def _safe_find(root: str = ".") -> list[str]:
     # Hidden directories/files excluded via '*/.*'; depth limited by MAX_SEARCH_DEPTH.
     # We do not follow symlinks to avoid loops; fallback to os.walk respects followlinks=False.
     cmd = [
@@ -32,8 +32,8 @@ def _safe_find(root: str = ".") -> List[str]:
         raise RuntimeError(f"find failed: {e.output}")
 
 
-def _walk_limited(root: str = ".", max_depth: int = MAX_SEARCH_DEPTH) -> List[str]:
-    results: List[str] = []
+def _walk_limited(root: str = ".", max_depth: int = MAX_SEARCH_DEPTH) -> list[str]:
+    results: list[str] = []
     base_depth = root.rstrip("/").count("/")
     for dirpath, dirnames, filenames in os.walk(root, topdown=True, followlinks=False):
         if _is_hidden(dirpath):
@@ -50,14 +50,14 @@ def _walk_limited(root: str = ".", max_depth: int = MAX_SEARCH_DEPTH) -> List[st
     return results
 
 
-def _py_imports(files: Iterable[str]) -> Set[str]:
-    imports: Set[str] = set()
+def _py_imports(files: Iterable[str]) -> set[str]:
+    imports: set[str] = set()
     pattern = re.compile(r"^(?:from\s+([\w\.]+)\s+import|import\s+([\w\.]+))")
     for fp in files:
         if not fp.endswith(".py"):
             continue
         try:
-            with open(fp, "r", encoding="utf-8", errors="ignore") as f:
+            with open(fp, encoding="utf-8", errors="ignore") as f:
                 for line in f:
                     m = pattern.match(line.strip())
                     if m:
@@ -69,13 +69,13 @@ def _py_imports(files: Iterable[str]) -> Set[str]:
     return imports
 
 
-def _referenced_paths(all_paths: Iterable[str]) -> Set[str]:
-    refs: Set[str] = set()
+def _referenced_paths(all_paths: Iterable[str]) -> set[str]:
+    refs: set[str] = set()
     for fp in all_paths:
         base = os.path.basename(fp)
         if base in {"Makefile", "pyproject.toml", "requirements.txt"}:
             try:
-                with open(fp, "r", encoding="utf-8", errors="ignore") as f:
+                with open(fp, encoding="utf-8", errors="ignore") as f:
                     text = f.read()
                 for candidate in all_paths:
                     bn = os.path.basename(candidate)
@@ -85,7 +85,7 @@ def _referenced_paths(all_paths: Iterable[str]) -> Set[str]:
                 continue
         if fp.endswith("package.json") or fp.endswith("index.html"):
             try:
-                with open(fp, "r", encoding="utf-8", errors="ignore") as f:
+                with open(fp, encoding="utf-8", errors="ignore") as f:
                     text = f.read()
                 for candidate in all_paths:
                     bn = os.path.basename(candidate)
@@ -116,7 +116,7 @@ def audit_repo() -> dict:
     py_imports = _py_imports(found)
     refs = _referenced_paths(found)
 
-    used: Set[str] = set()
+    used: set[str] = set()
     for p in found:
         bn = os.path.basename(p)
         if bn.endswith(".py"):
@@ -129,11 +129,11 @@ def audit_repo() -> dict:
     used |= refs
 
     orphans = [p for p in found if p not in used]
-    
+
     # Categorize orphans by file extension for easier triage
     from collections import Counter
     ext_counts = Counter(os.path.splitext(p)[1] or "(no ext)" for p in orphans)
-    
+
     report = {
         "depth": MAX_SEARCH_DEPTH,
         "total_found": len(found),

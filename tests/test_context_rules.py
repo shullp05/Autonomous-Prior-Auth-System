@@ -3,10 +3,12 @@ test_context_rules.py - Verify 9.2 context classification logic
 """
 
 import pytest
+
 from context_rules import classify_context
 
+
 class TestContextRules:
-    
+
     # 1. NEGATED (Strongest)
     @pytest.mark.parametrize("text", [
         "Patient denies history of MTC",
@@ -85,8 +87,8 @@ class TestContextRules:
         assert classify_context("Family history of MTC", "MTC") == "FAMILY_HISTORY"
 
     def test_complex_phrasing(self):
-        # "No family history of MTC" -> Negation + Family? 
-        # Actually our rule checks negation first. "No ..." matches negation. 
+        # "No family history of MTC" -> Negation + Family?
+        # Actually our rule checks negation first. "No ..." matches negation.
         # Ideally "No family history" means NO RISK. So NEGATED is correct outcome (not active).
         assert classify_context("No family history of MTC", "MTC") == "NEGATED"
 

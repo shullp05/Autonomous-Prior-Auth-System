@@ -5,7 +5,6 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 # Allow env overrides so this stays aligned with config without hard-coding.
 GUIDELINE_PATH = Path(os.getenv("PA_GUIDELINE_PATH", "UpdatedPAGuidelines.txt"))
@@ -13,7 +12,7 @@ SNAPSHOT_PATH = Path(os.getenv("PA_SNAPSHOT_PATH", "policies/RX-WEG-2025.json"))
 POLICY_ID = os.getenv("PA_POLICY_ID", "RX-WEG-2025")
 
 
-def _read_lines(path: Path) -> List[str]:
+def _read_lines(path: Path) -> list[str]:
     text = path.read_text(encoding="utf-8")
     text = text.lstrip("\ufeff")  # strip BOM if present
     lines = text.splitlines()
@@ -36,26 +35,29 @@ def _norm_upper(line: str) -> str:
     return _norm(line).upper()
 
 
-def _find_index(lines: List[str], predicate, start: int = 0) -> int:
+def _find_index(lines: list[str], predicate, start: int = 0) -> int:
     for idx in range(start, len(lines)):
         if predicate(lines[idx]):
             return idx
     raise ValueError("Expected marker not found in guidelines file")
 
 
-def _slice_between(lines: List[str], start_predicate, end_predicate) -> List[str]:
+def _slice_between(lines: list[str], start_predicate, end_predicate) -> list[str]:
     """
     Safer slicing:
       - Finds start
       - Finds end AFTER start
       - Returns content BETWEEN markers (excluding marker lines)
     """
-    start = _find_index(lines, start_predicate, start=0)
-    end = _find_index(lines, end_predicate, start=start + 1)
-    return lines[start + 1 : end]
+    try:
+        start = _find_index(lines, start_predicate, start=0)
+        end = _find_index(lines, end_predicate, start=start + 1)
+        return lines[start + 1 : end]
+    except ValueError:
+        return []
 
 
-def _extract_values_from_bullet(text: str) -> List[str]:
+def _extract_values_from_bullet(text: str) -> list[str]:
     cleaned = text.strip().lstrip("- ").strip()
     cleaned = cleaned.rstrip(",")
     if not cleaned or cleaned.endswith(":"):
@@ -66,8 +68,8 @@ def _extract_values_from_bullet(text: str) -> List[str]:
     return [cleaned] if cleaned else []
 
 
-def _extract_bullets(lines: List[str]) -> List[str]:
-    bullets: List[str] = []
+def _extract_bullets(lines: list[str]) -> list[str]:
+    bullets: list[str] = []
     current = ""
     for raw in lines:
         line = raw.strip()
@@ -89,13 +91,13 @@ def _hash_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def canonical_dumps(data: Dict[str, object]) -> str:
+def canonical_dumps(data: dict[str, object]) -> str:
     return json.dumps(data, indent=2, sort_keys=True, ensure_ascii=True) + "\n"
 
 
-def _dedupe_preserve(seq: List[str]) -> List[str]:
+def _dedupe_preserve(seq: list[str]) -> list[str]:
     seen = set()
-    out: List[str] = []
+    out: list[str] = []
     for s in seq:
         if s is None:
             continue
@@ -107,8 +109,7 @@ def _dedupe_preserve(seq: List[str]) -> List[str]:
     return out
 
 
-def _normalize_scope(scope_line: str) -> Tuple[str, List[str]]:
-    # Keep your defaults, but don't ignore the file entirely if it changes.
+def _normalize_scope(scope_line: str) -> tuple[str, list[str]]:
     scope_clean = _norm(scope_line).replace("ONLY", "").replace("(", "").replace(")", "")
     scope_clean = scope_clean.replace("–", "-").replace("OBESITY /", "OBESITY/").strip()
     scope_text = scope_clean or "OBESITY / CHRONIC WEIGHT MANAGEMENT ONLY"
@@ -131,13 +132,13 @@ def _comorbidity_key(label: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", (label or "").lower()).strip("_")
 
 
-def _parse_comorbidities(lines: List[str]) -> Tuple[Dict[str, Dict[str, List[str]]], List[str]]:
-    categories: Dict[str, Dict[str, List[str]]] = {}
-    notes: List[str] = []
+def _parse_comorbidities(lines: list[str]) -> tuple[dict[str, dict[str, list[str]]], list[str]]:
+    categories: dict[str, dict[str, list[str]]] = {}
+    notes: list[str] = []
 
     current_key: str | None = None
     current_label: str | None = None
-    accepted: List[str] = []
+    accepted: list[str] = []
     current_bullet = ""
 
     for raw in lines:
@@ -149,8 +150,7 @@ def _parse_comorbidities(lines: List[str]) -> Tuple[Dict[str, Dict[str, List[str
             notes.append(line.split(":", 1)[1].strip() if ":" in line else line[5:].strip())
             continue
 
-        # Support multi-digit numbering: 1) ... 10) ...
-        if re.match(r"^\d+\)", line):
+        if re.match(r"^[a-zA-Z0-9]+\)", line):
             if current_bullet:
                 accepted.extend(_extract_values_from_bullet(current_bullet))
                 current_bullet = ""
@@ -190,12 +190,12 @@ def _parse_comorbidities(lines: List[str]) -> Tuple[Dict[str, Dict[str, List[str
     return categories, notes
 
 
-def _parse_safety(lines: List[str]) -> Tuple[List[Dict[str, object]], List[str], List[str]]:
-    safety_items: List[Dict[str, object]] = []
-    drug_conflicts: List[str] = []
-    notes: List[str] = []
+def _parse_safety(lines: list[str]) -> tuple[list[dict[str, object]], list[str], list[str]]:
+    safety_items: list[dict[str, object]] = []
+    drug_conflicts: list[str] = []
+    notes: list[str] = []
 
-    current: Dict[str, object] | None = None
+    current: dict[str, object] | None = None
     collecting_drugs = False
     conflict_bullet = ""
     safety_bullet = ""
@@ -211,7 +211,6 @@ def _parse_safety(lines: List[str]) -> Tuple[List[Dict[str, object]], List[str],
         if _norm_upper(line).startswith("CLINICAL NOTE"):
             continue
 
-        # Category header style: "- Something:"
         if line.startswith("- ") and line.endswith(":") and "GLP-1 / GLP-1/GIP agents to flag" not in line:
             if collecting_drugs and conflict_bullet:
                 drug_conflicts.extend(_extract_values_from_bullet(conflict_bullet))
@@ -228,7 +227,6 @@ def _parse_safety(lines: List[str]) -> Tuple[List[Dict[str, object]], List[str],
             current = {"category": line.lstrip("- ").rstrip(":"), "accepted_strings": []}
             continue
 
-        # Drugs-to-flag section marker
         if "GLP-1 / GLP-1/GIP agents to flag" in line:
             collecting_drugs = True
             continue
@@ -242,7 +240,6 @@ def _parse_safety(lines: List[str]) -> Tuple[List[Dict[str, object]], List[str],
                 conflict_bullet = f"{conflict_bullet} {line}"
             continue
 
-        # Safety accepted-string bullet under current category
         if line.startswith("-"):
             if not current:
                 current = {"category": "General Safety Exclusion", "accepted_strings": []}
@@ -263,7 +260,7 @@ def _parse_safety(lines: List[str]) -> Tuple[List[Dict[str, object]], List[str],
     if conflict_bullet:
         drug_conflicts.extend(_extract_values_from_bullet(conflict_bullet))
 
-    formatted_safety: List[Dict[str, object]] = []
+    formatted_safety: list[dict[str, object]] = []
     for item in safety_items:
         formatted_safety.append(
             {
@@ -276,8 +273,8 @@ def _parse_safety(lines: List[str]) -> Tuple[List[Dict[str, object]], List[str],
     return formatted_safety, _dedupe_preserve(drug_conflicts), _dedupe_preserve(notes)
 
 
-def _parse_ambiguities(lines: List[str]) -> List[Dict[str, str]]:
-    rules: List[Dict[str, str]] = []
+def _parse_ambiguities(lines: list[str]) -> list[dict[str, str]]:
+    rules: list[dict[str, str]] = []
     regex = r'-\s*Pattern:\s*"([^"]+)"\s*->\s*([A-Z_]+)(?:\s*\(Note:\s*(.*)\))?'
     for raw in lines:
         line = raw.strip()
@@ -295,7 +292,7 @@ def _parse_ambiguities(lines: List[str]) -> List[Dict[str, str]]:
     return rules
 
 
-def parse_guidelines(path: Path = GUIDELINE_PATH) -> Dict[str, object]:
+def parse_guidelines(path: Path = GUIDELINE_PATH) -> dict[str, object]:
     if not path.exists():
         raise FileNotFoundError(f"Guideline file not found: {path}")
 
@@ -317,11 +314,11 @@ def parse_guidelines(path: Path = GUIDELINE_PATH) -> Dict[str, object]:
     if parsed_policy_id != POLICY_ID:
         raise ValueError(f"Policy ID mismatch in guidelines: expected {POLICY_ID}, found {parsed_policy_id}")
 
+    # Major Sections
     adult_idx = _find_index(lines, lambda l: _norm_upper(l).startswith("ADULTS"))
     comorb_idx = _find_index(lines, lambda l: _norm_upper(l).startswith("WEIGHT-RELATED COMORBIDITIES"))
     safety_idx = _find_index(lines, lambda l: _norm_upper(l).startswith("SAFETY_EXCLUSIONS"))
     ambiguity_idx = _find_index(lines, lambda l: _norm_upper(l).startswith("AMBIGUITY RULES"))
-
     general_notes_idx = _find_index(lines, lambda l: _norm_upper(l).startswith("GENERAL NOTES"))
 
     general_section = lines[general_notes_idx + 1 : adult_idx]
@@ -332,25 +329,55 @@ def parse_guidelines(path: Path = GUIDELINE_PATH) -> Dict[str, object]:
 
     general_notes = [raw.strip().lstrip("- ").strip() for raw in general_section if raw.strip().startswith("-")]
 
-    # Obesity diagnosis strings block: between marker and "2)" (next numbered block)
+    # --- OBESITY PATHWAY PARSING ---
+    # Strings
     obesity_diag_lines = _slice_between(
         adult_section,
         lambda l: "ADULT OBESITY DIAGNOSIS STRINGS" in _norm_upper(l),
+        lambda l: "ADULT OBESITY E66" in _norm_upper(l),
+    )
+    # E66
+    obesity_e66_lines = _slice_between(
+        adult_section,
+        lambda l: "ADULT OBESITY E66" in _norm_upper(l),
+        lambda l: "ADULT OBESITY Z68" in _norm_upper(l),
+    )
+    # Z68
+    obesity_z68_lines = _slice_between(
+        adult_section,
+        lambda l: "ADULT OBESITY Z68" in _norm_upper(l),
         lambda l: re.match(r"^\s*2\)", l.strip()) is not None,
     )
 
-    # Overweight diagnosis strings: from "ADULT OVERWEIGHT" marker to end of adult_section
-    overweight_start = _find_index(adult_section, lambda l: "ADULT OVERWEIGHT" in _norm_upper(l))
-    overweight_diag_lines = adult_section[overweight_start + 1 :]
+    # --- OVERWEIGHT PATHWAY PARSING ---
+    # Strings
+    overweight_diag_lines = _slice_between(
+        adult_section,
+        lambda l: "ADULT OVERWEIGHT DIAGNOSIS STRINGS" in _norm_upper(l),
+        lambda l: "ADULT OVERWEIGHT E66" in _norm_upper(l),
+    )
+    # E66
+    overweight_e66_lines = _slice_between(
+        adult_section,
+        lambda l: "ADULT OVERWEIGHT E66" in _norm_upper(l),
+        lambda l: "ADULT OVERWEIGHT Z68" in _norm_upper(l),
+    )
+    # Z68 (goes until end of adult section, which is implicitly the start of comorb section)
+    overweight_z68_lines = adult_section[_find_index(adult_section, lambda l: "ADULT OVERWEIGHT Z68" in _norm_upper(l)) + 1 :]
 
+    # Extract bullets
     adult_obesity_diags = _dedupe_preserve(_extract_bullets(obesity_diag_lines))
+    adult_obesity_e66 = _dedupe_preserve(_extract_bullets(obesity_e66_lines))
+    adult_obesity_z68 = _dedupe_preserve(_extract_bullets(obesity_z68_lines))
+
     adult_overweight_diags = _dedupe_preserve(_extract_bullets(overweight_diag_lines))
+    adult_overweight_e66 = _dedupe_preserve(_extract_bullets(overweight_e66_lines))
+    adult_overweight_z68 = _dedupe_preserve(_extract_bullets(overweight_z68_lines))
 
     comorbidities, comorb_notes = _parse_comorbidities(comorb_section)
     safety, drug_conflicts, safety_notes = _parse_safety(safety_section)
     ambiguity_rules = _parse_ambiguities(ambiguity_section)
 
-    # Defensive normalization: only if the section exists
     if "type2_diabetes" in comorbidities:
         t2_list = comorbidities.get("type2_diabetes", {}).get("accepted_strings", [])
         normalized = [
@@ -365,7 +392,6 @@ def parse_guidelines(path: Path = GUIDELINE_PATH) -> Dict[str, object]:
         cv.extend(["Heart attack", "MI"])
         comorbidities["cardiovascular_disease"]["accepted_strings"] = _dedupe_preserve(cv)
 
-    # Small safety enrichment (non-breaking)
     for entry in safety:
         cat = str(entry.get("category", ""))
         acc = list(entry.get("accepted_strings", []) or [])
@@ -404,6 +430,8 @@ def parse_guidelines(path: Path = GUIDELINE_PATH) -> Dict[str, object]:
                     "bmi_min": 30.0,
                     "bmi_max": None,
                     "required_diagnosis_strings": adult_obesity_diags,
+                    "required_diagnosis_codes_e66": adult_obesity_e66,
+                    "required_diagnosis_codes_z68": adult_obesity_z68,
                     "required_comorbidity_categories": [],
                 },
                 {
@@ -411,6 +439,8 @@ def parse_guidelines(path: Path = GUIDELINE_PATH) -> Dict[str, object]:
                     "bmi_min": 27.0,
                     "bmi_max": 29.99,
                     "required_diagnosis_strings": adult_overweight_diags,
+                    "required_diagnosis_codes_e66": adult_overweight_e66,
+                    "required_diagnosis_codes_z68": adult_overweight_z68,
                     "required_comorbidity_categories": list(comorbidities.keys()),
                 },
             ],
@@ -432,12 +462,12 @@ def parse_guidelines(path: Path = GUIDELINE_PATH) -> Dict[str, object]:
     return snapshot
 
 
-def write_policy_snapshot(snapshot: Dict[str, object], path: Path = SNAPSHOT_PATH) -> None:
+def write_policy_snapshot(snapshot: dict[str, object], path: Path = SNAPSHOT_PATH) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(canonical_dumps(snapshot), encoding="utf-8")
 
 
-def load_policy_snapshot(path: Path = SNAPSHOT_PATH, policy_id: str = POLICY_ID) -> Dict[str, object]:
+def load_policy_snapshot(path: Path = SNAPSHOT_PATH, policy_id: str = POLICY_ID) -> dict[str, object]:
     if not path.exists():
         raise FileNotFoundError(f"Snapshot file not found: {path}")
     with path.open("r", encoding="utf-8") as handle:

@@ -1,0 +1,42 @@
+[
+    {
+        "bug_id": "BUG-001",
+        "severity": "CRITICAL",
+        "location": "dashboard/src/TraceBanner.jsx:19",
+        "description": "Synchronous state update (setTrace) inside useEffect causing cascading renders.",
+        "status": "OPEN",
+        "category": "Frontend Performance"
+    },
+    {
+        "bug_id": "BUG-002",
+        "severity": "CRITICAL",
+        "location": "agent_logic.py",
+        "description": "Missing centralized audit logging for final agent decisions. Compliance violation.",
+        "status": "OPEN",
+        "category": "Security & Compliance"
+    },
+    {
+        "bug_id": "BUG-003",
+        "severity": "MEDIUM",
+        "location": "agent_logic.py",
+        "description": "Multiple instances of 'try: ... except: pass' suppressing potential critical errors silently.",
+        "status": "OPEN",
+        "category": "Reliability"
+    },
+    {
+        "bug_id": "BUG-004",
+        "severity": "LOW",
+        "location": "agent_logic.py",
+        "description": "Usage of deprecated typing primitives (List, Tuple) instead of built-ins (list, tuple).",
+        "status": "OPEN",
+        "category": "Code Quality"
+    },
+    {
+        "bug_id": "BUG-005",
+        "severity": "LOW",
+        "location": "agent_logic.py, dashboard/src/App.jsx",
+        "description": "Unused imports and variables cluttering the codebase.",
+        "status": "OPEN",
+        "category": "Code Hygiene"
+    }
+]

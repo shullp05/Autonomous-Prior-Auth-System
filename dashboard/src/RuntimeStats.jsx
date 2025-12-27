@@ -17,6 +17,8 @@ export default function RuntimeStats({ metadata }) {
     { label: "Model Flavor", value: metadata.model_flavor ?? "—" },
     { label: "Claims Processed", value: formatNumber(metadata.total_claims) },
     { label: "Medication", value: metadata.drug_queried ?? "—" },
+    { label: "CDI Required (Hold)", value: formatNumber(metadata.cdi_required_count) },
+    { label: "Revenue at Risk", value: metadata.revenue_at_risk_usd ? `$${metadata.revenue_at_risk_usd.toLocaleString()}` : "—" },
     { label: "Response Time (Typ / Max)", value: metadata.p50_duration_ms && metadata.p95_duration_ms ? `${(metadata.p50_duration_ms / 1000).toFixed(1)}s / ${(metadata.p95_duration_ms / 1000).toFixed(1)}s` : "—" },
   ];
 

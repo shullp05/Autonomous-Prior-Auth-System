@@ -1,6 +1,6 @@
 
-import pytest
-from policy_utils import normalize, has_word_boundary, matches_term, expand_safety_variants, is_snf_phrase
+from policy_utils import expand_safety_variants, has_word_boundary, is_snf_phrase, matches_term, normalize
+
 
 def test_normalize():
     assert normalize("  TeSt  ") == "test"
@@ -25,12 +25,12 @@ def test_matches_term():
     # Short terms (<=4 chars) use boundary check
     assert matches_term("has osa here", "osa") is True
     assert matches_term("has misosoup", "osa") is False
-    
+
     # Long terms (>4 chars) use boundary check (updated logic)
     assert matches_term("myocardial infarction history", "myocardial infarction") is True
     assert matches_term("history of myocardial infarction", "myocardial infarction") is True
     # Ensure partial match on long string is also boundary aware if logic dictates
-    # Reviewing policy_utils implementation: it explicitly uses boundary for ALL terms in my mental model of the fix, 
+    # Reviewing policy_utils implementation: it explicitly uses boundary for ALL terms in my mental model of the fix,
     # or at least falls back to boundary logic. Let's verify standard behavior.
     assert matches_term("not a match", "foobar") is False
 
@@ -39,12 +39,12 @@ def test_expand_safety_variants():
     variants = expand_safety_variants("MTC/MEN2")
     assert "mtc" in variants
     assert "men2" in variants
-    
+
     # ' or ' split
     variants = expand_safety_variants("pregnant or nursing")
     assert "pregnant" in variants
     assert "nursing" in variants
-    
+
     # Parentheses handling if implemented
     variants = expand_safety_variants("medication (brand)")
     assert "medication" in variants

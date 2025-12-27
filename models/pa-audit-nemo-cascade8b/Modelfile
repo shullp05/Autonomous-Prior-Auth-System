@@ -1,0 +1,82 @@
+# PA-Audit Model: Nemotron-Cascade-8B (Qwen3 / ChatML) - Q6_K
+#
+# Optimized for:
+# - JSON-only clinical prior authorization audit outputs
+# - Deterministic behavior (low temperature + fixed seed)
+# - Reduced VRAM via smaller context window
+# - Forced non-thinking mode by appending " /no_think" to every user turn
+#
+# Build:
+#   ollama create pa-audit-nemo-cascade8b -f Modelfile
+
+FROM hf.co/bartowski/nvidia_Nemotron-Cascade-8B-GGUF:Q6_K
+
+# === RAM/VRAM Optimization ===
+# Keep context modest for PA prompts; lowers KV cache footprint drastically vs 32K.
+PARAMETER num_ctx 4096
+
+# Output cap: enough for structured JSON + short rationale fields.
+PARAMETER num_predict 768
+
+# Determinism (same prompt => same output as much as possible)
+PARAMETER seed 42
+
+# === Inference Parameters (clinical / deterministic) ===
+PARAMETER temperature 0.2
+PARAMETER top_p 0.9
+PARAMETER top_k 20
+PARAMETER repeat_penalty 1.1
+PARAMETER repeat_last_n 256
+
+# === Stop Sequences (ChatML) ===
+PARAMETER stop "<|im_end|>"
+PARAMETER stop "<|im_start|>"
+
+# === System Prompt (strict JSON contract) ===
+SYSTEM """
+You are a Senior Utilization Review Medical Director specialized in prior authorization decisions.
+
+Non-negotiable rules:
+- Output ONLY valid JSON. No markdown. No prose outside JSON. No code fences.
+- Never output <think> or </think> or any reasoning trace.
+- Never output <tool_call> tags or attempt tool calling.
+- Never invent clinical facts not present in the input.
+- If information is insufficient or ambiguous, return a JSON result that flags the case for human review rather than guessing.
+
+Clinical behavior:
+- Apply policy criteria strictly.
+- Prefer safety and compliance over approval when criteria are not met.
+- Be concise and consistent. Avoid verbose repetition.
+
+If the user asks for anything other than a JSON response, you STILL output only JSON.
+"""
+
+# === Prompt Template (Qwen3-style ChatML) ===
+# Forces non-thinking mode by appending " /no_think" to every user message.
+# Keeps formatting minimal to reduce noise and prevent tool-tag contamination.
+TEMPLATE """{{- if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{- else }}<|im_start|>system
+You are a helpful and harmless assistant.<|im_end|>
+{{- end }}
+{{- if .Messages }}
+{{- range .Messages }}
+{{- if eq .Role "user" }}<|im_start|>user
+{{ .Content }} /no_think<|im_end|>
+{{- else if eq .Role "assistant" }}<|im_start|>assistant
+{{ .Content }}<|im_end|>
+{{- else if eq .Role "system" }}<|im_start|>system
+{{ .Content }}<|im_end|>
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if .Prompt }}<|im_start|>user
+{{ .Prompt }} /no_think<|im_end|>
+{{- end }}<|im_start|>assistant
+"""
+
+# Optional few-shot priming (helps JSON discipline)
+MESSAGE user Produce a JSON object with fields {"decision": "...", "reason": "..."} for: "Criteria not provided."
+MESSAGE assistant {"decision":"NEEDS_REVIEW","reason":"Insufficient information to apply policy criteria."}
+
+LICENSE "NVIDIA Open Model License"

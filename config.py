@@ -5,8 +5,7 @@ Single source of truth for environment variables, model names, and thresholds.
 """
 
 import os
-from typing import Dict, Any, List
-
+from typing import Any
 
 # =============================================================================
 # ENVIRONMENT VARIABLES
@@ -17,7 +16,7 @@ def _as_bool(name: str, default: str = "false") -> bool:
 
 # IMPORTANT: True means use RAW upstream Ollama model names; False means use custom Modelfile-built aliases.
 USE_RAW_MODELS = _as_bool("PA_USE_RAW_MODELS", "false")  # FIXED (was inverted)
-AUDIT_MODEL_FLAVOR = os.getenv("PA_AUDIT_MODEL_FLAVOR", "qwen25").strip()
+AUDIT_MODEL_FLAVOR = os.getenv("PA_AUDIT_MODEL_FLAVOR", "nemo8b").strip()
 USE_DETERMINISTIC = _as_bool("PA_USE_DETERMINISTIC", "false")
 OFFLINE_MODE = _as_bool("PA_OFFLINE_MODE", "false")
 
@@ -43,7 +42,7 @@ PA_UM_RECIPIENT_ORG = os.getenv("PA_UM_RECIPIENT_ORG", "Utilization Management")
 PA_UM_RECIPIENT_DEPT = os.getenv("PA_UM_RECIPIENT_DEPT", "Utilization Management Department").strip() or "Utilization Management Department"
 PA_UM_ATTENTION = os.getenv("PA_UM_ATTENTION", "Medical Director").strip() or "Medical Director"
 
-def require_provider_context() -> Dict[str, str]:
+def require_provider_context() -> dict[str, str]:
     """
     Enforce that we have enough real-world identifiers to generate payer-ready letters
     WITHOUT placeholders. Fail fast if missing.
@@ -77,17 +76,31 @@ def require_provider_context() -> Dict[str, str]:
 # =============================================================================
 # Build custom models: ./models/build_models.sh
 
-MODEL_MAP_CUSTOM: Dict[str, Dict[str, Any]] = {
+MODEL_MAP_CUSTOM: dict[str, dict[str, Any]] = {
     "mistral": {"name": "pa-audit-mistral", "options": {}, "ram_gb": 8},
     "qwen25": {
         "name": "pa-audit-qwen25",
         "options": {"temperature": 0.3, "top_p": 0.9, "num_predict": 768, "num_ctx": 4096},
         "ram_gb": 10,
     },
+    "nemo8b": {
+        "name": "pa-audit-nemotron-cascade8b",
+        "options": {"temperature": 0.2, "top_p": 0.9, "top_k": 20, "repeat_penalty": 1.1, "repeat_last_n": 256, "num_predict": 768, "num_ctx": 4096, "seed": 42},
+        "ram_gb": 8,
+        "stop": "<im_end>",
+        "start": "<im_start>",
+    },
+    "nemo4b": {
+        "name": "pa-audit-nemo-cascade4b",
+        "options": {"temperature": 0.2, "top_p": 0.9, "top_k": 20, "repeat_penalty": 1.1, "repeat_last_n": 256, "num_predict": 768, "num_ctx": 4096, "seed": 42},
+        "ram_gb": 6,
+        "stop": "<im_end>",
+        "start": "<im_start>",
+    },
     "qwen3": {"name": "pa-audit-qwen3", "options": {}, "ram_gb": 12},
 }
 
-MODEL_MAP_RAW: Dict[str, Dict[str, Any]] = {
+MODEL_MAP_RAW: dict[str, dict[str, Any]] = {
     "mistral": {
         "name": "mistral-nemo:12b-instruct-2407-q4_K_M",
         "options": {"temperature": 0.2, "top_p": 0.9, "num_predict": 512, "num_ctx": 4096},
@@ -97,6 +110,20 @@ MODEL_MAP_RAW: Dict[str, Dict[str, Any]] = {
         "name": "qwen2.5:14b-instruct-q4_K_M",
         "options": {"temperature": 0.3, "top_p": 0.9, "num_predict": 768, "num_ctx": 4096},
         "ram_gb": 10,
+    },
+    "nemo8b": {
+        "name": "hf.co/bartowski/nvidia_Nemotron-Cascade-8B-GGUF:Q6_K",
+        "options": {"temperature": 0.2, "top_p": 0.9, "top_k": 20, "repeat_penalty": 1.1, "repeat_last_n": 256, "num_predict": 768, "num_ctx": 4096, "seed": 42},
+        "ram_gb": 8,
+        "stop": "<im_end>",
+        "start": "<im_start>",
+    },
+    "nemo4b": {
+        "name": "hf.co/bartowski/nvidia_Nemotron-Cascade-8B-GGUF:Q4_K_M",
+        "options": {"temperature": 0.2, "top_p": 0.9, "top_k": 20, "repeat_penalty": 1.1, "repeat_last_n": 256, "num_predict": 768, "num_ctx": 4096, "seed": 42},
+        "ram_gb": 6,
+        "stop": "<im_end>",
+        "start": "<im_start>",
     },
     "qwen3": {
         "name": "qwen3:latest",
@@ -109,7 +136,7 @@ MODEL_MAP = MODEL_MAP_RAW if USE_RAW_MODELS else MODEL_MAP_CUSTOM
 
 if AUDIT_MODEL_FLAVOR not in MODEL_MAP:
     # Avoid print-on-import in libraries; prefer raising or logging in the entrypoint.
-    AUDIT_MODEL_FLAVOR = "qwen25"
+    AUDIT_MODEL_FLAVOR = "nemo8b"
 
 ACTIVE_MODEL_CONFIG = MODEL_MAP[AUDIT_MODEL_FLAVOR]
 AUDIT_MODEL_NAME = ACTIVE_MODEL_CONFIG["name"]
@@ -146,3 +173,21 @@ DEFAULT_CLAIM_RATE = 0.15
 LOINC_BMI = "39156-5"
 LOINC_WEIGHT = "29463-7"
 LOINC_HEIGHT = "8302-2"
+
+# SNOMED-CT (Conditions/Findings)
+SNOMED_OBESE = "162864005"       # Obesity (BMI 30+)
+SNOMED_OVERWEIGHT = "162863004"  # Overweight (BMI 25-29)
+
+# ICD-10-CM (Diagnosis Codes)
+ICD10_OVERWEIGHT = "E66.3"       # Overweight
+ICD10_OBESITY = "E66.9"          # Obesity, unspecified
+ICD10_MORBID = "E66.01"          # Morbid Obesity
+
+# Strict Validation Lists
+VALID_OBESITY_DX_CODES = {
+    ICD10_OVERWEIGHT,
+    ICD10_OBESITY,
+    ICD10_MORBID,
+    "E66.09", "E66.1", "E66.2", "E66.8", "E66.0"
+}
+VALID_BMI_Z_PREFIX = "Z68"

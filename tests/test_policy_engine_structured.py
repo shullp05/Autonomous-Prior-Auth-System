@@ -1,10 +1,10 @@
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from policy_engine import evaluate_eligibility
 from policy_constants import ADULT_OVERWEIGHT_DIAGNOSES
+from policy_engine import evaluate_eligibility
 
 
 def test_snf_not_pregnancy_safety():

@@ -21,22 +21,41 @@
     "notes"
   ],
   "properties": {
-    "policy_id": { "type": "string" },
-    "title": { "type": "string" },
-    "effective_date": { "type": "string" },
-    "scope": { "type": "string" },
+    "policy_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "effective_date": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string"
+    },
     "excluded_scopes": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": {
+        "type": "string"
+      }
     },
-    "source_file": { "type": "string" },
-    "source_hash": { "type": "string" },
+    "source_file": {
+      "type": "string"
+    },
+    "source_hash": {
+      "type": "string"
+    },
     "eligibility": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["adult_min_age", "pathways"],
+      "required": [
+        "adult_min_age",
+        "pathways"
+      ],
       "properties": {
-        "adult_min_age": { "type": "integer" },
+        "adult_min_age": {
+          "type": "integer"
+        },
         "pathways": {
           "type": "array",
           "items": {
@@ -50,16 +69,41 @@
               "required_comorbidity_categories"
             ],
             "properties": {
-              "name": { "type": "string" },
-              "bmi_min": { "type": "number" },
-              "bmi_max": { "type": ["number", "null"] },
+              "name": {
+                "type": "string"
+              },
+              "bmi_min": {
+                "type": "number"
+              },
+              "bmi_max": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
               "required_diagnosis_strings": {
                 "type": "array",
-                "items": { "type": "string" }
+                "items": {
+                  "type": "string"
+                }
+              },
+              "required_diagnosis_codes_e66": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "required_diagnosis_codes_z68": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
               },
               "required_comorbidity_categories": {
                 "type": "array",
-                "items": { "type": "string" }
+                "items": {
+                  "type": "string"
+                }
               }
             }
           }
@@ -69,15 +113,22 @@
     "diagnosis_strings": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["adult_obesity", "adult_excess_weight"],
+      "required": [
+        "adult_obesity",
+        "adult_excess_weight"
+      ],
       "properties": {
         "adult_obesity": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
         "adult_excess_weight": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -86,12 +137,19 @@
       "additionalProperties": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["label", "accepted_strings"],
+        "required": [
+          "label",
+          "accepted_strings"
+        ],
         "properties": {
-          "label": { "type": "string" },
+          "label": {
+            "type": "string"
+          },
           "accepted_strings": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           }
         }
       }
@@ -101,51 +159,83 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["category", "accepted_strings", "deny_type"],
+        "required": [
+          "category",
+          "accepted_strings",
+          "deny_type"
+        ],
         "properties": {
-          "category": { "type": "string" },
+          "category": {
+            "type": "string"
+          },
           "accepted_strings": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "deny_type": { "type": "string", "enum": ["HARD_DENY"] }
+          "deny_type": {
+            "type": "string",
+            "enum": [
+              "HARD_DENY"
+            ]
+          }
         }
       }
     },
     "drug_conflicts": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["glp1_or_glp1_gip_agents"],
+      "required": [
+        "glp1_or_glp1_gip_agents"
+      ],
       "properties": {
         "glp1_or_glp1_gip_agents": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
     "documentation_requirements": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": {
+        "type": "string"
+      }
     },
     "ambiguities": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["pattern", "action"],
+        "required": [
+          "pattern",
+          "action"
+        ],
         "properties": {
-          "pattern": { "type": "string" },
+          "pattern": {
+            "type": "string"
+          },
           "action": {
             "type": "string",
-            "enum": ["REQUEST_INFO", "MANUAL_REVIEW", "CONSERVATIVE_DENY"]
+            "enum": [
+              "REQUEST_INFO",
+              "MANUAL_REVIEW",
+              "CONSERVATIVE_DENY"
+            ]
           },
-          "notes": { "type": "string" }
+          "notes": {
+            "type": "string"
+          }
         }
       }
     },
     "notes": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": {
+        "type": "string"
+      }
     }
   }
 }

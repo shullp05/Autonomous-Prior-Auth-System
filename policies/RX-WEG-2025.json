@@ -190,29 +190,24 @@
   "diagnosis_strings": {
     "adult_excess_weight": [
       "Overweight",
-      "Overweight, adult",
-      "Overweight and obesity (E66.x)",
-      "BMI 27\u201329.9",
-      "Elevated BMI",
-      "BMI above normal",
-      "BMI > 27",
+      "overweight",
+      "Overweight Adult",
+      "overweight adult",
       "Overweight (E66.3)",
-      "BMI codes Z68.27\u2013Z68.29 when present along with an overweight/obesity dx *If BOTH 1) and 2) are met, treat the patient as qualifying under BOTH pathways. ================================================================================"
+      "Overweight (E66.x)"
     ],
     "adult_obesity": [
       "Obesity",
       "obese",
       "clinical obesity",
+      "obesity",
       "Obese patient",
       "patient is obese",
-      "BMI \u2265 30",
-      "BMI > 30",
-      "BMI 30\u201339.9",
       "Simple obesity",
       "unspecified obesity",
       "Obesity due to excess calories (E66.0)",
       "Obesity, unspecified (E66.9)",
-      "Overweight and obesity (E66.x)",
+      "obesity (E66.x)",
       "Class 1 obesity",
       "class I obesity",
       "mild obesity",
@@ -226,10 +221,10 @@
       "Extreme obesity",
       "morbid obesity",
       "morbid obesity due to excess calories",
-      "Morbid (severe) obesity with alveolar hypoventilation",
-      "Morbid (severe) obesity due to excess calories (E66.01)",
+      "Morbid obesity with alveolar hypoventilation",
+      "Morbid obesity due to excess calories (E66.01)",
       "Other obesity due to excess calories (E66.09)",
-      "Extreme obesity (BMI \u2265 40) (Z68.41\u2013Z68.45)",
+      "Extreme obesity (Z68.41\u2013Z68.45)",
       "Obesity associated with type 2 diabetes",
       "Obesity-related hypertension",
       "obesity-related dyslipidemia",
@@ -260,20 +255,36 @@
         "bmi_min": 30.0,
         "name": "Obesity BMI \u2265 30 kg/m\u00b2 with adult obesity diagnosis",
         "required_comorbidity_categories": [],
+        "required_diagnosis_codes_e66": [
+          "E66.01",
+          "E66.9",
+          "E66.09",
+          "E66.0",
+          "E66.x"
+        ],
+        "required_diagnosis_codes_z68": [
+          "Z68.27",
+          "Z68.28",
+          "Z68.29",
+          "Z68.41",
+          "Z68.42",
+          "Z68.43",
+          "Z68.44",
+          "Z68.45",
+          "Z68.x"
+        ],
         "required_diagnosis_strings": [
           "Obesity",
           "obese",
           "clinical obesity",
+          "obesity",
           "Obese patient",
           "patient is obese",
-          "BMI \u2265 30",
-          "BMI > 30",
-          "BMI 30\u201339.9",
           "Simple obesity",
           "unspecified obesity",
           "Obesity due to excess calories (E66.0)",
           "Obesity, unspecified (E66.9)",
-          "Overweight and obesity (E66.x)",
+          "obesity (E66.x)",
           "Class 1 obesity",
           "class I obesity",
           "mild obesity",
@@ -287,10 +298,10 @@
           "Extreme obesity",
           "morbid obesity",
           "morbid obesity due to excess calories",
-          "Morbid (severe) obesity with alveolar hypoventilation",
-          "Morbid (severe) obesity due to excess calories (E66.01)",
+          "Morbid obesity with alveolar hypoventilation",
+          "Morbid obesity due to excess calories (E66.01)",
           "Other obesity due to excess calories (E66.09)",
-          "Extreme obesity (BMI \u2265 40) (Z68.41\u2013Z68.45)",
+          "Extreme obesity (Z68.41\u2013Z68.45)",
           "Obesity associated with type 2 diabetes",
           "Obesity-related hypertension",
           "obesity-related dyslipidemia",
@@ -308,16 +319,23 @@
           "obstructive_sleep_apnea",
           "cardiovascular_disease"
         ],
+        "required_diagnosis_codes_e66": [
+          "E66.3",
+          "E66.x"
+        ],
+        "required_diagnosis_codes_z68": [
+          "Z68.27",
+          "Z68.28",
+          "Z68.29",
+          "Z68.x"
+        ],
         "required_diagnosis_strings": [
           "Overweight",
-          "Overweight, adult",
-          "Overweight and obesity (E66.x)",
-          "BMI 27\u201329.9",
-          "Elevated BMI",
-          "BMI above normal",
-          "BMI > 27",
+          "overweight",
+          "Overweight Adult",
+          "overweight adult",
           "Overweight (E66.3)",
-          "BMI codes Z68.27\u2013Z68.29 when present along with an overweight/obesity dx *If BOTH 1) and 2) are met, treat the patient as qualifying under BOTH pathways. ================================================================================"
+          "Overweight (E66.x)"
         ]
       }
     ]
@@ -329,7 +347,7 @@
   ],
   "notes": [
     "Height/weight that clearly calculate to the thresholds below count the same as explicit BMI.",
-    "Diagnosis strings include BOTH free-text labels and structured problem-list / ICD-based text.",
+    "Case-insensitive diagnosis strings include ANY free-text labels, conditions, condition_name, problem list, structured problem-list, ICD-linked labels or text.",
     "Isolated Type 1 diabetes mellitus (T1DM/IDDM) is not counted as the weight-related comorbidity for Wegovy BMI criteria.",
     "Isolated \"Type 1 diabetes mellitus\", \"T1DM\", \"IDDM\" alone is NOT counted as the"
   ],
@@ -467,6 +485,6 @@
   ],
   "scope": "OBESITY/ CHRONIC WEIGHT MANAGEMENT  - NOT CV-RISK OR MASH PATHWAYS",
   "source_file": "UpdatedPAGuidelines.txt",
-  "source_hash": "d24f81035667fbd768b6b3acfd1d21fd9f9ff78b6deb03d88e77a35b3c373220",
+  "source_hash": "01a798fae1a2f611fd7d573855461c2ee787d99ec56e2783dd7ea6838fcfff4d",
   "title": "PAYER POLICY: Chronic Weight Management (Wegovy/Semaglutide)"
 }

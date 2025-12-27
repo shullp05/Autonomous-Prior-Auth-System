@@ -2,11 +2,11 @@
 test_policy_safety_signal.py - Integration tests for Phase 9 Safety Signals
 """
 
-import pytest
 from policy_engine import evaluate_eligibility
 
+
 class TestPolicySafetySignals:
-    
+
     def test_active_safety_hard_stop(self):
         """Active condition -> DENIED_SAFETY"""
         patient = {
@@ -44,7 +44,7 @@ class TestPolicySafetySignals:
             "meds": []
         }
         result = evaluate_eligibility(patient)
-        
+
         # Even though BMI is eligible, Safety Signal preempts Approval?
         # Yes, logic: 1) Safety Gate -> Signal -> Return Signal.
         # So it blocks approval until manual review clears the signal.

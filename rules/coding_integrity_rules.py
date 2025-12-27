@@ -4,105 +4,137 @@ coding_integrity_rules.py - Phase 9.5 Coding Integrity Overlay
 Defines the "Administrative Readiness" logic.
 Cases may be CLINICALLY ELIGIBLE but ADMINISTRATIVE NOT READY if they lack specific anchor codes.
 
-Anchor Codes (ICD-10):
-- Obesity Pathway: E66.01, E66.09, E66.1, E66.2, E66.8, E66.9
-- Overweight Pathway: E66.3
-+ Hygiene prefixes (Z68 for BMI, etc. - currently informational)
+New Strict Policy (2025):
+- Obesity Pathway: Requires (Text "Obesity") + (Code E66.x) + (Code Z68.x)
+- Overweight Pathway: Requires (Text "Overweight/Obesity") + (Code E66.3/E66.x) + (Code Z68.x)
 """
-
-from typing import List, Tuple, Optional, Set
+import re
+from typing import List, Set, Tuple, Optional, Any, Dict
 
 # ==============================================================================
 # Configuration: Payer-Mandated Anchor Codes
 # ==============================================================================
 
-OBESITY_ANCHOR_CODES = {
-    "E66.01", # Morbid (severe) obesity due to excess calories
-    "E66.09", # Other obesity due to excess calories
-    "E66.1",  # Drug-induced obesity
-    "E66.2",  # Morbid (severe) obesity with alveolar hypoventilation
-    "E66.8",  # Other obesity
-    "E66.9",  # Obesity, unspecified
-    "E66.3"   # Overweight (Included here? No, strictly E66.3 is for Overweight pathway usually)
-}
+# Constants removed - now injected from Policy Snapshot (RX-WEG-2025.json) via Policy Engine
 
-OVERWEIGHT_ANCHOR_CODES = {
-    "E66.3"   # Overweight
-}
-
-# Hygiene only
-BMI_ZCODES_PREFIX = "Z68."
+VALID_BMI_Z_PREFIX = "Z68" # Prefix check still useful, or rely on explicit list?
 
 # ==============================================================================
 # Logic
 # ==============================================================================
 
 def check_admin_readiness(
-    patient_diagnoses: List[str], 
-    clinical_pathway: Optional[str]
-) -> Tuple[bool, Optional[str]]:
+    patient_diagnoses: List[Any],
+    required_e66_codes: Set[str],
+    required_z68_codes: Set[str],
+    required_diagnosis_strings: List[str]
+) -> Tuple[bool, Optional[str], Dict[str, str]]:
     """
-    Check if a clinically eligible case is administratively ready (has anchor codes).
+    Check if a clinically eligible case is administratively ready (Triple-Key Verification).
     
     Args:
-        patient_diagnoses: List of diagnosis codes (e.g. ["E66.9", "I10"])
-        clinical_pathway: "BMI30_OBESITY" or "BMI27_COMORBIDITY"
+        patient_diagnoses: List of condition dicts (with 'condition_name', 'icd10_dx', 'icd10_bmi') 
+                           OR list of strings (legacy fallback).
+        required_e66_codes: Set of valid E66 codes for this pathway.
+        required_z68_codes: Set of valid Z68 codes for this pathway.
+        required_diagnosis_strings: List of valid diagnosis text strings.
         
     Returns:
-        (is_ready: bool, missing_code_suggestion: Optional[str])
+        (is_ready: bool, missing_code_suggestion: Optional[str], found_evidence: Dict[str, str])
     """
-    if not clinical_pathway:
-        # Not politically eligible, so administrative readiness is irrelevant (or technically not ready)
-        return False, None
 
-    # Normalize diagnoses (upper case, strip)
-    # Note: Currently data might be names or codes. We need to handle both? 
-    # Assumption for Phase 9.5: The 'conditions' list in data might be text names, but the `diagnosis_codes` might be explicit.
-    # WAIT - `evaluate_eligibility` receives `conditions` (strings). 
-    # Does it receive codes? 
-    # The Task instructions say: "Add Codign Integrity Decision Step... Missing Anchor -> CDI_REQUIRED"
-    # And "OBESITY_ANCHOR_CODES = {...}"
-    # This implies we need access to ICD codes.
-    # `patient_data` in `policy_engine.py` currently has keys: `latest_bmi`, `conditions`, `meds`.
-    # It does NOT appear to have a dedicated `diagnosis_codes` list yet.
-    # However, `conditions` list often contains mixed text.
-    # We must scan `conditions` for these substrings (or exact codes if provided).
-    
-    # For robust implementation, we'll scan the input strings for the code pattern.
-    
-    detected_codes = _extract_codes(patient_diagnoses)
-    
-    if clinical_pathway == "BMI30_OBESITY":
-        # Requires Obesity Anchor
-        if any(code in detected_codes for code in OBESITY_ANCHOR_CODES):
-            return True, None
-        return False, "E66.9" # Default suggestion
-        
-    if clinical_pathway == "BMI27_COMORBIDITY":
-        # Requires Overweight Anchor
-        # Note: E66.9 (Obesity) would technically satisfy Overweight criteria too (hierarchically), 
-        # but strict rules might require E66.3 specifically for the "Overweight" pathway.
-        # Let's be lenient: accepted if E66.3 OR any Obesity code (since Obesity > Overweight)
-        if any(code in detected_codes for code in OVERWEIGHT_ANCHOR_CODES) or \
-           any(code in detected_codes for code in OBESITY_ANCHOR_CODES):
-            return True, None
-        return False, "E66.3" # Default suggestion
+    # 1. Gather all evidence from the chart into Sets for global checking
+    chart_text_tokens = set()
+    chart_dx_codes = set()
+    chart_z_codes = set()
 
-    return True, None # Should be unreachable if pathway is valid
+    for c in patient_diagnoses:
+        # Handle dict vs string
+        if isinstance(c, str):
+            name = c.upper()
+            dx = ""
+            z = ""
+        else:
+            name = str(c.get("condition_name", "")).upper()
+            dx = str(c.get("icd10_dx", "")).strip().upper()
+            z = str(c.get("icd10_bmi", "")).strip().upper()
 
-def _extract_codes(conditions: List[str]) -> Set[str]:
-    """
-    Extract potential ICD-10 codes from condition strings.
-    Naive extraction: looks for patterns like "E66.9" or "(E66.9)"
-    """
-    found = set()
-    import re
-    # Match generally: Letter + Digits + Dot + Digits
-    # e.g. E66.9, Z68.1, I10
-    pattern = re.compile(r'\b([A-Z]\d{2}(?:\.\d{1,3})?)\b')
-    
-    for cond in conditions:
-        matches = pattern.findall(cond.upper())
-        found.update(matches)
-        
-    return found
+        # Tokenize name (naive) - actually, let's keep the full name for matching too
+        chart_text_tokens.add(name)
+
+        # Collect codes
+        if dx: chart_dx_codes.add(dx)
+        if z: chart_z_codes.add(z)
+
+        # Also check if codes are embedded in the text string (backup)
+        # e.g. "Obesity (E66.9)"
+        codes_in_text = re.findall(r'([A-Z]\d{2}(?:\.\d{1,9})?)', name)
+        for code in codes_in_text:
+             if code.startswith("E66"): chart_dx_codes.add(code)
+             if code.startswith("Z68"): chart_z_codes.add(code)
+
+
+    # 2. Verify Triple Keys (Against Injected Requirements)
+    found_evidence = {"text": None, "e66": None, "z68": None}
+
+    # Key A: Text
+    # We check if ANY chart condition name contains ANY of the required strings (case-insensitive substring match)
+    # The required_diagnosis_strings from snapshot are usually full phrases "Adult Obesity".
+    # But simple "Obesity" might be enough.
+    # Logic: If chart text contains a required string (normalized)
+    has_text = False
+
+    # Normalize reqs
+    normalized_reqs = [r.upper() for r in required_diagnosis_strings]
+    # Add stemmed fallbacks if list provides "Adult Obesity", we probably want "Obesity" to match?
+    # Actually policy says "Documented... diagnosis string".
+    # For now, we do substring check.
+
+    for token in chart_text_tokens: # token is full condition name here
+        for req in normalized_reqs:
+            if req in token:
+                has_text = True
+                found_evidence["text"] = token # Capture the actual chart text that matched
+                break
+        if has_text: break
+
+    # Key B: E66 Code
+    has_e66 = False
+    for code in chart_dx_codes:
+        if code in required_e66_codes:
+            has_e66 = True
+            found_evidence["e66"] = code
+            break
+        # Handle "E66.x" wildcard if present in requirements
+        if "E66.X" in required_e66_codes or "E66.x" in required_e66_codes:
+             if code.startswith("E66"):
+                 has_e66 = True
+                 found_evidence["e66"] = code
+                 break
+
+    # Key C: Z68 Code
+    has_z68 = False
+    for code in chart_z_codes:
+        if code in required_z68_codes:
+            has_z68 = True
+            found_evidence["z68"] = code
+            break
+        # Handle "Z68.x" wildcard
+        if "Z68.X" in required_z68_codes or "Z68.x" in required_z68_codes:
+            if code.startswith("Z68"):
+                has_z68 = True
+                found_evidence["z68"] = code
+                break
+
+    # Compile Verdict
+    missing = []
+    if not has_text: missing.append("Diagnosis Text")
+    if not has_e66: missing.append("ICD-10 Code (E66.x)")
+    if not has_z68: missing.append("BMI Z-Code (Z68.x)")
+
+    if missing:
+        msg = f"CDI_REQUIRED: Missing administrative elements: {', '.join(missing)}."
+        return False, msg, found_evidence
+
+    return True, None, found_evidence
+

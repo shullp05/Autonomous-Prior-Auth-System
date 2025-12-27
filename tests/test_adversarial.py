@@ -10,15 +10,16 @@ This module provides systematic evaluation of edge cases to verify:
 Run with: pytest tests/test_adversarial.py -v
 """
 
-import sys
 import os
+import sys
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
-from policy_engine import evaluate_eligibility, EligibilityResult
+
 from policy_constants import ADULT_OBESITY_DIAGNOSES, ADULT_OVERWEIGHT_DIAGNOSES, BMI_OBESE_THRESHOLD
+from policy_engine import EligibilityResult, evaluate_eligibility
 
 OBESITY_DX = ADULT_OBESITY_DIAGNOSES[0]
 OVERWEIGHT_DX = ADULT_OVERWEIGHT_DIAGNOSES[0]
@@ -39,7 +40,7 @@ def run_eval(patient_data: dict) -> EligibilityResult:
 
 class TestBMIBoundaryConditions:
     """Test exact BMI boundary values to ensure correct threshold handling."""
-    
+
     @pytest.mark.parametrize("bmi,expected_verdict", [
         # Below minimum threshold - always denied
         (26.0, "DENIED_CLINICAL"),
@@ -70,7 +71,7 @@ class TestBMIBoundaryConditions:
             "meds": [],
         })
         assert result.verdict == expected_verdict, f"BMI {bmi}: expected {expected_verdict}, got {result.verdict}"
-    
+
     @pytest.mark.parametrize("bmi", [27.0, 27.5, 28.0, 28.5, 29.0, 29.5, 29.9])
     def test_overweight_with_valid_comorbidity_approved(self, bmi):
         """BMI 27-29.9 with valid comorbidity should be approved."""
@@ -88,7 +89,7 @@ class TestSafetyExclusionZeroFalseApprovals:
     CRITICAL: Verify zero false approvals when safety exclusions are present.
     Even with perfect eligibility (BMI 40+), safety exclusions MUST deny.
     """
-    
+
     @pytest.mark.parametrize("safety_condition", [
         "Medullary Thyroid Carcinoma",
         "Medullary Thyroid Carcinoma (MTC)",
@@ -125,7 +126,7 @@ class TestSafetyExclusionZeroFalseApprovals:
         })
         assert result.verdict == "DENIED_SAFETY", f"Failed to deny for '{safety_condition}'"
         assert result.safety_flag == "DETECTED"
-    
+
     @pytest.mark.parametrize("glp1_med", [
         "Ozempic",
         "ozempic",
@@ -151,7 +152,7 @@ class TestSafetyExclusionZeroFalseApprovals:
             "meds": [glp1_med],
         })
         assert result.verdict == "DENIED_SAFETY", f"Failed to deny for concurrent '{glp1_med}'"
-    
+
     def test_wegovy_itself_is_allowed(self):
         """Wegovy itself should NOT trigger concurrent GLP-1 denial."""
         result = run_eval({
@@ -167,7 +168,7 @@ class TestAmbiguousTermsManualReview:
     Verify ambiguous terms trigger MANUAL_REVIEW, not approval or denial.
     These terms are clinically meaningful but don't meet strict policy criteria.
     """
-    
+
     @pytest.mark.parametrize("ambiguous_term", [
         "Prediabetes",
         "Pre-diabetes",
@@ -182,7 +183,7 @@ class TestAmbiguousTermsManualReview:
             "meds": [],
         })
         assert result.verdict == "MANUAL_REVIEW", f"'{ambiguous_term}' should trigger MANUAL_REVIEW"
-    
+
     @pytest.mark.parametrize("ambiguous_term", [
         "Elevated blood pressure",
         "Borderline hypertension",
@@ -196,7 +197,7 @@ class TestAmbiguousTermsManualReview:
         })
         # All ambiguous terms in the list should now trigger MANUAL_REVIEW
         assert result.verdict == "MANUAL_REVIEW", f"'{ambiguous_term}' should trigger MANUAL_REVIEW"
-    
+
     def test_elevated_bp_abbreviation_is_ambiguous(self):
         """Per policy, 'Elevated BP' (abbreviation) is in ambiguities, not accepted strings."""
         result = run_eval({
@@ -205,7 +206,7 @@ class TestAmbiguousTermsManualReview:
             "meds": [],
         })
         assert result.verdict == "MANUAL_REVIEW", "'Elevated BP' is ambiguous per policy"
-    
+
     def test_generic_sleep_apnea_triggers_manual_review(self):
         """Generic 'sleep apnea' without 'obstructive' should trigger manual review."""
         result = run_eval({
@@ -214,7 +215,7 @@ class TestAmbiguousTermsManualReview:
             "meds": [],
         })
         assert result.verdict == "MANUAL_REVIEW"
-    
+
     def test_obstructive_sleep_apnea_approves(self):
         """Explicit 'Obstructive Sleep Apnea' should approve."""
         result = run_eval({
@@ -224,7 +225,7 @@ class TestAmbiguousTermsManualReview:
         })
         assert result.verdict == "APPROVED"
         assert result.comorbidity_category == "OSA"
-    
+
     def test_osa_abbreviation_approves(self):
         """OSA abbreviation should approve."""
         result = run_eval({
@@ -240,7 +241,7 @@ class TestThyroidDistinction:
     """
     Critical: Distinguish between MTC (safety exclusion) and other thyroid cancers (manual review).
     """
-    
+
     @pytest.mark.parametrize("mtc_term", [
         "Medullary Thyroid Carcinoma",
         "MTC",
@@ -256,7 +257,7 @@ class TestThyroidDistinction:
             "meds": [],
         })
         assert result.verdict == "DENIED_SAFETY"
-    
+
     @pytest.mark.parametrize("non_mtc_thyroid", [
         "Thyroid cancer",
         "Thyroid carcinoma",
@@ -278,7 +279,7 @@ class TestThyroidDistinction:
 
 class TestQualifyingComorbidities:
     """Verify all qualifying comorbidities are properly recognized."""
-    
+
     @pytest.mark.parametrize("condition,expected_category", [
         # Hypertension variants
         ("Hypertension", "HYPERTENSION"),
@@ -322,7 +323,7 @@ class TestQualifyingComorbidities:
 
 class TestMissingDataHandling:
     """Test handling of missing or invalid data."""
-    
+
     @pytest.mark.parametrize("bmi_value", [
         "MISSING_DATA",
         "",
@@ -336,7 +337,7 @@ class TestMissingDataHandling:
             "meds": [],
         })
         assert result.verdict == "DENIED_MISSING_INFO"
-    
+
     def test_unreasonable_bmi_treated_as_missing(self):
         """BMI outside reasonable range should be treated as missing."""
         result = run_eval({
@@ -345,7 +346,7 @@ class TestMissingDataHandling:
             "meds": [],
         })
         assert result.verdict == "DENIED_MISSING_INFO"
-    
+
     def test_bmi_parsing_from_various_formats(self):
         """BMI should be correctly parsed from various formats."""
         test_cases = [
@@ -365,7 +366,7 @@ class TestMissingDataHandling:
 
 class TestCaseInsensitivity:
     """Verify case-insensitive matching for conditions and medications."""
-    
+
     @pytest.mark.parametrize("condition", [
         "hypertension",
         "HYPERTENSION",
@@ -380,7 +381,7 @@ class TestCaseInsensitivity:
             "meds": [],
         })
         assert result.verdict == "APPROVED"
-    
+
     @pytest.mark.parametrize("med", [
         "OZEMPIC",
         "ozempic",
@@ -398,7 +399,7 @@ class TestCaseInsensitivity:
 
 class TestComplexScenarios:
     """Test complex real-world scenarios with multiple conditions."""
-    
+
     def test_multiple_comorbidities_approves(self):
         """Multiple valid comorbidities should still approve."""
         result = run_eval({
@@ -407,7 +408,7 @@ class TestComplexScenarios:
             "meds": [],
         })
         assert result.verdict == "APPROVED"
-    
+
     def test_safety_exclusion_overrides_comorbidities(self):
         """Safety exclusion should override any comorbidities."""
         result = run_eval({
@@ -416,7 +417,7 @@ class TestComplexScenarios:
             "meds": [],
         })
         assert result.verdict == "DENIED_SAFETY"
-    
+
     def test_ambiguous_and_valid_term_uses_valid(self):
         """If both ambiguous and valid comorbidity present, should approve."""
         result = run_eval({
@@ -426,7 +427,7 @@ class TestComplexScenarios:
         })
         assert result.verdict == "APPROVED"
         assert result.comorbidity_category == "HYPERTENSION"
-    
+
     def test_obese_bmi_overrides_need_for_comorbidity(self):
         """BMI ≥ 30 should approve regardless of comorbidity presence."""
         result = run_eval({

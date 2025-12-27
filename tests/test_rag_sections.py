@@ -1,10 +1,10 @@
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from setup_rag import _section_documents
 from policy_snapshot import parse_guidelines
+from setup_rag import _section_documents
 
 
 def test_rag_sections_minimum_atoms():

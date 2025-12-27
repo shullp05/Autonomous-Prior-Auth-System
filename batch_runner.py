@@ -50,30 +50,32 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
 import pandas as pd
+
 from offline_mode import enforce_offline
 
 # Enforce offline mode immediately if configured
-enforce_offline()
+from offline_mode import enforce_offline
+from policy_utils import format_criteria_list
 
+from audit_logger import get_audit_logger
 from policy_engine import evaluate_eligibility
 from policy_snapshot import POLICY_ID, SNAPSHOT_PATH, load_policy_snapshot
-from policy_snapshot import POLICY_ID, SNAPSHOT_PATH, load_policy_snapshot
 from schema_validation import validate_policy_snapshot
-from audit_logger import get_audit_logger
 
 _audit_logger = get_audit_logger()
 
 from config import (
-    USE_DETERMINISTIC,
-    AUDIT_MODEL_NAME,
     AUDIT_MODEL_FLAVOR,
-    CLAIM_VALUE_USD,
-    AUDIT_MODEL_RAM_GB,
+    AUDIT_MODEL_NAME,
     AUDIT_MODEL_OPTIONS,
+    AUDIT_MODEL_RAM_GB,
+    CLAIM_VALUE_USD,
+    PA_PRACTICE_NAME,
     PA_PROVIDER_NAME,
     PA_PROVIDER_NPI,
-    PA_PRACTICE_NAME,
+    USE_DETERMINISTIC,
 )
 
 # Configure logging
@@ -173,7 +175,10 @@ def _normalize_status(raw_verdict: str | None) -> str:
     if v.startswith("DENIED"):
         return "DENIED"
     # Anything unexpected should route to manual review posture
-    return "FLAGGED"
+    return ""
+
+
+
 
 
 def _load_patient_data(
@@ -210,8 +215,9 @@ def _load_patient_data(
             row = pat_rows.iloc[0].to_dict()
             name = str(row.get("name", "") or "")
             dob = str(row.get("dob", "") or "")
-    except Exception:
-        # Keep as empty strings; provider-context enforcement is handled separately
+    except Exception as e:
+        # Keep as empty strings but log warning; provider-context enforcement is handled separately
+        logger.warning(f"Error loading patient demographics for {pid}: {e}")
         pass
 
     # Get latest BMI
@@ -251,12 +257,16 @@ def _load_patient_data(
             latest_bmi = "MISSING_DATA"
 
     # Get conditions
-    conditions = (
-        df_conds[df_conds["patient_id"].astype(str) == pid_str]["condition_name"]
-        .dropna()
-        .astype(str)
-        .tolist()
-    )
+    # Get conditions (full details for coding integrity)
+    cond_rows = df_conds[df_conds["patient_id"].astype(str) == pid_str]
+    # Ensure columns exist (in case of legacy CSV)
+    cols = ["condition_name"]
+    if "icd10_dx" in cond_rows.columns:
+        cols.append("icd10_dx")
+    if "icd10_bmi" in cond_rows.columns:
+        cols.append("icd10_bmi")
+
+    conditions = cond_rows[cols].to_dict(orient="records")
 
     # Get medications
     meds = (
@@ -314,6 +324,20 @@ def run_batch() -> None:
 
     target_meds = df_meds[df_meds["medication_name"].str.contains(DRUG_QUERY, case=False, na=False)]
     target_ids = target_meds["patient_id"].dropna().astype(str).unique().tolist()
+    
+    # Argparse here or assume global? Better to parse here.
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--patient_id", help="Run only for specific patient UUID")
+    args, _ = parser.parse_known_args()
+    if args.patient_id:
+        if args.patient_id in target_ids:
+            target_ids = [args.patient_id]
+        else:
+            logger.warning(f"Patient {args.patient_id} not found in Wegovy claims.")
+            target_ids = []
+            
+    total_claims = len(target_ids)
     total_claims = len(target_ids)
 
     mode_str = "DETERMINISTIC (no LLM)" if USE_DETERMINISTIC else "LLM-AUGMENTED"
@@ -322,7 +346,7 @@ def run_batch() -> None:
     # Init Agent if needed
     agent = None
     if not USE_DETERMINISTIC:
-        from agent_logic import build_agent, _ensure_data_loaded
+        from agent_logic import _ensure_data_loaded, build_agent
 
         # Ensure agent module data is loaded before we start building or invoking
         _ensure_data_loaded()
@@ -334,12 +358,12 @@ def run_batch() -> None:
     def save_results(partial: bool = False) -> None:
         """Save results to JSON file. Called on completion or interrupt."""
         status_suffix = " (PARTIAL - interrupted)" if partial else ""
-        
+
         # Phase 9.5: Add aggregate metrics to metadata
         # Calculate CDI Count and Revenue at Risk
         cdi_count = sum(1 for r in results if r.get("status") == "CDI_REQUIRED")
         revenue_at_risk = cdi_count * float(CLAIM_VALUE_USD)
-        
+
         output: dict[str, Any] = {
             "metadata": {
                 "timestamp": _now_iso(),
@@ -358,12 +382,12 @@ def run_batch() -> None:
         }
 
         durations = [
-            r.get("duration_sec")
+            r.get("duration_ms")
             for r in results
-            if isinstance(r.get("duration_sec"), (int, float))
+            if isinstance(r.get("duration_ms"), (int, float))
         ]
         if durations:
-            durations_ms = sorted(float(d) * 1000.0 for d in durations)
+            durations_ms = sorted(float(d) for d in durations)
 
             def percentile(values: list[float], pct: float) -> float | None:
                 if not values:
@@ -430,7 +454,7 @@ def run_batch() -> None:
         decision_type = None
         safety_exclusion_code = None
         ambiguity_code = None
-        
+
         # Phase 9.5 and 9.3 fields
         clinical_eligible = False
         admin_ready = False
@@ -454,13 +478,29 @@ def run_batch() -> None:
                 decision_type = det_result_obj.decision_type
                 safety_exclusion_code = det_result_obj.safety_exclusion_code
                 ambiguity_code = det_result_obj.ambiguity_code
-                
+
                 # Capture new fields
                 clinical_eligible = det_result_obj.clinical_eligible
                 admin_ready = det_result_obj.admin_ready
                 missing_anchor_code = det_result_obj.missing_anchor_code
                 safety_context = det_result_obj.safety_context
                 safety_confidence = det_result_obj.safety_confidence
+
+                # AUDIT LOGGING (Deterministic Mode)
+                # LLM mode handles this in agent_logic.py, but deterministic mode must log here.
+                _audit_logger.log_event(
+                    event_type="DECISION",
+                    details={
+                        "patient_id": pid,
+                        "verdict": status,
+                        "raw_verdict": raw_verdict,
+                        "reasoning": reason,
+                        "model_used": "DETERMINISTIC_ENGINE",
+                        "policy_path": policy_path,
+                        "bmi": det_result_obj.bmi_numeric,
+                    },
+                    patient_id=pid
+                )
 
                 # Letters: deterministic mode should remain LLM-free when possible.
                 # If agent_logic isn't importable (langchain deps missing), use safe deterministic templates.
@@ -512,7 +552,21 @@ Prescriber Signature / Date
 """
                 elif status == "CDI_REQUIRED":
                      # Generate Physician Query Note (Deterministic)
-                     appeal = det_result_obj.physician_query_text
+                     criteria_list = format_criteria_list(
+                         det_result_obj.bmi_numeric,
+                         det_result_obj.found_diagnosis_string,
+                         det_result_obj.found_e66_code,
+                         det_result_obj.found_z68_code,
+                         det_result_obj.evidence_quoted, # Comorbidity evidence
+                         det_result_obj.missing_anchor_code,
+                         None
+                     )
+
+                     appeal = f"""PHYSICIAN QUERY / CDI ALERT
+{det_result_obj.physician_query_text}
+
+{criteria_list}
+"""
                      appeal_note = "Physician Query Generated"
 
                 elif status == "DENIED":
@@ -536,8 +590,20 @@ This letter serves as formal notification that the prior authorization request f
 DENIAL REASON:
 {reason}
 
+                DENIAL REASON:
+{reason}
+
 CLINICAL DATA REVIEWED:
-- Patient BMI: {bmi_str}{safety_info}
+{format_criteria_list(
+    det_result_obj.bmi_numeric,
+    det_result_obj.found_diagnosis_string,
+    det_result_obj.found_e66_code,
+    det_result_obj.found_z68_code,
+    det_result_obj.evidence_quoted,
+    det_result_obj.missing_anchor_code,
+    det_result_obj.ambiguity_code
+)}
+{safety_info}
 
 POLICY REFERENCE:
 This determination was made in accordance with the applicable drug coverage policy criteria for GLP-1 receptor agonists indicated for chronic weight management.
@@ -571,18 +637,28 @@ Clinical Pharmacy Review Team
                 safety_exclusion_code = llm_response_obj.get("safety_exclusion_code")
                 ambiguity_code = llm_response_obj.get("ambiguity_code")
 
-                raw_verdict = (llm_response_obj.get("audit_findings") or {}).get("verdict")
+                # Extract new fields from audit_findings
+                audit_findings = llm_response_obj.get("audit_findings") or {}
+                raw_verdict = audit_findings.get("verdict")
+                clinical_eligible = audit_findings.get("clinical_eligible", False)
+                admin_ready = audit_findings.get("admin_ready", False)
+                missing_anchor_code = audit_findings.get("missing_anchor_code")
+                safety_context = audit_findings.get("safety_context")
+                safety_confidence = audit_findings.get("safety_confidence")
 
                 # If APPROVED but no letter present, generate one (provider-facing)
                 if status == "APPROVED" and not appeal:
                     try:
                         from agent_logic import generate_approved_letter
 
-                        audit_findings = llm_response_obj.get("audit_findings") or {}
                         findings_dict = {
                             "bmi_numeric": audit_findings.get("bmi_numeric") if audit_findings else None,
                             "comorbidity_category": audit_findings.get("comorbidity_category", "NONE") if audit_findings else "NONE",
                             "policy_path": policy_path,
+                            "found_diagnosis_string": audit_findings.get("found_diagnosis_string"),
+                            "found_e66_code": audit_findings.get("found_e66_code"),
+                            "found_z68_code": audit_findings.get("found_z68_code"),
+                            "found_comorbidity_evidence": audit_findings.get("evidence_quoted"),
                         }
 
                         # Prefer agent-provided patient_data to avoid dataframe dependency drift
@@ -596,7 +672,7 @@ Clinical Pharmacy Review Team
                             logger.info("Generated Letter of Medical Necessity for APPROVED patient %s", pid)
                     except Exception as e:
                         logger.warning("Could not generate approved letter for %s: %s", pid, e)
-                        audit_findings = llm_response_obj.get("audit_findings") or {}
+
                         bmi_val = audit_findings.get("bmi_numeric") if audit_findings else None
                         comorbidity = audit_findings.get("comorbidity_category", "NONE") if audit_findings else "NONE"
                         bmi_str = f"{float(bmi_val):.1f} kg/m²" if isinstance(bmi_val, (int, float)) else "[See chart]"
@@ -629,6 +705,48 @@ _______________________________
 Prescriber Signature / Date
 """
 
+                elif status == "CDI_REQUIRED":
+                     criteria_list = format_criteria_list(
+                            audit_findings.get("bmi_numeric") if audit_findings else None,
+                            audit_findings.get("found_diagnosis_string"),
+                            audit_findings.get("found_e66_code"),
+                            audit_findings.get("found_z68_code"),
+                            audit_findings.get("evidence_quoted"),
+                            audit_findings.get("missing_anchor_code"),
+                            audit_findings.get("ambiguity_code")
+                     )
+
+                     # Construct query text if not present
+                     query_body = reason
+                     if not query_body:
+                         query_body = "Missing administrative documentation required for approval."
+
+                     appeal = f"""PHYSICIAN QUERY / CDI ALERT
+{query_body}
+
+{criteria_list}
+"""
+                     appeal_note = "Physician Query Generated"
+
+                elif status in ["FLAGGED", "MANUAL_REVIEW", "PROVIDER_ACTION_REQUIRED"]:
+                     criteria_list = format_criteria_list(
+                            audit_findings.get("bmi_numeric") if audit_findings else None,
+                            audit_findings.get("found_diagnosis_string"),
+                            audit_findings.get("found_e66_code"),
+                            audit_findings.get("found_z68_code"),
+                            audit_findings.get("evidence_quoted"),
+                            audit_findings.get("missing_anchor_code"),
+                            audit_findings.get("ambiguity_code")
+                     )
+
+                     appeal = f"""MANUAL REVIEW REQUIRED
+Status: {status}
+Reason: {reason}
+
+{criteria_list}
+"""
+                     appeal_note = "Manual Review Flagged"
+
                 # If DENIED and no letter present, generate a denial notification
                 elif status == "DENIED" and not appeal:
                     audit_findings = llm_response_obj.get("audit_findings") or {}
@@ -649,11 +767,20 @@ Dear Provider,
 
 This letter serves as formal notification that the prior authorization request for Wegovy (semaglutide 2.4mg) has been DENIED.
 
-DENIAL REASON:
+                DENIAL REASON:
 {reason}
 
 CLINICAL DATA REVIEWED:
-- Patient BMI: {bmi_str}{safety_info}
+{format_criteria_list(
+    audit_findings.get("bmi_numeric") if audit_findings else None,
+    audit_findings.get("found_diagnosis_string"),
+    audit_findings.get("found_e66_code"),
+    audit_findings.get("found_z68_code"),
+    audit_findings.get("evidence_quoted"),
+    audit_findings.get("missing_anchor_code"),
+    audit_findings.get("ambiguity_code")
+)}
+{safety_info}
 
 POLICY REFERENCE:
 This determination was made in accordance with the applicable drug coverage policy criteria for GLP-1 receptor agonists indicated for chronic weight management.
@@ -676,7 +803,8 @@ Clinical Pharmacy Review Team
             reason = str(e)
             logger.error("Error processing patient %s: %s", pid, e)
 
-        duration = time.time() - start_time
+        duration_sec = time.time() - start_time
+        duration_ms = int(duration_sec * 1000)
 
         # Safe extraction of BMI based on which mode ran
         final_bmi_val = None
@@ -693,7 +821,7 @@ Clinical Pharmacy Review Team
             "appeal_letter": appeal,
             "appeal_note": appeal_note,
             "value": float(CLAIM_VALUE_USD),
-            "duration_sec": round(duration, 2),
+            "duration_ms": duration_ms,    # Standardized unit
             "policy_path": policy_path,
             "decision_type": decision_type,
             "safety_exclusion_code": safety_exclusion_code,
@@ -711,7 +839,7 @@ Clinical Pharmacy Review Team
         for i, pid in enumerate(target_ids):
             res = process_patient(pid)
             results.append(res)
-            logger.info("[%d/%d] Patient %s -> %s (%.2fs)", i + 1, total_claims, pid, res["status"], res["duration_sec"])
+            logger.info("[%d/%d] Patient %s -> %s (%dms)", i + 1, total_claims, pid, res["status"], res["duration_ms"])
     except KeyboardInterrupt:
         interrupted = True
         logger.warning("\n\nInterrupted by user. Saving %d partial results...", len(results))

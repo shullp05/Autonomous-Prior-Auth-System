@@ -1,6 +1,6 @@
 
-import pytest
 from policy_engine import evaluate_eligibility
+
 
 def test_cdi_required_bmi30_no_anchor():
     """Verify that a clinically eligible BMI>30 patient without E66.9 gets CDI_REQUIRED."""
@@ -56,5 +56,5 @@ def test_cdi_denied_not_eligible():
     result = evaluate_eligibility(patient_data)
     assert result.verdict == "DENIED_CLINICAL"
     assert result.clinical_eligible is False
-    # admin_ready is not computed for denied cases, or defaults to False/True. 
+    # admin_ready is not computed for denied cases, or defaults to False/True.
     # Current logic: loop breaks before CDI check.

@@ -1,0 +1,30 @@
+[
+    {
+        "bug_id": "BUG-001",
+        "severity": "CRITICAL",
+        "location": "agent_logic.py",
+        "description": "Missing calls to `_audit_logger.log_event` in LLM decision path. Logic review shows 0 matches for log_event in file, violating compliance requirements.",
+        "status": "OPEN"
+    },
+    {
+        "bug_id": "BUG-002",
+        "severity": "HIGH",
+        "location": "dashboard/src/TraceBanner.jsx:19:27",
+        "description": "Synchronous `setState` call within `useEffect` causes cascading renders. ESLint validation error: 'Calling setState synchronously within an effect can trigger cascading renders'.",
+        "status": "OPEN"
+    },
+    {
+        "bug_id": "BUG-003",
+        "severity": "LOW",
+        "location": "dashboard/src/App.jsx",
+        "description": "Unused variables (`clsx`, `formatPercent`, `unused`) detected by ESLint.",
+        "status": "OPEN"
+    },
+    {
+        "bug_id": "BUG-004",
+        "severity": "LOW",
+        "location": "verify_audit.py",
+        "description": "Multiple code quality issues (unused arguments, unsorted imports, trailing whitespace) detected by Ruff.",
+        "status": "OPEN"
+    }
+]

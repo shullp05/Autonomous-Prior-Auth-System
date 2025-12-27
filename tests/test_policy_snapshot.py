@@ -2,9 +2,9 @@ import hashlib
 import json
 from pathlib import Path
 
+from policy_engine import evaluate_eligibility
 from policy_snapshot import GUIDELINE_PATH, SNAPSHOT_PATH, canonical_dumps, parse_guidelines
 from schema_validation import validate_policy_snapshot
-from policy_engine import evaluate_eligibility
 
 GOLDEN_PATH = Path("tests/golden/policies/RX-WEG-2025.json")
 
@@ -43,7 +43,7 @@ def test_committed_snapshot_matches_parse_output():
 
 def test_missing_diagnosis_requires_documentation():
     result = evaluate_eligibility({"latest_bmi": "31.0", "conditions": [], "meds": []})
-    assert result.verdict == "DENIED_MISSING_INFO"
+    assert result.verdict == "CDI_REQUIRED"
 
 
 def test_no_renal_dialysis_safety_entries():
@@ -59,10 +59,10 @@ def test_ambiguity_parsing():
     snapshot = parse_guidelines()
     ambiguities = snapshot.get("ambiguities", [])
     assert len(ambiguities) > 0, "No ambiguity rules parsed"
-    
+
     # Check for specific known rule
     sleep_apnea = next((r for r in ambiguities if r["pattern"] == "sleep apnea"), None)
     assert sleep_apnea is not None
     assert sleep_apnea["action"] == "MANUAL_REVIEW"
-    assert "obstructive" in sleep_apnea.get("notes", "").lower() 
+    assert "obstructive" in sleep_apnea.get("notes", "").lower()
 

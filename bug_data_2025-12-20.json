@@ -1,0 +1,86 @@
+[
+    {
+        "bug_id": "BUG-001",
+        "severity": "CRITICAL",
+        "category": "FUNCTIONAL",
+        "location": {
+            "files": [
+                "/root/projects/PriorAuth/policy_engine.py"
+            ],
+            "component": "Policy Engine",
+            "function": "evaluate_eligibility"
+        },
+        "description": {
+            "current_behavior": "Audit logging was only triggered for CDI_REQUIRED cases. Approved, Denied, and Safety Stop decisions were returned early without logging.",
+            "expected_behavior": "Every decision made by the engine must be logged to the audit system for compliance.",
+            "root_cause": "The _audit_logger.log_event call was placed inside an else block reachable only by imperfect admin readiness."
+        },
+        "impact_assessment": {
+            "user_impact": "None visible to user immediately.",
+            "system_impact": "Audit logs incomplete.",
+            "business_impact": "Severe compliance violation and inability to audit past decisions."
+        },
+        "status": "FIXED"
+    },
+    {
+        "bug_id": "BUG-002",
+        "severity": "CRITICAL",
+        "category": "FUNCTIONAL",
+        "location": {
+            "files": [
+                "/root/projects/PriorAuth/dashboard/src/App.jsx:595"
+            ],
+            "component": "Dashboard",
+            "function": "App"
+        },
+        "description": {
+            "current_behavior": "Variable 'filteredData' was used in JSX but not defined, causing the dashboard to crash on render.",
+            "expected_behavior": "Variable should be defined as a filtered/sorted version of 'data' state.",
+            "root_cause": "Missing logic."
+        },
+        "impact_assessment": {
+            "user_impact": "Dashboard unavailable.",
+            "system_impact": "Frontend crash.",
+            "business_impact": "High."
+        },
+        "status": "FIXED"
+    },
+    {
+        "bug_id": "BUG-003",
+        "severity": "MEDIUM",
+        "category": "CODE_QUALITY",
+        "location": {
+            "files": [
+                "/root/projects/PriorAuth/dashboard/src/TraceBanner.jsx"
+            ],
+            "component": "Dashboard/TraceBanner",
+            "function": "TraceBanner.useEffect"
+        },
+        "description": {
+            "current_behavior": "Synchronous setTrace(null) called within useEffect when isDeterministic is true.",
+            "expected_behavior": "Effect should not trigger state updates synchronously.",
+            "root_cause": "Redundant state clearing logic."
+        },
+        "status": "FIXED"
+    },
+    {
+        "bug_id": "BUG-004",
+        "severity": "LOW",
+        "category": "CODE_QUALITY",
+        "location": {
+            "files": [
+                "/root/projects/PriorAuth/dashboard/src/App.jsx",
+                "/root/projects/PriorAuth/agent_logic.py",
+                "/root/projects/PriorAuth/dashboard/src/metricsEngine.js"
+            ],
+            "component": "Multiple",
+            "function": "Imports"
+        },
+        "description": {
+            "current_behavior": "Unused imports (clsx, formatters, re, psutil).",
+            "expected_behavior": "Clean code without unused imports.",
+            "root_cause": "Refactoring leftovers."
+        },
+        "status": "FIXED"
+    }
+]

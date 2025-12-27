@@ -1,0 +1,3464 @@
+[
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 84,
+      "row": 51
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from __future__ import annotations\n\nimport json\nimport logging\nimport os\nimport time\nfrom pathlib import Path\nfrom typing import Any, Dict, List, Literal, Optional, TypedDict, Union\n\nimport pandas as pd\nimport psutil\nfrom dotenv import load_dotenv\nfrom langchain_core.documents import Document\nfrom langchain_ollama import ChatOllama\nfrom langgraph.graph import END, StateGraph\nfrom pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator\n\n",
+          "end_location": {
+            "column": 1,
+            "row": 53
+          },
+          "location": {
+            "column": 1,
+            "row": 35
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 1,
+      "row": 35
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 35,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "UP035",
+    "end_location": {
+      "column": 61,
+      "row": 41
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 41
+    },
+    "message": "`typing.List` is deprecated, use `list` instead",
+    "noqa_row": 41,
+    "url": "https://docs.astral.sh/ruff/rules/deprecated-import"
+  },
+  {
+    "cell": null,
+    "code": "UP035",
+    "end_location": {
+      "column": 61,
+      "row": 41
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 41
+    },
+    "message": "`typing.Dict` is deprecated, use `dict` instead",
+    "noqa_row": 41,
+    "url": "https://docs.astral.sh/ruff/rules/deprecated-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 24,
+      "row": 41
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Any, Optional, Literal",
+          "end_location": {
+            "column": 61,
+            "row": 41
+          },
+          "location": {
+            "column": 1,
+            "row": 41
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 20,
+      "row": 41
+    },
+    "message": "`typing.List` imported but unused",
+    "noqa_row": 41,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 30,
+      "row": 41
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Any, Optional, Literal",
+          "end_location": {
+            "column": 61,
+            "row": 41
+          },
+          "location": {
+            "column": 1,
+            "row": 41
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 26,
+      "row": 41
+    },
+    "message": "`typing.Dict` imported but unused",
+    "noqa_row": 41,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 61,
+      "row": 41
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Any, Optional, Literal",
+          "end_location": {
+            "column": 61,
+            "row": 41
+          },
+          "location": {
+            "column": 1,
+            "row": 41
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 56,
+      "row": 41
+    },
+    "message": "`typing.Union` imported but unused",
+    "noqa_row": 41,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F811",
+    "end_location": {
+      "column": 23,
+      "row": 43
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import TypedDict",
+          "end_location": {
+            "column": 43,
+            "row": 43
+          },
+          "location": {
+            "column": 1,
+            "row": 43
+          }
+        }
+      ],
+      "message": "Remove definition: `Any`"
+    },
+    "location": {
+      "column": 20,
+      "row": 43
+    },
+    "message": "Redefinition of unused `Any` from line 41",
+    "noqa_row": 43,
+    "url": "https://docs.astral.sh/ruff/rules/redefined-while-unused"
+  },
+  {
+    "cell": null,
+    "code": "F811",
+    "end_location": {
+      "column": 32,
+      "row": 43
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import TypedDict",
+          "end_location": {
+            "column": 43,
+            "row": 43
+          },
+          "location": {
+            "column": 1,
+            "row": 43
+          }
+        }
+      ],
+      "message": "Remove definition: `Literal`"
+    },
+    "location": {
+      "column": 25,
+      "row": 43
+    },
+    "message": "Redefinition of unused `Literal` from line 41",
+    "noqa_row": 43,
+    "url": "https://docs.astral.sh/ruff/rules/redefined-while-unused"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 57,
+      "row": 59
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 59
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 59,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 55,
+      "row": 91
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from audit_logger import get_audit_logger  # noqa: E402\n\n# ---- Optional reranker (safe-to-import wrapper) ----\n# This module is designed to not blow up imports if BCEmbedding isn't installed.\nfrom bce_reranker import rerank_bce  # noqa: E402\n\n# ---- Central config ----\nfrom config import (  # noqa: E402\n    APPEAL_MODEL_NAME,\n    AUDIT_MODEL_FLAVOR,\n    AUDIT_MODEL_NAME,\n    AUDIT_MODEL_OPTIONS,\n    AUDIT_MODEL_RAM_GB,\n    EMBED_MODEL_NAME,\n    PA_RAG_K_VECTOR,\n    PA_RAG_MIN_DOCS,\n    PA_RAG_SCORE_FLOOR,\n    PA_RAG_TOP_K_DOCS,\n    PA_RERANK_DEVICE,\n    PA_RERANK_MODEL,\n)\nfrom config import (\n    POLICY_ID as ACTIVE_POLICY_ID,\n)\nfrom policy_constants import (  # noqa: E402\n    AMBIGUOUS_APPEAL_TERMS,\n    BMI_OBESE_THRESHOLD,\n    BMI_OVERWEIGHT_THRESHOLD,\n)\nfrom policy_engine import _parse_bmi, evaluate_eligibility  # noqa: E402\nfrom policy_snapshot import SNAPSHOT_PATH, load_policy_snapshot  # noqa: E402\nfrom policy_utils import format_criteria_list, normalize\nfrom schema_validation import validate_policy_snapshot  # noqa: E402\n\n",
+          "end_location": {
+            "column": 1,
+            "row": 93
+          },
+          "location": {
+            "column": 1,
+            "row": 59
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 1,
+      "row": 59
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 59,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 35,
+      "row": 59
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from policy_utils import format_criteria_list",
+          "end_location": {
+            "column": 57,
+            "row": 59
+          },
+          "location": {
+            "column": 1,
+            "row": 59
+          }
+        }
+      ],
+      "message": "Remove unused import: `policy_utils.normalize`"
+    },
+    "location": {
+      "column": 26,
+      "row": 59
+    },
+    "message": "`policy_utils.normalize` imported but unused",
+    "noqa_row": 59,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 2,
+      "row": 83
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 81
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 81,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 53,
+      "row": 106
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 106
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 106,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 42,
+      "row": 376
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 42,
+            "row": 376
+          },
+          "location": {
+            "column": 29,
+            "row": 376
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 29,
+      "row": 376
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 376,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 34,
+      "row": 377
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 34,
+            "row": 377
+          },
+          "location": {
+            "column": 21,
+            "row": 377
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 21,
+      "row": 377
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 377,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 34,
+      "row": 378
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 34,
+            "row": 378
+          },
+          "location": {
+            "column": 21,
+            "row": 378
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 21,
+      "row": 378
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 378,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 46,
+      "row": 379
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 46,
+            "row": 379
+          },
+          "location": {
+            "column": 33,
+            "row": 379
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 33,
+      "row": 379
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 379,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 34,
+      "row": 380
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 34,
+            "row": 380
+          },
+          "location": {
+            "column": 21,
+            "row": 380
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 21,
+      "row": 380
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 380,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 34,
+      "row": 381
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 34,
+            "row": 381
+          },
+          "location": {
+            "column": 21,
+            "row": 381
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 21,
+      "row": 381
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 381,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 46,
+      "row": 382
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 46,
+            "row": 382
+          },
+          "location": {
+            "column": 33,
+            "row": 382
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 33,
+      "row": 382
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 382,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 33,
+      "row": 1237
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "float | None",
+          "end_location": {
+            "column": 33,
+            "row": 1237
+          },
+          "location": {
+            "column": 18,
+            "row": 1237
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 18,
+      "row": 1237
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 1237,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 69,
+      "row": 1262
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "dict | None",
+          "end_location": {
+            "column": 69,
+            "row": 1262
+          },
+          "location": {
+            "column": 55,
+            "row": 1262
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 55,
+      "row": 1262
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 1262,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 16,
+      "row": 1420
+    },
+    "filename": "/root/projects/PriorAuth/agent_logic.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 19,
+            "row": 1420
+          },
+          "location": {
+            "column": 5,
+            "row": 1420
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `safety_flag`"
+    },
+    "location": {
+      "column": 5,
+      "row": 1420
+    },
+    "message": "Local variable `safety_flag` is assigned to but never used",
+    "noqa_row": 1420,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 24,
+      "row": 40
+    },
+    "filename": "/root/projects/PriorAuth/audit_llm_output.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 41
+          },
+          "location": {
+            "column": 1,
+            "row": 40
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `denied_synonyms`"
+    },
+    "location": {
+      "column": 9,
+      "row": 40
+    },
+    "message": "Local variable `denied_synonyms` is assigned to but never used",
+    "noqa_row": 40,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 39,
+      "row": 6
+    },
+    "filename": "/root/projects/PriorAuth/audit_logger.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "import hashlib\nimport json\nimport os\nimport threading\nfrom datetime import datetime, timezone\nfrom typing import Any, Dict, Optional\n\n\n",
+          "end_location": {
+            "column": 1,
+            "row": 9
+          },
+          "location": {
+            "column": 1,
+            "row": 1
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 1,
+      "row": 1
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 17,
+      "row": 1
+    },
+    "filename": "/root/projects/PriorAuth/audit_logger.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 2
+          },
+          "location": {
+            "column": 1,
+            "row": 1
+          }
+        }
+      ],
+      "message": "Remove unused import: `threading`"
+    },
+    "location": {
+      "column": 8,
+      "row": 1
+    },
+    "message": "`threading` imported but unused",
+    "noqa_row": 1,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "UP035",
+    "end_location": {
+      "column": 39,
+      "row": 6
+    },
+    "filename": "/root/projects/PriorAuth/audit_logger.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 6
+    },
+    "message": "`typing.Dict` is deprecated, use `dict` instead",
+    "noqa_row": 6,
+    "url": "https://docs.astral.sh/ruff/rules/deprecated-import"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 5,
+      "row": 14
+    },
+    "filename": "/root/projects/PriorAuth/audit_logger.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 5,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 14
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 14
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 16,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 45,
+      "row": 20
+    },
+    "filename": "/root/projects/PriorAuth/audit_logger.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 45,
+            "row": 20
+          },
+          "location": {
+            "column": 32,
+            "row": 20
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 32,
+      "row": 20
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 20,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP008",
+    "end_location": {
+      "column": 52,
+      "row": 22
+    },
+    "filename": "/root/projects/PriorAuth/audit_logger.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 51,
+            "row": 22
+          },
+          "location": {
+            "column": 35,
+            "row": 22
+          }
+        }
+      ],
+      "message": "Remove `super()` parameters"
+    },
+    "location": {
+      "column": 34,
+      "row": 22
+    },
+    "message": "Use `super()` instead of `super(__class__, self)`",
+    "noqa_row": 22,
+    "url": "https://docs.astral.sh/ruff/rules/super-call-with-parameters"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 47,
+      "row": 26
+    },
+    "filename": "/root/projects/PriorAuth/audit_logger.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 47,
+            "row": 26
+          },
+          "location": {
+            "column": 34,
+            "row": 26
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 34,
+      "row": 26
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 26,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP006",
+    "end_location": {
+      "column": 55,
+      "row": 70
+    },
+    "filename": "/root/projects/PriorAuth/audit_logger.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "dict",
+          "end_location": {
+            "column": 55,
+            "row": 70
+          },
+          "location": {
+            "column": 51,
+            "row": 70
+          }
+        }
+      ],
+      "message": "Replace with `dict`"
+    },
+    "location": {
+      "column": 51,
+      "row": 70
+    },
+    "message": "Use `dict` instead of `Dict` for type annotation",
+    "noqa_row": 70,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep585-annotation"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 115,
+      "row": 70
+    },
+    "filename": "/root/projects/PriorAuth/audit_logger.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 115,
+            "row": 70
+          },
+          "location": {
+            "column": 102,
+            "row": 70
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 102,
+      "row": 70
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 70,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP017",
+    "end_location": {
+      "column": 46,
+      "row": 75
+    },
+    "filename": "/root/projects/PriorAuth/audit_logger.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from datetime import datetime, timezone, UTC",
+          "end_location": {
+            "column": 40,
+            "row": 2
+          },
+          "location": {
+            "column": 1,
+            "row": 2
+          }
+        },
+        {
+          "content": "UTC",
+          "end_location": {
+            "column": 46,
+            "row": 75
+          },
+          "location": {
+            "column": 34,
+            "row": 75
+          }
+        }
+      ],
+      "message": "Convert to `datetime.UTC` alias"
+    },
+    "location": {
+      "column": 34,
+      "row": 75
+    },
+    "message": "Use `datetime.UTC` alias",
+    "noqa_row": 75,
+    "url": "https://docs.astral.sh/ruff/rules/datetime-timezone-utc"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 55,
+      "row": 65
+    },
+    "filename": "/root/projects/PriorAuth/batch_runner.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from __future__ import annotations\n\nimport json\nimport logging\nimport math\nimport os\nimport shutil\nimport time\nfrom datetime import datetime, timezone\nfrom pathlib import Path\nfrom typing import Any\n\nimport pandas as pd\n\nfrom audit_logger import get_audit_logger\n\n# Enforce offline mode immediately if configured\nfrom offline_mode import enforce_offline\nfrom policy_engine import evaluate_eligibility\nfrom policy_snapshot import POLICY_ID, SNAPSHOT_PATH, load_policy_snapshot\nfrom policy_utils import format_criteria_list\nfrom schema_validation import validate_policy_snapshot\n\n",
+          "end_location": {
+            "column": 1,
+            "row": 67
+          },
+          "location": {
+            "column": 1,
+            "row": 42
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 1,
+      "row": 42
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 42,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "F811",
+    "end_location": {
+      "column": 41,
+      "row": 59
+    },
+    "filename": "/root/projects/PriorAuth/batch_runner.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 60
+          },
+          "location": {
+            "column": 1,
+            "row": 59
+          }
+        }
+      ],
+      "message": "Remove definition: `enforce_offline`"
+    },
+    "location": {
+      "column": 26,
+      "row": 59
+    },
+    "message": "Redefinition of unused `enforce_offline` from line 56",
+    "noqa_row": 59,
+    "url": "https://docs.astral.sh/ruff/rules/redefined-while-unused"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 41,
+      "row": 59
+    },
+    "filename": "/root/projects/PriorAuth/batch_runner.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 60
+          },
+          "location": {
+            "column": 1,
+            "row": 59
+          }
+        }
+      ],
+      "message": "Remove unused import: `offline_mode.enforce_offline`"
+    },
+    "location": {
+      "column": 26,
+      "row": 59
+    },
+    "message": "`offline_mode.enforce_offline` imported but unused",
+    "noqa_row": 59,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 2,
+      "row": 79
+    },
+    "filename": "/root/projects/PriorAuth/batch_runner.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 69
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 69,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "UP017",
+    "end_location": {
+      "column": 37,
+      "row": 106
+    },
+    "filename": "/root/projects/PriorAuth/batch_runner.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from datetime import datetime, timezone, UTC",
+          "end_location": {
+            "column": 40,
+            "row": 50
+          },
+          "location": {
+            "column": 1,
+            "row": 50
+          }
+        },
+        {
+          "content": "UTC",
+          "end_location": {
+            "column": 37,
+            "row": 106
+          },
+          "location": {
+            "column": 25,
+            "row": 106
+          }
+        }
+      ],
+      "message": "Convert to `datetime.UTC` alias"
+    },
+    "location": {
+      "column": 25,
+      "row": 106
+    },
+    "message": "Use `datetime.UTC` alias",
+    "noqa_row": 106,
+    "url": "https://docs.astral.sh/ruff/rules/datetime-timezone-utc"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 5,
+      "row": 326
+    },
+    "filename": "/root/projects/PriorAuth/batch_runner.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 5,
+            "row": 326
+          },
+          "location": {
+            "column": 1,
+            "row": 326
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 326
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 326,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 13,
+      "row": 338
+    },
+    "filename": "/root/projects/PriorAuth/batch_runner.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 13,
+            "row": 338
+          },
+          "location": {
+            "column": 1,
+            "row": 338
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 338
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 338,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "E701",
+    "end_location": {
+      "column": 21,
+      "row": 229
+    },
+    "filename": "/root/projects/PriorAuth/benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 20,
+      "row": 229
+    },
+    "message": "Multiple statements on one line (colon)",
+    "noqa_row": 229,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-statements-on-one-line-colon"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 16,
+      "row": 45
+    },
+    "filename": "/root/projects/PriorAuth/check_results.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 19,
+            "row": 45
+          },
+          "location": {
+            "column": 9,
+            "row": 45
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `verdict`"
+    },
+    "location": {
+      "column": 9,
+      "row": 45
+    },
+    "message": "Local variable `verdict` is assigned to but never used",
+    "noqa_row": 45,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 34,
+      "row": 49
+    },
+    "filename": "/root/projects/PriorAuth/context_rules.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 49
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 49,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 5,
+      "row": 60
+    },
+    "filename": "/root/projects/PriorAuth/context_rules.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 5,
+            "row": 60
+          },
+          "location": {
+            "column": 1,
+            "row": 60
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 60
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 67,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 9,
+      "row": 64
+    },
+    "filename": "/root/projects/PriorAuth/context_rules.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 9,
+            "row": 64
+          },
+          "location": {
+            "column": 1,
+            "row": 64
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 64
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 67,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 5,
+      "row": 195
+    },
+    "filename": "/root/projects/PriorAuth/etl_pipeline.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 5,
+            "row": 195
+          },
+          "location": {
+            "column": 1,
+            "row": 195
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 195
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 197,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "E712",
+    "end_location": {
+      "column": 73,
+      "row": 447
+    },
+    "filename": "/root/projects/PriorAuth/governance_audit.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "df_merged[\"ground_truth_eligible\"]",
+          "end_location": {
+            "column": 73,
+            "row": 447
+          },
+          "location": {
+            "column": 31,
+            "row": 447
+          }
+        }
+      ],
+      "message": "Replace with `df_merged[\"ground_truth_eligible\"]`"
+    },
+    "location": {
+      "column": 31,
+      "row": 447
+    },
+    "message": "Avoid equality comparisons to `True`; use `df_merged[\"ground_truth_eligible\"]:` for truth checks",
+    "noqa_row": 447,
+    "url": "https://docs.astral.sh/ruff/rules/true-false-comparison"
+  },
+  {
+    "cell": null,
+    "code": "E712",
+    "end_location": {
+      "column": 78,
+      "row": 448
+    },
+    "filename": "/root/projects/PriorAuth/governance_audit.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "df_merged[\"ground_truth_eligible\"]",
+          "end_location": {
+            "column": 78,
+            "row": 448
+          },
+          "location": {
+            "column": 36,
+            "row": 448
+          }
+        }
+      ],
+      "message": "Replace with `df_merged[\"ground_truth_eligible\"]`"
+    },
+    "location": {
+      "column": 36,
+      "row": 448
+    },
+    "message": "Avoid equality comparisons to `True`; use `df_merged[\"ground_truth_eligible\"]:` for truth checks",
+    "noqa_row": 448,
+    "url": "https://docs.astral.sh/ruff/rules/true-false-comparison"
+  },
+  {
+    "cell": null,
+    "code": "E712",
+    "end_location": {
+      "column": 66,
+      "row": 455
+    },
+    "filename": "/root/projects/PriorAuth/governance_audit.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "df_group[\"ground_truth_eligible\"]",
+          "end_location": {
+            "column": 66,
+            "row": 455
+          },
+          "location": {
+            "column": 25,
+            "row": 455
+          }
+        }
+      ],
+      "message": "Replace with `df_group[\"ground_truth_eligible\"]`"
+    },
+    "location": {
+      "column": 25,
+      "row": 455
+    },
+    "message": "Avoid equality comparisons to `True`; use `df_group[\"ground_truth_eligible\"]:` for truth checks",
+    "noqa_row": 455,
+    "url": "https://docs.astral.sh/ruff/rules/true-false-comparison"
+  },
+  {
+    "cell": null,
+    "code": "C416",
+    "end_location": {
+      "column": 62,
+      "row": 503
+    },
+    "filename": "/root/projects/PriorAuth/governance_audit.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "list(df_eval[attr].dropna().unique())",
+          "end_location": {
+            "column": 62,
+            "row": 503
+          },
+          "location": {
+            "column": 18,
+            "row": 503
+          }
+        }
+      ],
+      "message": "Rewrite using `list()`"
+    },
+    "location": {
+      "column": 18,
+      "row": 503
+    },
+    "message": "Unnecessary list comprehension (rewrite using `list()`)",
+    "noqa_row": 503,
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-comprehension"
+  },
+  {
+    "cell": null,
+    "code": "E712",
+    "end_location": {
+      "column": 68,
+      "row": 522
+    },
+    "filename": "/root/projects/PriorAuth/governance_audit.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "df_g[\"ground_truth_eligible\"]",
+          "end_location": {
+            "column": 68,
+            "row": 522
+          },
+          "location": {
+            "column": 31,
+            "row": 522
+          }
+        }
+      ],
+      "message": "Replace with `df_g[\"ground_truth_eligible\"]`"
+    },
+    "location": {
+      "column": 31,
+      "row": 522
+    },
+    "message": "Avoid equality comparisons to `True`; use `df_g[\"ground_truth_eligible\"]:` for truth checks",
+    "noqa_row": 522,
+    "url": "https://docs.astral.sh/ruff/rules/true-false-comparison"
+  },
+  {
+    "cell": null,
+    "code": "E712",
+    "end_location": {
+      "column": 71,
+      "row": 523
+    },
+    "filename": "/root/projects/PriorAuth/governance_audit.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "df_rest[\"ground_truth_eligible\"]",
+          "end_location": {
+            "column": 71,
+            "row": 523
+          },
+          "location": {
+            "column": 31,
+            "row": 523
+          }
+        }
+      ],
+      "message": "Replace with `df_rest[\"ground_truth_eligible\"]`"
+    },
+    "location": {
+      "column": 31,
+      "row": 523
+    },
+    "message": "Avoid equality comparisons to `True`; use `df_rest[\"ground_truth_eligible\"]:` for truth checks",
+    "noqa_row": 523,
+    "url": "https://docs.astral.sh/ruff/rules/true-false-comparison"
+  },
+  {
+    "cell": null,
+    "code": "E712",
+    "end_location": {
+      "column": 70,
+      "row": 597
+    },
+    "filename": "/root/projects/PriorAuth/governance_audit.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "df_eval[\"ground_truth_eligible\"]",
+          "end_location": {
+            "column": 70,
+            "row": 597
+          },
+          "location": {
+            "column": 30,
+            "row": 597
+          }
+        }
+      ],
+      "message": "Replace with `df_eval[\"ground_truth_eligible\"]`"
+    },
+    "location": {
+      "column": 30,
+      "row": 597
+    },
+    "message": "Avoid equality comparisons to `True`; use `df_eval[\"ground_truth_eligible\"]:` for truth checks",
+    "noqa_row": 597,
+    "url": "https://docs.astral.sh/ruff/rules/true-false-comparison"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 42,
+      "row": 52
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 52
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 52,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 43,
+      "row": 53
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 53
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 53,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 63,
+      "row": 54
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 54
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 54,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 22,
+      "row": 110
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": null,
+    "location": {
+      "column": 19,
+      "row": 110
+    },
+    "message": "Undefined name `Any`",
+    "noqa_row": 110,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 35,
+      "row": 110
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": null,
+    "location": {
+      "column": 32,
+      "row": 110
+    },
+    "message": "Undefined name `Any`",
+    "noqa_row": 110,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 26,
+      "row": 117
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": null,
+    "location": {
+      "column": 23,
+      "row": 117
+    },
+    "message": "Undefined name `Any`",
+    "noqa_row": 117,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 28,
+      "row": 124
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": null,
+    "location": {
+      "column": 25,
+      "row": 124
+    },
+    "message": "Undefined name `Any`",
+    "noqa_row": 124,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 11,
+      "row": 258
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 14,
+            "row": 258
+          },
+          "location": {
+            "column": 5,
+            "row": 258
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `action`"
+    },
+    "location": {
+      "column": 5,
+      "row": 258
+    },
+    "message": "Local variable `action` is assigned to but never used",
+    "noqa_row": 258,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "W291",
+    "end_location": {
+      "column": 75,
+      "row": 276
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 75,
+            "row": 276
+          },
+          "location": {
+            "column": 74,
+            "row": 276
+          }
+        }
+      ],
+      "message": "Remove trailing whitespace"
+    },
+    "location": {
+      "column": 74,
+      "row": 276
+    },
+    "message": "Trailing whitespace",
+    "noqa_row": 287,
+    "url": "https://docs.astral.sh/ruff/rules/trailing-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 5,
+      "row": 278
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 5,
+            "row": 278
+          },
+          "location": {
+            "column": 1,
+            "row": 278
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 278
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 287,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W291",
+    "end_location": {
+      "column": 77,
+      "row": 280
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 77,
+            "row": 280
+          },
+          "location": {
+            "column": 76,
+            "row": 280
+          }
+        }
+      ],
+      "message": "Remove trailing whitespace"
+    },
+    "location": {
+      "column": 76,
+      "row": 280
+    },
+    "message": "Trailing whitespace",
+    "noqa_row": 287,
+    "url": "https://docs.astral.sh/ruff/rules/trailing-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 5,
+      "row": 283
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 5,
+            "row": 283
+          },
+          "location": {
+            "column": 1,
+            "row": 283
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 283
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 287,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W291",
+    "end_location": {
+      "column": 77,
+      "row": 284
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 77,
+            "row": 284
+          },
+          "location": {
+            "column": 76,
+            "row": 284
+          }
+        }
+      ],
+      "message": "Remove trailing whitespace"
+    },
+    "location": {
+      "column": 76,
+      "row": 284
+    },
+    "message": "Trailing whitespace",
+    "noqa_row": 287,
+    "url": "https://docs.astral.sh/ruff/rules/trailing-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W291",
+    "end_location": {
+      "column": 72,
+      "row": 285
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 72,
+            "row": 285
+          },
+          "location": {
+            "column": 71,
+            "row": 285
+          }
+        }
+      ],
+      "message": "Remove trailing whitespace"
+    },
+    "location": {
+      "column": 71,
+      "row": 285
+    },
+    "message": "Trailing whitespace",
+    "noqa_row": 287,
+    "url": "https://docs.astral.sh/ruff/rules/trailing-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 5,
+      "row": 305
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 5,
+            "row": 305
+          },
+          "location": {
+            "column": 1,
+            "row": 305
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 305
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 308,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W291",
+    "end_location": {
+      "column": 68,
+      "row": 306
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 68,
+            "row": 306
+          },
+          "location": {
+            "column": 67,
+            "row": 306
+          }
+        }
+      ],
+      "message": "Remove trailing whitespace"
+    },
+    "location": {
+      "column": 67,
+      "row": 306
+    },
+    "message": "Trailing whitespace",
+    "noqa_row": 308,
+    "url": "https://docs.astral.sh/ruff/rules/trailing-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 29,
+      "row": 476
+    },
+    "filename": "/root/projects/PriorAuth/policy_engine.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 477
+          },
+          "location": {
+            "column": 1,
+            "row": 476
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `clinical_verdict`"
+    },
+    "location": {
+      "column": 13,
+      "row": 476
+    },
+    "message": "Local variable `clinical_verdict` is assigned to but never used",
+    "noqa_row": 476,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 42,
+      "row": 307
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 41,
+      "row": 307
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 307,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 42,
+      "row": 308
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 41,
+      "row": 308
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 308,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 44,
+      "row": 318
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 43,
+      "row": 318
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 318,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 45,
+      "row": 319
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 44,
+      "row": 319
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 319,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 45,
+      "row": 320
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 44,
+      "row": 320
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 320,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 48,
+      "row": 321
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 47,
+      "row": 321
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 321,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 52,
+      "row": 322
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 51,
+      "row": 322
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 322,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 17,
+      "row": 336
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 336
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 336,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 17,
+      "row": 337
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 337
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 337,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 17,
+      "row": 342
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 342
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 342,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 17,
+      "row": 343
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 343
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 343,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 17,
+      "row": 348
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 348
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 348,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 17,
+      "row": 349
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 349
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 349,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 17,
+      "row": 356
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 356
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 356,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 17,
+      "row": 357
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 357
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 357,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 17,
+      "row": 362
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 362
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 362,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 17,
+      "row": 363
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 363
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 363,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 77,
+      "row": 366
+    },
+    "filename": "/root/projects/PriorAuth/policy_snapshot.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 366
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 366,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 29,
+      "row": 153
+    },
+    "filename": "/root/projects/PriorAuth/policy_utils.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "float | None",
+          "end_location": {
+            "column": 29,
+            "row": 153
+          },
+          "location": {
+            "column": 14,
+            "row": 153
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 14,
+      "row": 153
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 153,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 30,
+      "row": 154
+    },
+    "filename": "/root/projects/PriorAuth/policy_utils.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 30,
+            "row": 154
+          },
+          "location": {
+            "column": 17,
+            "row": 154
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 17,
+      "row": 154
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 154,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 29,
+      "row": 155
+    },
+    "filename": "/root/projects/PriorAuth/policy_utils.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 29,
+            "row": 155
+          },
+          "location": {
+            "column": 16,
+            "row": 155
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 16,
+      "row": 155
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 155,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 29,
+      "row": 156
+    },
+    "filename": "/root/projects/PriorAuth/policy_utils.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 29,
+            "row": 156
+          },
+          "location": {
+            "column": 16,
+            "row": 156
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 16,
+      "row": 156
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 156,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 32,
+      "row": 157
+    },
+    "filename": "/root/projects/PriorAuth/policy_utils.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 32,
+            "row": 157
+          },
+          "location": {
+            "column": 19,
+            "row": 157
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 19,
+      "row": 157
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 157,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 34,
+      "row": 158
+    },
+    "filename": "/root/projects/PriorAuth/policy_utils.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 34,
+            "row": 158
+          },
+          "location": {
+            "column": 21,
+            "row": 158
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 21,
+      "row": 158
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 158,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 34,
+      "row": 159
+    },
+    "filename": "/root/projects/PriorAuth/policy_utils.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 34,
+            "row": 159
+          },
+          "location": {
+            "column": 21,
+            "row": 159
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 21,
+      "row": 159
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 159,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 57,
+      "row": 12
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "import re\nfrom typing import Any, Dict, List, Optional, Set, Tuple\n\n",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 11
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 1,
+      "row": 11
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 11,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "UP035",
+    "end_location": {
+      "column": 57,
+      "row": 12
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 12
+    },
+    "message": "`typing.List` is deprecated, use `list` instead",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/deprecated-import"
+  },
+  {
+    "cell": null,
+    "code": "UP035",
+    "end_location": {
+      "column": 57,
+      "row": 12
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 12
+    },
+    "message": "`typing.Set` is deprecated, use `set` instead",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/deprecated-import"
+  },
+  {
+    "cell": null,
+    "code": "UP035",
+    "end_location": {
+      "column": 57,
+      "row": 12
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 12
+    },
+    "message": "`typing.Tuple` is deprecated, use `tuple` instead",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/deprecated-import"
+  },
+  {
+    "cell": null,
+    "code": "UP035",
+    "end_location": {
+      "column": 57,
+      "row": 12
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 12
+    },
+    "message": "`typing.Dict` is deprecated, use `dict` instead",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/deprecated-import"
+  },
+  {
+    "cell": null,
+    "code": "UP006",
+    "end_location": {
+      "column": 28,
+      "row": 27
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "list",
+          "end_location": {
+            "column": 28,
+            "row": 27
+          },
+          "location": {
+            "column": 24,
+            "row": 27
+          }
+        }
+      ],
+      "message": "Replace with `list`"
+    },
+    "location": {
+      "column": 24,
+      "row": 27
+    },
+    "message": "Use `list` instead of `List` for type annotation",
+    "noqa_row": 27,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep585-annotation"
+  },
+  {
+    "cell": null,
+    "code": "UP006",
+    "end_location": {
+      "column": 28,
+      "row": 28
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "set",
+          "end_location": {
+            "column": 28,
+            "row": 28
+          },
+          "location": {
+            "column": 25,
+            "row": 28
+          }
+        }
+      ],
+      "message": "Replace with `set`"
+    },
+    "location": {
+      "column": 25,
+      "row": 28
+    },
+    "message": "Use `set` instead of `Set` for type annotation",
+    "noqa_row": 28,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep585-annotation"
+  },
+  {
+    "cell": null,
+    "code": "UP006",
+    "end_location": {
+      "column": 28,
+      "row": 29
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "set",
+          "end_location": {
+            "column": 28,
+            "row": 29
+          },
+          "location": {
+            "column": 25,
+            "row": 29
+          }
+        }
+      ],
+      "message": "Replace with `set`"
+    },
+    "location": {
+      "column": 25,
+      "row": 29
+    },
+    "message": "Use `set` instead of `Set` for type annotation",
+    "noqa_row": 29,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep585-annotation"
+  },
+  {
+    "cell": null,
+    "code": "UP006",
+    "end_location": {
+      "column": 37,
+      "row": 30
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "list",
+          "end_location": {
+            "column": 37,
+            "row": 30
+          },
+          "location": {
+            "column": 33,
+            "row": 30
+          }
+        }
+      ],
+      "message": "Replace with `list`"
+    },
+    "location": {
+      "column": 33,
+      "row": 30
+    },
+    "message": "Use `list` instead of `List` for type annotation",
+    "noqa_row": 30,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep585-annotation"
+  },
+  {
+    "cell": null,
+    "code": "UP006",
+    "end_location": {
+      "column": 11,
+      "row": 31
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "tuple",
+          "end_location": {
+            "column": 11,
+            "row": 31
+          },
+          "location": {
+            "column": 6,
+            "row": 31
+          }
+        }
+      ],
+      "message": "Replace with `tuple`"
+    },
+    "location": {
+      "column": 6,
+      "row": 31
+    },
+    "message": "Use `tuple` instead of `Tuple` for type annotation",
+    "noqa_row": 31,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep585-annotation"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 31,
+      "row": 31
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "str | None",
+          "end_location": {
+            "column": 31,
+            "row": 31
+          },
+          "location": {
+            "column": 18,
+            "row": 31
+          }
+        }
+      ],
+      "message": "Convert to `X | None`"
+    },
+    "location": {
+      "column": 18,
+      "row": 31
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 31,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP006",
+    "end_location": {
+      "column": 37,
+      "row": 31
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "dict",
+          "end_location": {
+            "column": 37,
+            "row": 31
+          },
+          "location": {
+            "column": 33,
+            "row": 31
+          }
+        }
+      ],
+      "message": "Replace with `dict`"
+    },
+    "location": {
+      "column": 33,
+      "row": 31
+    },
+    "message": "Use `dict` instead of `Dict` for type annotation",
+    "noqa_row": 31,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep585-annotation"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 5,
+      "row": 34
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 5,
+            "row": 34
+          },
+          "location": {
+            "column": 1,
+            "row": 34
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 34
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 44,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W291",
+    "end_location": {
+      "column": 101,
+      "row": 36
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 101,
+            "row": 36
+          },
+          "location": {
+            "column": 100,
+            "row": 36
+          }
+        }
+      ],
+      "message": "Remove trailing whitespace"
+    },
+    "location": {
+      "column": 100,
+      "row": 36
+    },
+    "message": "Trailing whitespace",
+    "noqa_row": 44,
+    "url": "https://docs.astral.sh/ruff/rules/trailing-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 9,
+      "row": 41
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 9,
+            "row": 41
+          },
+          "location": {
+            "column": 1,
+            "row": 41
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 41
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 44,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "E701",
+    "end_location": {
+      "column": 15,
+      "row": 66
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": null,
+    "location": {
+      "column": 14,
+      "row": 66
+    },
+    "message": "Multiple statements on one line (colon)",
+    "noqa_row": 66,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-statements-on-one-line-colon"
+  },
+  {
+    "cell": null,
+    "code": "E701",
+    "end_location": {
+      "column": 14,
+      "row": 67
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 67
+    },
+    "message": "Multiple statements on one line (colon)",
+    "noqa_row": 67,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-statements-on-one-line-colon"
+  },
+  {
+    "cell": null,
+    "code": "E701",
+    "end_location": {
+      "column": 40,
+      "row": 73
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": null,
+    "location": {
+      "column": 39,
+      "row": 73
+    },
+    "message": "Multiple statements on one line (colon)",
+    "noqa_row": 73,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-statements-on-one-line-colon"
+  },
+  {
+    "cell": null,
+    "code": "E701",
+    "end_location": {
+      "column": 40,
+      "row": 74
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": null,
+    "location": {
+      "column": 39,
+      "row": 74
+    },
+    "message": "Multiple statements on one line (colon)",
+    "noqa_row": 74,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-statements-on-one-line-colon"
+  },
+  {
+    "cell": null,
+    "code": "E701",
+    "end_location": {
+      "column": 21,
+      "row": 99
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": null,
+    "location": {
+      "column": 20,
+      "row": 99
+    },
+    "message": "Multiple statements on one line (colon)",
+    "noqa_row": 99,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-statements-on-one-line-colon"
+  },
+  {
+    "cell": null,
+    "code": "E701",
+    "end_location": {
+      "column": 21,
+      "row": 131
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": null,
+    "location": {
+      "column": 20,
+      "row": 131
+    },
+    "message": "Multiple statements on one line (colon)",
+    "noqa_row": 131,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-statements-on-one-line-colon"
+  },
+  {
+    "cell": null,
+    "code": "E701",
+    "end_location": {
+      "column": 20,
+      "row": 132
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": null,
+    "location": {
+      "column": 19,
+      "row": 132
+    },
+    "message": "Multiple statements on one line (colon)",
+    "noqa_row": 132,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-statements-on-one-line-colon"
+  },
+  {
+    "cell": null,
+    "code": "E701",
+    "end_location": {
+      "column": 20,
+      "row": 133
+    },
+    "filename": "/root/projects/PriorAuth/rules/coding_integrity_rules.py",
+    "fix": null,
+    "location": {
+      "column": 19,
+      "row": 133
+    },
+    "message": "Multiple statements on one line (colon)",
+    "noqa_row": 133,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-statements-on-one-line-colon"
+  },
+  {
+    "cell": null,
+    "code": "B007",
+    "end_location": {
+      "column": 12,
+      "row": 130
+    },
+    "filename": "/root/projects/PriorAuth/setup_rag.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "_key",
+          "end_location": {
+            "column": 12,
+            "row": 130
+          },
+          "location": {
+            "column": 9,
+            "row": 130
+          }
+        }
+      ],
+      "message": "Rename unused `key` to `_key`"
+    },
+    "location": {
+      "column": 9,
+      "row": 130
+    },
+    "message": "Loop control variable `key` not used within loop body",
+    "noqa_row": 130,
+    "url": "https://docs.astral.sh/ruff/rules/unused-loop-control-variable"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 13,
+      "row": 320
+    },
+    "filename": "/root/projects/PriorAuth/setup_rag.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 16,
+            "row": 320
+          },
+          "location": {
+            "column": 5,
+            "row": 320
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `snapshot`"
+    },
+    "location": {
+      "column": 5,
+      "row": 320
+    },
+    "message": "Local variable `snapshot` is assigned to but never used",
+    "noqa_row": 320,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "W291",
+    "end_location": {
+      "column": 80,
+      "row": 10
+    },
+    "filename": "/root/projects/PriorAuth/tests/test_audit_bug.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 80,
+            "row": 10
+          },
+          "location": {
+            "column": 79,
+            "row": 10
+          }
+        }
+      ],
+      "message": "Remove trailing whitespace"
+    },
+    "location": {
+      "column": 79,
+      "row": 10
+    },
+    "message": "Trailing whitespace",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/trailing-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 15,
+      "row": 33
+    },
+    "filename": "/root/projects/PriorAuth/tests/test_audit_fix.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 18,
+            "row": 33
+          },
+          "location": {
+            "column": 9,
+            "row": 33
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `result`"
+    },
+    "location": {
+      "column": 9,
+      "row": 33
+    },
+    "message": "Local variable `result` is assigned to but never used",
+    "noqa_row": 33,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 19,
+      "row": 35
+    },
+    "filename": "/root/projects/PriorAuth/tests/test_repo_audit.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 22,
+            "row": 35
+          },
+          "location": {
+            "column": 9,
+            "row": 35
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `py_imports`"
+    },
+    "location": {
+      "column": 9,
+      "row": 35
+    },
+    "message": "Local variable `py_imports` is assigned to but never used",
+    "noqa_row": 35,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 15,
+      "row": 24
+    },
+    "filename": "/root/projects/PriorAuth/tests/test_schema_validation.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 24
+    },
+    "message": "Undefined name `pytest`",
+    "noqa_row": 24,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "E741",
+    "end_location": {
+      "column": 33,
+      "row": 29
+    },
+    "filename": "/root/projects/PriorAuth/tools/repo_audit.py",
+    "fix": null,
+    "location": {
+      "column": 32,
+      "row": 29
+    },
+    "message": "Ambiguous variable name: `l`",
+    "noqa_row": 29,
+    "url": "https://docs.astral.sh/ruff/rules/ambiguous-variable-name"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 55,
+      "row": 32
+    },
+    "filename": "/root/projects/PriorAuth/tools/repo_audit.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 32
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 32,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 15,
+      "row": 116
+    },
+    "filename": "/root/projects/PriorAuth/tools/repo_audit.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 18,
+            "row": 116
+          },
+          "location": {
+            "column": 5,
+            "row": 116
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `py_imports`"
+    },
+    "location": {
+      "column": 5,
+      "row": 116
+    },
+    "message": "Local variable `py_imports` is assigned to but never used",
+    "noqa_row": 116,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  }
+]

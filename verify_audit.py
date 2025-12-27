@@ -1,7 +1,7 @@
-import json
 import hashlib
-import sys
+import json
 import os
+import sys
 
 AUDIT_LOG_FILE = "audit_log.jsonl"
 
@@ -20,7 +20,7 @@ def verify_log(filepath):
     valid_count = 0
     errors = []
 
-    with open(filepath, 'r') as f:
+    with open(filepath) as f:
         for line in f:
             line_num += 1
             line = line.strip()
@@ -43,22 +43,22 @@ def verify_log(filepath):
             if entry['prev_hash'] != prev_hash:
                 errors.append(f"Line {line_num}: BROKEN CHAIN. 'prev_hash' does not match previous entry hash.\n  Expected: {prev_hash}\n  Found:    {entry['prev_hash']}")
                 # Cannot continue chain verification meaningfully if link is broken
-                break 
+                break
 
             # Re-calculate hash
             # Need to ensure details serialization matches exactly how it was logged (audit_logger uses sort_keys=True)
             details_str = json.dumps(entry['details'], sort_keys=True)
             calculated_hash = calculate_hash(
-                entry['prev_hash'], 
-                entry['timestamp'], 
-                entry['event_type'], 
+                entry['prev_hash'],
+                entry['timestamp'],
+                entry['event_type'],
                 details_str
             )
 
             if calculated_hash != entry['hash']:
                 errors.append(f"Line {line_num}: INVALID SIGNATURE.\n  Calculated: {calculated_hash}\n  Stored:     {entry['hash']}")
                 break
-            
+
             # Advancing chain
             prev_hash = entry['hash']
             valid_count += 1

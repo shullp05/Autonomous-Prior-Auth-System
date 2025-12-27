@@ -2,6 +2,30 @@
 
 This React/Vite app renders the outputs produced by `batch_runner.py`. After each batch run, the backend automatically mirrors `dashboard_data.json`, `governance_report.json`, and `.last_model_trace.json` into this folder’s `public/` directory so the UI always reflects the latest snapshot—no manual `cp` required.
 
+## Metric Definitions
+
+### Status Categories
+- **Meets Criteria**: Case met all clinical requirements and was APPROVED.
+- **Auto-Resolved**: Sum of all finalized decisions (APPROVED + DENIED + CDI_REQUIRED). These cases did not require human manual review.
+- **Needs Review**: Sum of (Needs Clarification + Missing Required Data). These cases require human intervention.
+- **Needs Clarification**: LLM found ambiguous medical terms that require human judgment (e.g., "Elevated BP" without context).
+- **Missing Required Data**: Case lacked critical fields (BMI, Height/Weight) needed for decision.
+
+### Hours Saved Calculation
+- **Default Assumption:** 25 minutes per complex PA (Based on MGMA/AMA benchmarks).
+- **Formula:** `(Total Screened − Needs Review) × 25 min / 60`
+- **Sensitivity Range:** Displays estimates for 15 min (optimistic) to 45 min (conservative) per case.
+- **Note on CDI:** Claims requiring Clinical Documentation Improvement (CDI) are excluded from "Hours Saved" calculations as they effectively pause the workflow for physician query.
+
+### Revenue Metrics
+- **Revenue Secured:** Total value of APPROVED claims.
+- **Cost Avoidance:** Total value of DENIED claims (clinically inappropriate or unsafe).
+- **Revenue at Risk:** Total value of CDI_REQUIRED claims (clinically eligible but missing anchor codes).
+
+### Scope
+- **KPI Cards:** Reflect totals for the **entire run/batch**, regardless of table filters.
+- **Table/Sankey:** Reflect the **entire run** by default, but table rows react to search.
+
 ## Development Workflow
 
 1. Generate data from the root project:

@@ -1,13 +1,12 @@
 
-import pytest
-from governance_audit import _detect_safety_exclusion, _is_cvd, _is_t2_diabetes, wilson_ci, two_proportion_z_pvalue
-from policy_utils import normalize
+from governance_audit import _detect_safety_exclusion, _is_cvd, _is_t2_diabetes, two_proportion_z_pvalue, wilson_ci
+
 
 def test_governance_safety_exclusion_mtc():
     # MTC
     assert _detect_safety_exclusion(["medullary thyroid carcinoma"], []) == (True, "medullary thyroid carcinoma")
     assert _detect_safety_exclusion(["headache"], []) == (False, "")
-    
+
 def test_governance_safety_exclusion_pregnancy():
     # Pregnancy
     # Pregnancy terms are checked against CONDITIONS, not MEDS in the implementation

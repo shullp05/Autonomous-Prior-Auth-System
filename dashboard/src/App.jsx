@@ -5,12 +5,11 @@ import RuntimeStats from "./RuntimeStats";
 import SankeyChart from "./SankeyChart";
 import { FNR_THRESHOLD } from "./constants";
 import { FileText, Ban, AlertTriangle, Info, MessageSquare, HelpCircle, Upload } from "lucide-react";
-import clsx from "clsx";
 import "./App.css";
 
 // Centralized modules
 import { safeUpper, getStatusDisplayLabel, getStatusPillClass } from "./statusConfig";
-import { computeMetrics, formatCurrency, formatPercent, formatHours } from "./metricsEngine";
+import { computeMetrics } from "./metricsEngine";
 
 
 
@@ -25,7 +24,7 @@ function cleanAppealLetter(letter) {
       if (parsed && typeof parsed.letter === "string") {
         text = parsed.letter;
       }
-    } catch (e) {
+    } catch {
       // Not valid JSON, continue with original
     }
   }
@@ -68,10 +67,9 @@ function formatVelocity(ms) {
   if (ms === null || ms === undefined) return "—";
   const n = Number(ms);
   if (!Number.isFinite(n)) return "—";
-  if (n >= 1000) {
-    return `~${Math.round(n / 1000)}s/case`;
-  }
-  return `~${Math.round(n)}ms/case`;
+  // Always display in seconds (User Rule: Internally ms, Externally seconds)
+  return `${(n / 1000).toFixed(2)}s/case`;
+
 }
 
 // Normalizes the governance data structure (supports both new and legacy formats)
@@ -283,26 +281,8 @@ export default function App() {
   }, []);
 
   // 2. KPI Logic (using centralized metrics engine)
-  const metrics = useMemo(() => computeMetrics(data), [data]);
-
-  // Legacy aliases for backward compatibility with existing UI code
-  const kpis = useMemo(() => ({
-    total: metrics.totalScreened,
-    approved: metrics.approvedCount,
-    denied: metrics.deniedCount,
-    manuallyHandled: metrics.needsReviewTotal,
-    totalValue: metrics.totalValue,
-    protectedRevenue: metrics.approvedValue,
-    avoidedCosts: metrics.deniedValue,
-    autoResolutionRate: metrics.autoResolutionRate,
-    adminHoursSaved: metrics.display.hoursSavedPoint,
-    // New fields from metrics engine
-    needsClarificationCount: metrics.needsClarificationCount,
-    missingRequiredDataCount: metrics.missingRequiredDataCount,
-    revenueAtRisk: metrics.display.revenueAtRisk,
-    cdiCount: metrics.cdiRequiredCount,
-    cdiBreakdown: metrics.explain.cdiBreakdown,
-  }), [metrics]);
+  const metrics = useMemo(() => computeMetrics(data, {}, 'run'), [data]);
+  const kpis = metrics; // Use the structured object directly
 
   // 3. Governance Logic
   const activeAudit = useMemo(() => getAudit(governance, activeAuditAttr), [governance, activeAuditAttr]);
@@ -321,6 +301,43 @@ export default function App() {
       }))
       .sort((a, b) => (b.fnr || 0) - (a.fnr || 0));
   }, [governance, activeAuditAttr]);
+  // 3. Filter & Sort Logic
+  const filteredData = useMemo(() => {
+    let res = [...data];
+
+    // Filter
+    if (searchTerm) {
+      const lower = searchTerm.toLowerCase();
+      res = res.filter(r =>
+        (r.patient_id && r.patient_id.toLowerCase().includes(lower)) ||
+        (r.status && r.status.toLowerCase().includes(lower)) ||
+        (r.reason && r.reason.toLowerCase().includes(lower))
+      );
+    }
+
+    // Sort
+    res.sort((a, b) => {
+      let valA = a[sortConfig.key];
+      let valB = b[sortConfig.key];
+
+      // Handle numeric
+      if (sortConfig.key === 'value') {
+        valA = Number(valA) || 0;
+        valB = Number(valB) || 0;
+      } else {
+        // String comparison
+        valA = String(valA || "").toLowerCase();
+        valB = String(valB || "").toLowerCase();
+      }
+
+      if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return res;
+  }, [data, searchTerm, sortConfig]);
+
   const overallFNR = governance?.overall?.fnr_access;
 
   if (loading) return <div className="dashboard-shell"><p>Loading Dashboard...</p></div>;
@@ -369,215 +386,216 @@ export default function App() {
         {/* --- KPI Grid --- */}
         <div className="kpi-grid">
           <div className="kpi-card">
-            <div className="kpi-label">Orders Screened</div>
-            <div className="kpi-value">{(kpis.total)}</div>
-          </div>
-          <div className="kpi-card">
-            <div className="kpi-label">Auto-Resolution</div>
-            <div className="kpi-value">{formatPct(kpis.autoResolutionRate)}</div>
-          </div>
-          <div className="kpi-label">Revenue Secured</div>
-          <div className="kpi-value">{formatSankeyValue(kpis.protectedRevenue)}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label-row">
-            <span className="kpi-label">Revenue at Risk</span>
-            <MetricTooltip>
-              <h4 className="tooltip-header">Potential Revenue Impact</h4>
-              <div className="tooltip-section">
-                <p className="tooltip-label">CDI Required</p>
-                <p className="tooltip-value">
-                  <strong>{kpis.cdiCount}</strong> claims clinically eligible but missing anchor codes
-                </p>
-              </div>
-              <div className="tooltip-section">
-                <p className="tooltip-value">
-                  {kpis.cdiBreakdown}
-                </p>
-              </div>
-            </MetricTooltip>
-          </div>
-          <div className="kpi-value" style={{ color: '#7C3AED' }}>{kpis.revenueAtRisk}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label-row">
-            <span className="kpi-label">Admin Hours Saved</span>
+            <div className="kpi-label">{kpis.labels.hoursKpi}</div>
+            <div className="kpi-label-row">
+              {/* Tooltip Wrapper */}
+              <MetricTooltip>
+                <h4 className="tooltip-header">Hours Saved Calculation</h4>
 
-            {/* Tooltip Wrapper */}
-            <MetricTooltip>
-              <h4 className="tooltip-header">Hours Saved Calculation</h4>
-
-              {/* Section 1: Formula */}
-              <div className="tooltip-section">
-                <p className="tooltip-label">Auto-Resolved Cases</p>
-                <p className="tooltip-value">
-                  {metrics.explain.autoResolvedBreakdown} = <strong>{metrics.autoResolvedCount}</strong>
-                </p>
-              </div>
-
-              {/* Section 2: Assumption */}
-              <div className="tooltip-section">
-                <p className="tooltip-label">Assumption</p>
-                <p className="tooltip-value">
-                  {metrics.explain.assumptionNote}
-                </p>
-              </div>
-
-              {/* Section 3: Math */}
-              <div className="tooltip-math-box">
-                <div className="tooltip-math-header">
-                  <span>Auto-resolved</span>
-                  <span>× {metrics.config.minutesPerCasePoint} min / 60</span>
+                {/* Section 1: Formula */}
+                <div className="tooltip-section">
+                  <p className="tooltip-label">Auto-Resolved Cases</p>
+                  <p className="tooltip-value">
+                    {metrics.explain.autoResolvedBreakdown} = <strong>{metrics.autoResolvedCount}</strong>
+                  </p>
                 </div>
-                <div className="tooltip-math-values">
-                  <span>{metrics.autoResolvedCount}</span>
-                  <span>× {metrics.config.minutesPerCasePoint} / 60</span>
+
+                {/* Section 2: Assumption */}
+                <div className="tooltip-section">
+                  <p className="tooltip-label">Assumption</p>
+                  <p className="tooltip-value">
+                    {metrics.explain.assumptionNote}
+                  </p>
                 </div>
-                <div className="tooltip-math-result">
-                  <span className="tooltip-result-label">Point Estimate</span>
-                  <span className="tooltip-result-value">{metrics.display.hoursSavedPoint} Hrs</span>
+
+                {/* Section 3: Math */}
+                <div className="tooltip-math-box">
+                  <div className="tooltip-math-header">
+                    <span>Auto-resolved</span>
+                    <span>× {metrics.config.minutesPerCasePoint} min / 60</span>
+                  </div>
+                  <div className="tooltip-math-values">
+                    <span>{metrics.autoResolvedCount}</span>
+                    <span>× {metrics.config.minutesPerCasePoint} / 60</span>
+                  </div>
+                  <div className="tooltip-math-result">
+                    <span className="tooltip-result-label">Point Estimate</span>
+                    <span className="tooltip-result-value">{metrics.display.hoursSavedPoint} Hrs</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Section 4: Sensitivity Range */}
-              <div className="tooltip-section" style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border-subtle)' }}>
-                <p className="tooltip-label">Sensitivity Range</p>
-                <p className="tooltip-value">
-                  {metrics.explain.sensitivityNote}
-                </p>
-              </div>
-            </MetricTooltip>
-          </div>
-
-          <div className="kpi-value">{kpis.adminHoursSaved}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label-row">
-            <span className="kpi-label">Needs Review</span>
-            {/* Breakdown Tooltip */}
-            <MetricTooltip>
-              <h4 className="tooltip-header">Breakdown</h4>
-              <div className="tooltip-section">
-                <p className="tooltip-label">Needs Clarification</p>
-                <p className="tooltip-value"><strong>{kpis.needsClarificationCount}</strong> cases with ambiguous terms</p>
-              </div>
-              <div className="tooltip-section">
-                <p className="tooltip-label">Missing Required Data</p>
-                <p className="tooltip-value"><strong>{kpis.missingRequiredDataCount}</strong> cases missing BMI/documentation</p>
-              </div>
-            </MetricTooltip>
-          </div>
-          <div className="kpi-value" style={{ color: 'var(--status-amber)' }}>{kpis.manuallyHandled}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Processing Velocity</div>
-          <div className="kpi-value">{formatVelocity(metadata?.avg_duration_ms)}</div>
-        </div>
-      </div>
-
-      {/* --- Visual Analysis Section --- */}
-      <div className="split-layout">
-        {/* Left: Sankey Chart */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-          <h2>Revenue Flow Analysis</h2>
-          <div style={{ flex: 1 }}>
-            <SankeyChart data={data} />
-          </div>
-        </div>
-
-        {/* Right: Governance Panel */}
-        <div className="card">
-          <h2>Fairness Audit (FNR)</h2>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>
-            Monitoring <strong>False Negative Rate</strong> (Wrongful Denials) across protected groups.
-          </p>
-
-          {typeof overallFNR === "number" && (
-            <MetricBar label="Overall FNR" value={overallFNR} />
-          )}
-
-          <div style={{ height: 1, background: 'var(--border-subtle)', margin: '16px 0' }}></div>
-
-          {/* Audit Attribute Selectors */}
-          {governance?.attribute_audits?.length > 1 && (
-            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-              {governance.attribute_audits.map(a => (
-                <button
-                  key={a.attribute}
-                  className={`chip ${activeAuditAttr === a.attribute ? 'chip-active' : ''}`}
-                  onClick={() => setActiveAuditAttr(a.attribute)}>
-                  {a.attribute}
-                </button>
-              ))}
+                {/* Section 4: Sensitivity Range */}
+                <div className="tooltip-section" style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border-subtle)' }}>
+                  <p className="tooltip-label">Sensitivity Range</p>
+                  <p className="tooltip-value">
+                    {metrics.explain.sensitivityNote}
+                  </p>
+                </div>
+              </MetricTooltip>
             </div>
-          )}
+            <div className="kpi-value">{kpis.display.hoursSavedPoint}</div>
+          </div>
 
-          {/* Metric Bars */}
-          {fnrRows.map(r => (
-            <MetricBar key={r.group} label={r.group} value={r.fnr} eligibleN={r.eligibleN} />
-          ))}
+          <div className="kpi-card">
+            <div className="kpi-label">{kpis.labels.autoResolutionKpi}</div>
+            <div className="kpi-value">{kpis.display.autoResolutionRate}</div>
+          </div>
+
+          <div className="kpi-card">
+            <div className="kpi-label">{kpis.labels.revenueKpi}</div>
+            <div className="kpi-value">{formatSankeyValue(kpis.approvedValue)}</div>
+          </div>
+
+          <div className="kpi-card">
+            <div className="kpi-label">{kpis.labels.riskKpi}</div>
+            <div className="kpi-label-row">
+              <MetricTooltip>
+                <h4 className="tooltip-header">Potential Revenue Impact</h4>
+                <div className="tooltip-section">
+                  <p className="tooltip-label">CDI Required</p>
+                  <p className="tooltip-value">
+                    <strong>{kpis.cdiRequiredCount}</strong> claims clinically eligible but missing anchor codes
+                  </p>
+                </div>
+                <div className="tooltip-section">
+                  <p className="tooltip-value">
+                    {kpis.explain.cdiBreakdown}
+                  </p>
+                </div>
+              </MetricTooltip>
+            </div>
+            <div className="kpi-value" style={{ color: '#7C3AED' }}>{kpis.display.revenueAtRisk}</div>
+          </div>
+
+          <div className="kpi-card">
+            <div className="kpi-label">{kpis.labels.needsReviewKpi}</div>
+            <div className="kpi-label-row">
+              {/* Breakdown Tooltip */}
+              <MetricTooltip>
+                <h4 className="tooltip-header">Breakdown</h4>
+                <div className="tooltip-section">
+                  <p className="tooltip-label">Needs Clarification</p>
+                  <p className="tooltip-value"><strong>{kpis.needsClarificationCount}</strong> cases with ambiguous terms</p>
+                </div>
+                <div className="tooltip-section">
+                  <p className="tooltip-label">Missing Required Data</p>
+                  <p className="tooltip-value"><strong>{kpis.missingRequiredDataCount}</strong> cases missing BMI/documentation</p>
+                </div>
+              </MetricTooltip>
+            </div>
+            <div className="kpi-value" style={{ color: 'var(--status-amber)' }}>{kpis.display.needsReviewTotal}</div>
+          </div>
+
+          <div className="kpi-card">
+            <div className="kpi-label">Processing Velocity</div>
+            <div className="kpi-value">{formatVelocity(metadata?.avg_duration_ms)}</div>
+          </div>
         </div>
-      </div>
 
-      {/* --- Data Table --- */}
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '24px 24px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2>Clinical Decision Log</h2>
+        {/* --- Visual Analysis Section --- */}
+        <div className="split-layout">
+          {/* Left: Sankey Chart */}
+          <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+            <h2>Revenue Flow Analysis</h2>
+            <div style={{ flex: 1 }}>
+              <SankeyChart data={data} />
+            </div>
+          </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
-            {/* Search Input */}
-            <div style={{ position: 'relative' }}>
-              <input
-                type="text"
-                placeholder="Search ID, Status, Reason..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+          {/* Right: Governance Panel */}
+          <div className="card">
+            <h2>Fairness Audit (FNR)</h2>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>
+              Monitoring <strong>False Negative Rate</strong> (Wrongful Denials) across protected groups.
+            </p>
+
+            {typeof overallFNR === "number" && (
+              <MetricBar label="Overall FNR" value={overallFNR} />
+            )}
+
+            <div style={{ height: 1, background: 'var(--border-subtle)', margin: '16px 0' }}></div>
+
+            {/* Audit Attribute Selectors */}
+            {governance?.attribute_audits?.length > 1 && (
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                {governance.attribute_audits.map(a => (
+                  <button
+                    key={a.attribute}
+                    className={`chip ${activeAuditAttr === a.attribute ? 'chip-active' : ''}`}
+                    onClick={() => setActiveAuditAttr(a.attribute)}>
+                    {a.attribute}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Metric Bars */}
+            {fnrRows.map(r => (
+              <MetricBar key={r.group} label={r.group} value={r.fnr} eligibleN={r.eligibleN} />
+            ))}
+          </div>
+        </div>
+
+        {/* --- Data Table --- */}
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '24px 24px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2>Clinical Decision Log</h2>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              {/* Search Input */}
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  placeholder="Search ID, Status, Reason..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    padding: '8px 12px',
+                    paddingLeft: '32px',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    width: '240px',
+                    outline: 'none'
+                  }}
+                />
+                <FileText size={14} style={{ position: 'absolute', left: 10, top: 10, color: 'var(--text-tertiary)' }} />
+              </div>
+
+              {/* Sort Select */}
+              <select
+                value={sortConfig.key}
+                onChange={(e) => setSortConfig({ ...sortConfig, key: e.target.value })}
                 style={{
                   padding: '8px 12px',
-                  paddingLeft: '32px',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: '6px',
                   fontSize: '13px',
-                  width: '240px',
-                  outline: 'none'
+                  background: 'white',
+                  outline: 'none',
+                  cursor: 'pointer'
                 }}
-              />
-              <FileText size={14} style={{ position: 'absolute', left: 10, top: 10, color: 'var(--text-tertiary)' }} />
+              >
+                <option value="patient_id">Sort by ID</option>
+                {/* Assuming date exists, if not fall back to ID order */}
+                <option value="status">Sort by Status</option>
+                <option value="value">Sort by Value</option>
+              </select>
+
+              <button
+                onClick={() => setSortConfig(p => ({ ...p, direction: p.direction === 'asc' ? 'desc' : 'asc' }))}
+                style={{
+                  padding: '8px',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '6px',
+                  background: 'white',
+                  cursor: 'pointer'
+                }}
+                title="Toggle Sort Direction"
+              >
+                {sortConfig.direction === 'asc' ? 'Asc' : 'Desc'}
+              </button>
             </div>
-
-            {/* Sort Select */}
-            <select
-              value={sortConfig.key}
-              onChange={(e) => setSortConfig({ ...sortConfig, key: e.target.value })}
-              style={{
-                padding: '8px 12px',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '6px',
-                fontSize: '13px',
-                background: 'white',
-                outline: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="patient_id">Sort by ID</option>
-              {/* Assuming date exists, if not fall back to ID order */}
-              <option value="status">Sort by Status</option>
-              <option value="value">Sort by Value</option>
-            </select>
-
-            <button
-              onClick={() => setSortConfig(p => ({ ...p, direction: p.direction === 'asc' ? 'desc' : 'asc' }))}
-              style={{
-                padding: '8px',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '6px',
-                background: 'white',
-                cursor: 'pointer'
-              }}
-              title="Toggle Sort Direction"
-            >
-              {sortConfig.direction === 'asc' ? 'Asc' : 'Desc'}
-            </button>
           </div>
         </div>
         <div className="table-wrap" style={{ border: 'none', borderRadius: 0 }}>
@@ -717,7 +735,7 @@ export default function App() {
             </tbody>
           </table>
         </div>
-      </div>
+      </div >
 
 
 

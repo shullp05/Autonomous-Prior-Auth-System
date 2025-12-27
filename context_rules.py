@@ -14,7 +14,6 @@ Others -> Safety Signal (SAFETY_SIGNAL_NEEDS_REVIEW)
 """
 
 import re
-from typing import Optional
 
 # Pre-compiled regex patterns for performance
 # \b ensures word boundaries so "his" doesn't match "history"
@@ -49,6 +48,7 @@ REGEX_UNCERTAINTY = re.compile(
 
 from dataclasses import dataclass
 
+
 @dataclass
 class ContextClassification:
     context_type: str  # ACTIVE, HISTORICAL, NEGATED, FAMILY_HISTORY, HYPOTHETICAL
@@ -67,26 +67,26 @@ def classify_context(text: str, term: str = "") -> ContextClassification:
     """
     # Normalize for basic matching
     lower_text = text.lower()
-    
+
     # Check explicitly defined order of precedence:
-    
+
     # 1. Negation (Strongest signal - "denies history of" is negated, not historical per se)
     # "denies history of" -> Negated.
     if _has_pattern(REGEX_NEGATION, lower_text):
         return ContextClassification('NEGATED', 'CLEARED')
-        
+
     # 2. Family History (Strong signal - "family history of" is not patient)
     if _has_pattern(REGEX_FAMILY, lower_text):
         return ContextClassification('FAMILY_HISTORY', 'SIGNAL')
-        
+
     # 3. Historical (Past events)
     if _has_pattern(REGEX_HISTORICAL, lower_text):
         return ContextClassification('HISTORICAL', 'SIGNAL')
-        
+
     # 4. Uncertainty (Ambiguous/Hypothetical)
     if _has_pattern(REGEX_UNCERTAINTY, lower_text):
         return ContextClassification('HYPOTHETICAL', 'SIGNAL')
-        
+
     # Default: If it exists and isn't negated/historical/family/uncertain, assume Active/Current.
     return ContextClassification('ACTIVE', 'HARD_STOP')
 

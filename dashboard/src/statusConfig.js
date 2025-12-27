@@ -43,10 +43,18 @@ export const STATUS_DISPLAY = {
 // Review Buckets (for metric grouping)
 // =============================================================================
 
+// =============================================================================
+// Review Buckets (for metric grouping)
+// =============================================================================
+
 export const REVIEW_BUCKET = {
-    AUTO_RESOLVED: 'AUTO_RESOLVED',
-    NEEDS_REVIEW: 'NEEDS_REVIEW',
+    APPROVED: 'APPROVED',
+    DENIED: 'DENIED',
     PENDING_CDI: 'PENDING_CDI',
+    NEEDS_REVIEW: 'NEEDS_REVIEW',
+    MISSING_INFO: 'MISSING_INFO',
+    // Fallback/Legacy (should be avoided in new logic, but kept for safety if needed)
+    AUTO_RESOLVED: 'AUTO_RESOLVED',
 };
 
 // =============================================================================
@@ -157,27 +165,34 @@ export function getStatusPillClass(status, reason = '') {
 /**
  * Get the review bucket for a case (used for metric grouping)
  * @param {string} status - Raw status from data
- * @returns {string} REVIEW_BUCKET.AUTO_RESOLVED or REVIEW_BUCKET.NEEDS_REVIEW
+ * @returns {string} One of REVIEW_BUCKET values
  */
 export function getReviewBucket(status) {
     const s = safeUpper(status);
+
+    if (s === RAW_STATUS.APPROVED) {
+        return REVIEW_BUCKET.APPROVED;
+    }
 
     if (s === RAW_STATUS.CDI_REQUIRED) {
         return REVIEW_BUCKET.PENDING_CDI;
     }
 
-    // Auto-resolved: APPROVED or any DENIED variant
     if (
-        s === RAW_STATUS.APPROVED ||
         s === RAW_STATUS.DENIED ||
         s === RAW_STATUS.DENIED_SAFETY ||
         s === RAW_STATUS.DENIED_CLINICAL ||
         s === RAW_STATUS.DENIED_MISSING_INFO
     ) {
-        return REVIEW_BUCKET.AUTO_RESOLVED;
+        return REVIEW_BUCKET.DENIED;
     }
 
-    // Needs review: SAFETY_SIGNAL, FLAGGED, MANUAL_REVIEW, PROVIDER_ACTION_REQUIRED
+    if (s === RAW_STATUS.PROVIDER_ACTION_REQUIRED) {
+        return REVIEW_BUCKET.MISSING_INFO;
+    }
+
+    // Default catch-all for ambiguity or manual checks
+    // Includes: FLAGGED, MANUAL_REVIEW, SAFETY_SIGNAL_NEEDS_REVIEW
     return REVIEW_BUCKET.NEEDS_REVIEW;
 }
 
@@ -203,22 +218,24 @@ export function isMissingRequiredData(status) {
  * @returns {'approved' | 'denied' | 'manual' | 'cdi'} Sankey category
  */
 export function getSankeyCategory(status) {
-    const s = safeUpper(status);
+    const bucket = getReviewBucket(status);
 
-    if (s === RAW_STATUS.APPROVED) {
+    if (bucket === REVIEW_BUCKET.APPROVED) {
         return 'approved';
     }
 
-    if (s === RAW_STATUS.CDI_REQUIRED) {
-        return 'cdi';
+    if (bucket === REVIEW_BUCKET.PENDING_CDI) {
+        return 'cdi'; // Note: The user might want this separated or manual. Existing SankeyChart handles 'cdi' implicitly in 'manual' or explicit logic?
+        // Checking SankeyChart.jsx: it looked for 'approved', 'denied', else 'manual'. 
+        // But logic inside it counts CDI. 
+        // Let's keep returning 'cdi' if we want to support it, or map to 'manual' if that's what the chart expects.
+        // Re-reading SankeyChart.jsx: "if (category === 'approved') ... else if ('denied') ... else { manualData.push }"
+        // So anything not 'approved' or 'denied' goes to manual.
+        // But wait, if I return 'cdi', does it go to manual? Yes.
+        // So returning 'cdi' is fine, it falls through to manual node.
     }
 
-    if (
-        s === RAW_STATUS.DENIED ||
-        s === RAW_STATUS.DENIED_SAFETY ||
-        s === RAW_STATUS.DENIED_CLINICAL ||
-        s === RAW_STATUS.DENIED_MISSING_INFO
-    ) {
+    if (bucket === REVIEW_BUCKET.DENIED) {
         return 'denied';
     }
 

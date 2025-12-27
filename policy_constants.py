@@ -8,13 +8,13 @@ to prevent drift between deterministic rules, prompts, and governance checks.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
 
 from policy_snapshot import POLICY_ID, SNAPSHOT_PATH, load_policy_snapshot
 from schema_validation import validate_policy_snapshot
 
 
-def _as_list(val: Any) -> List[Any]:
+def _as_list(val: Any) -> list[Any]:
     if val is None:
         return []
     if isinstance(val, list):
@@ -22,15 +22,15 @@ def _as_list(val: Any) -> List[Any]:
     return [val]
 
 
-def _as_str_list(val: Any) -> List[str]:
-    out: List[str] = []
+def _as_str_list(val: Any) -> list[str]:
+    out: list[str] = []
     for x in _as_list(val):
         if isinstance(x, str) and x.strip():
             out.append(x.strip())
     return out
 
 
-def _require(snapshot: dict, path: List[str]) -> Any:
+def _require(snapshot: dict, path: list[str]) -> Any:
     cur: Any = snapshot
     for k in path:
         if not isinstance(cur, dict) or k not in cur:
@@ -46,7 +46,7 @@ validate_policy_snapshot(_SNAPSHOT)
 # -----------------------------------------------------------------------------
 # General thresholds
 # -----------------------------------------------------------------------------
-ELIGIBILITY_PATHWAYS: List[Dict[str, Any]] = _as_list(_require(_SNAPSHOT, ["eligibility", "pathways"]))
+ELIGIBILITY_PATHWAYS: list[dict[str, Any]] = _as_list(_require(_SNAPSHOT, ["eligibility", "pathways"]))
 
 try:
     _OBESITY_PATHWAY = next(
@@ -77,7 +77,7 @@ ADULT_OVERWEIGHT_DIAGNOSES = _as_str_list(_diag.get("adult_excess_weight"))
 # -----------------------------------------------------------------------------
 # Comorbidities
 # -----------------------------------------------------------------------------
-COMORBIDITIES: Dict[str, Dict[str, Any]] = _SNAPSHOT.get("comorbidities") or {}
+COMORBIDITIES: dict[str, dict[str, Any]] = _SNAPSHOT.get("comorbidities") or {}
 
 QUALIFYING_HYPERTENSION = _as_str_list((COMORBIDITIES.get("hypertension") or {}).get("accepted_strings"))
 QUALIFYING_T2DM = _as_str_list((COMORBIDITIES.get("type2_diabetes") or {}).get("accepted_strings"))
@@ -91,13 +91,13 @@ QUALIFYING_CVD_ABBREVS = [p for p in QUALIFYING_CVD_PHRASES if len(p.split()) ==
 # -----------------------------------------------------------------------------
 # Safety exclusions
 # -----------------------------------------------------------------------------
-SAFETY_EXCLUSIONS: List[Dict[str, Any]] = _as_list(_SNAPSHOT.get("safety_exclusions"))
+SAFETY_EXCLUSIONS: list[dict[str, Any]] = _as_list(_SNAPSHOT.get("safety_exclusions"))
 
-def _category_terms(name_fragment: str) -> List[str]:
+def _category_terms(name_fragment: str) -> list[str]:
     frag = (name_fragment or "").lower()
     if not frag:
         return []
-    terms: List[str] = []
+    terms: list[str] = []
     for entry in SAFETY_EXCLUSIONS:
         if not isinstance(entry, dict):
             continue
@@ -122,13 +122,13 @@ PROHIBITED_GLP1 = _as_str_list(_drug_conflicts.get("glp1_or_glp1_gip_agents"))
 # -----------------------------------------------------------------------------
 # Ambiguities (exposed for guardrails/governance)
 # -----------------------------------------------------------------------------
-AMBIGUITIES: List[Dict[str, Any]] = _as_list(_SNAPSHOT.get("ambiguities"))
+AMBIGUITIES: list[dict[str, Any]] = _as_list(_SNAPSHOT.get("ambiguities"))
 
-def _ambiguity_patterns(keyword: str) -> List[str]:
+def _ambiguity_patterns(keyword: str) -> list[str]:
     kw = (keyword or "").lower()
     if not kw:
         return []
-    out: List[str] = []
+    out: list[str] = []
     for a in AMBIGUITIES:
         if not isinstance(a, dict):
             continue

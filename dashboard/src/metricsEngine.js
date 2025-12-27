@@ -10,8 +10,6 @@ import {
     RAW_STATUS,
     REVIEW_BUCKET,
     getReviewBucket,
-    isNeedsClarification,
-    isMissingRequiredData,
     isSafetyContraindication,
 } from './statusConfig';
 
@@ -117,40 +115,45 @@ export function computeMetrics(population = [], config = {}, scope = 'run') {
         const value = Number(record.value) || 0;
         const reason = record.reason || '';
 
+        const bucket = getReviewBucket(status);
+
         totalValue += value;
 
-        // Count by status category
-        if (status === RAW_STATUS.APPROVED) {
-            approvedCount++;
-            approvedValue += value;
-        } else if (status === RAW_STATUS.CDI_REQUIRED) {
-            cdiRequiredCount++;
-            revenueAtRiskValue += value;
-        } else if (
-            status === RAW_STATUS.DENIED ||
-            status === RAW_STATUS.DENIED_SAFETY ||
-            status === RAW_STATUS.DENIED_CLINICAL ||
-            status === RAW_STATUS.DENIED_MISSING_INFO
-        ) {
-            deniedCount++;
-            deniedValue += value;
-            // Sub-categorize denials
-            if (isSafetyContraindication(reason)) {
-                safetyContraindicationCount++;
-            } else {
-                notEligibleCount++;
-            }
-        } else {
-            // Manual review bucket
-            manualValue += value;
-            if (isNeedsClarification(status)) {
-                needsClarificationCount++;
-            } else if (isMissingRequiredData(status)) {
+        // Count by status category using the Single Source of Truth (buckets)
+        switch (bucket) {
+            case REVIEW_BUCKET.APPROVED:
+                approvedCount++;
+                approvedValue += value;
+                break;
+
+            case REVIEW_BUCKET.PENDING_CDI:
+                cdiRequiredCount++;
+                revenueAtRiskValue += value;
+                break;
+
+            case REVIEW_BUCKET.DENIED:
+                deniedCount++;
+                deniedValue += value;
+                // Sub-categorize denials (still need granularity for specific KPI breakdown)
+                if (isSafetyContraindication(reason)) {
+                    safetyContraindicationCount++;
+                } else {
+                    notEligibleCount++;
+                }
+                break;
+
+            case REVIEW_BUCKET.MISSING_INFO:
+                manualValue += value;
                 missingRequiredDataCount++;
-            } else {
-                // Unknown statuses go to needs clarification by default
+                break;
+
+            case REVIEW_BUCKET.NEEDS_REVIEW:
+            default:
+                manualValue += value;
+                // Differentiate needs clarification vs other manual
+                // Just count it all as 'needsClarification' for the KPI if not filtered
                 needsClarificationCount++;
-            }
+                break;
         }
     }
 

@@ -1,10 +1,9 @@
 import logging
 import os
 from pathlib import Path
-from typing import Dict, List
 
-from langchain_community.document_loaders import PyPDFLoader
 from langchain_chroma import Chroma
+from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from langchain_ollama import OllamaEmbeddings
 from reportlab.lib.pagesizes import LETTER
@@ -32,18 +31,18 @@ POLICY_PDF = Path("Policy_Weight_Mgmt_2025.pdf")
 EMBED_DIM_FILE = Path("chroma_db/embedding_dim.txt")
 
 
-def _bullet_list(items: List[str], style: ParagraphStyle) -> ListFlowable:
+def _bullet_list(items: list[str], style: ParagraphStyle) -> ListFlowable:
     return ListFlowable([ListItem(Paragraph(item, style)) for item in items], bulletType="bullet", start="•")
 
 
-def _write_snapshot(snapshot: Dict[str, object], path: Path = SNAPSHOT_PATH) -> Path:
+def _write_snapshot(snapshot: dict[str, object], path: Path = SNAPSHOT_PATH) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(canonical_dumps(snapshot), encoding="utf-8")
     logger.info("Wrote policy snapshot to %s", path)
     return path
 
 
-def generate_snapshot() -> Dict[str, object]:
+def generate_snapshot() -> dict[str, object]:
     snapshot = parse_guidelines(GUIDELINE_PATH)
     validate_policy_snapshot(snapshot)
     _write_snapshot(snapshot)
@@ -71,7 +70,7 @@ def _ensure_embedding_dim(embedding_fn: OllamaEmbeddings, expected: int = 1024) 
     return dim
 
 
-def create_policy_pdf(snapshot: Dict[str, object], filename: Path = POLICY_PDF) -> Path:
+def create_policy_pdf(snapshot: dict[str, object], filename: Path = POLICY_PDF) -> Path:
     doc = SimpleDocTemplate(
         str(filename),
         pagesize=LETTER,
@@ -86,7 +85,7 @@ def create_policy_pdf(snapshot: Dict[str, object], filename: Path = POLICY_PDF) 
     styles.add(ParagraphStyle(name="BodyTextSmall", fontSize=10, leading=14, spaceAfter=6))
     styles.add(ParagraphStyle(name="PolicyBullet", fontSize=10, leading=14))
 
-    story: List = []
+    story: list = []
     story.append(Paragraph(snapshot["title"], styles["Title"]))
     story.append(Paragraph(snapshot["scope"], styles["Italic"]))
     story.append(Spacer(1, 0.2 * inch))
@@ -163,7 +162,7 @@ def create_policy_pdf(snapshot: Dict[str, object], filename: Path = POLICY_PDF) 
     return filename
 
 
-def _section_documents(snapshot: Dict[str, object]) -> List[Document]:
+def _section_documents(snapshot: dict[str, object]) -> list[Document]:
     base_meta = {
         "policy_id": snapshot["policy_id"],
         "effective_date": snapshot["effective_date"],
@@ -172,10 +171,10 @@ def _section_documents(snapshot: Dict[str, object]) -> List[Document]:
         "doc_type": "policy_atom",
     }
 
-    docs: List[Document] = []
+    docs: list[Document] = []
     order = 0
 
-    def add_doc(section: str, summary: str, lines: List[str]):
+    def add_doc(section: str, summary: str, lines: list[str]):
         nonlocal order
         content = summary.strip()
         if lines:
@@ -201,6 +200,12 @@ def _section_documents(snapshot: Dict[str, object]) -> List[Document]:
         if pathway.get("required_diagnosis_strings"):
             lines.append("Required diagnosis strings:")
             lines.extend([f"- {d}" for d in pathway["required_diagnosis_strings"]])
+        if pathway.get("required_diagnosis_codes_e66"):
+             lines.append("Required ICD-10 E66 Codes:")
+             lines.extend([f"- {c}" for c in pathway["required_diagnosis_codes_e66"]])
+        if pathway.get("required_diagnosis_codes_z68"):
+             lines.append("Required ICD-10 Z68 Codes:")
+             lines.extend([f"- {c}" for c in pathway["required_diagnosis_codes_z68"]])
         if pathway.get("required_comorbidity_categories"):
             lines.append("Required weight-related comorbidities (any one):")
             labels = [

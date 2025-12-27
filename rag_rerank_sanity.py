@@ -16,19 +16,19 @@ import json
 import logging
 import os
 import time
-from dataclasses import dataclass, asdict
-from typing import Dict, List, Sequence
+from collections.abc import Sequence
+from dataclasses import asdict, dataclass
 
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_ollama import OllamaEmbeddings
 
-from config import EMBED_MODEL_NAME
-from policy_snapshot import POLICY_ID, SNAPSHOT_PATH, load_policy_snapshot
-from schema_validation import validate_policy_snapshot
-from policy_engine import evaluate_eligibility
 from agent_logic import _build_policy_query, _format_policy_evidence
 from bce_reranker import rerank_bce
+from config import EMBED_MODEL_NAME
+from policy_engine import evaluate_eligibility
+from policy_snapshot import POLICY_ID, SNAPSHOT_PATH, load_policy_snapshot
+from schema_validation import validate_policy_snapshot
 
 # ---------------------------------------------------------------------------
 # CONFIG
@@ -53,7 +53,7 @@ logger = logging.getLogger("rag_rerank_sanity")
 class ScenarioConfig:
     name: str
     patient: dict
-    expected_sections: List[str]
+    expected_sections: list[str]
     priority_n: int
 
 
@@ -64,17 +64,17 @@ class ScenarioResult:
     verdict: str
     policy_path: str | None
 
-    vector_sections: List[str]
-    rerank_sections_top: List[str]
-    filtered_sections_all: List[str]
-    llm_sections: List[str]
+    vector_sections: list[str]
+    rerank_sections_top: list[str]
+    filtered_sections_all: list[str]
+    llm_sections: list[str]
 
-    scores_all: List[float]
+    scores_all: list[float]
 
-    expected_sections: List[str]
-    hits_vector: Dict[str, bool]
-    hits_llm: Dict[str, bool]
-    coverage_hits: Dict[str, bool]
+    expected_sections: list[str]
+    hits_vector: dict[str, bool]
+    hits_llm: dict[str, bool]
+    coverage_hits: dict[str, bool]
 
     coverage_ok: bool
     priority_ok: bool
@@ -105,8 +105,8 @@ def _ensure_vectorstore() -> Chroma:
     )
 
 
-def _sections_from_docs(docs: Sequence[Document]) -> List[str]:
-    sections: List[str] = []
+def _sections_from_docs(docs: Sequence[Document]) -> list[str]:
+    sections: list[str] = []
     for d in docs:
         sec = (d.metadata or {}).get("section") or "unknown"
         sections.append(str(sec))
@@ -126,8 +126,8 @@ def _apply_score_floor(scored_docs, floor: float, min_docs: int):
     scores = list(scores)
 
     # Filter by score
-    filtered_docs: List[Document] = []
-    filtered_scores: List[float] = []
+    filtered_docs: list[Document] = []
+    filtered_scores: list[float] = []
     for d, s in zip(docs, scores):
         if s >= floor:
             filtered_docs.append(d)
@@ -142,7 +142,7 @@ def _apply_score_floor(scored_docs, floor: float, min_docs: int):
 
 
 def _check_expected_sections(sections: Sequence[str],
-                             expected: Sequence[str]) -> Dict[str, bool]:
+                             expected: Sequence[str]) -> dict[str, bool]:
     """
     For each expected snippet, check if it appears in any section string.
     """
@@ -153,7 +153,7 @@ def _check_expected_sections(sections: Sequence[str],
 def _filter_docs_for_policy_path(
     docs: Sequence[Document],
     policy_path: str | None,
-) -> List[Document]:
+) -> list[Document]:
     """
     Policy-aware filter that restricts AND reorders sections based on the
     deterministic policy_path.
@@ -176,7 +176,7 @@ def _filter_docs_for_policy_path(
             "eligibility:pathway1",
             "diagnosis:obesity_strings",
         )
-        priority_order: List[str] = [
+        priority_order: list[str] = [
             "eligibility:pathway1",
             "diagnosis:obesity_strings",
             "documentation:requirements",
@@ -209,7 +209,7 @@ def _filter_docs_for_policy_path(
         return list(docs)
 
     # First, apply the allow-list filter
-    allowed: List[Document] = []
+    allowed: list[Document] = []
     for d in docs:
         sec = section(d)
         if any(sec.startswith(prefix) for prefix in allowed_prefixes):
@@ -222,8 +222,8 @@ def _filter_docs_for_policy_path(
     # Then, apply deterministic priority within the allowed set:
     #   - anything whose section starts with a priority entry gets bubbled up,
     #   - rest keep the BCE order behind them.
-    priority_docs: List[Document] = []
-    other_docs: List[Document] = []
+    priority_docs: list[Document] = []
+    other_docs: list[Document] = []
 
     for d in allowed:
         sec = section(d)
@@ -240,7 +240,7 @@ def _filter_docs_for_policy_path(
 # SCENARIOS
 # ---------------------------------------------------------------------------
 
-def build_scenarios() -> List[ScenarioConfig]:
+def build_scenarios() -> list[ScenarioConfig]:
     """
     Synthetic test patients designed to exercise key policy pathways.
 
@@ -374,7 +374,7 @@ def run_scenario(cfg: ScenarioConfig, vectordb: Chroma) -> ScenarioResult:
 
     # 1) Vector search
     t0 = time.time()
-    vector_docs: List[Document] = vectordb.similarity_search(
+    vector_docs: list[Document] = vectordb.similarity_search(
         query,
         k=K_VECTOR,
         filter={"policy_id": POLICY_ID},
@@ -398,9 +398,9 @@ def run_scenario(cfg: ScenarioConfig, vectordb: Chroma) -> ScenarioResult:
             llm_sections=[],
             scores_all=[],
             expected_sections=cfg.expected_sections,
-            hits_vector={e: False for e in cfg.expected_sections},
-            hits_llm={e: False for e in cfg.expected_sections},
-            coverage_hits={e: False for e in cfg.expected_sections},
+            hits_vector=dict.fromkeys(cfg.expected_sections, False),
+            hits_llm=dict.fromkeys(cfg.expected_sections, False),
+            coverage_hits=dict.fromkeys(cfg.expected_sections, False),
             coverage_ok=False,
             priority_ok=False,
             pass_flag=False,
@@ -506,7 +506,7 @@ def main():
     vectordb = _ensure_vectorstore()
     scenarios = build_scenarios()
 
-    results: List[ScenarioResult] = []
+    results: list[ScenarioResult] = []
     for cfg in scenarios:
         res = run_scenario(cfg, vectordb)
         results.append(res)

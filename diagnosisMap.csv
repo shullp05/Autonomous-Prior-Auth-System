@@ -1,0 +1,19 @@
+Correlating_SNOMED_Code,icd10_dx,Diagnosis_Description,BMI,icd10_bmi
+162863004,E66.3,Overweight Used for BMI 25.0–29.9.(Note: Your system triggers coverage review starting at 27.0),27.0 - 27.9,Z68.27
+162863004,E66.3,Overweight Used for BMI 25.0–29.9.,28.0 - 28.9,Z68.28
+162863004,E66.3,Overweight Used for BMI 25.0–29.9.,29.0 - 29.9,Z68.29
+162864005,E66.9,"Obesity: unspecified Default ""catch-all"" when cause/severity is not documented.(Note: Your system defaults to this for BMI 30–39.9)",30.0 - 30.9,Z68.30
+162864005,E66.9,"Obesity: unspecified Default ""catch-all"" when cause/severity is not documented.(Note: Your system defaults to this for BMI 30–39.9)",31.0 - 31.9,Z68.31
+162864005,E66.9,"Obesity: unspecified Default ""catch-all"" when cause/severity is not documented.(Note: Your system defaults to this for BMI 30–39.9)",32.0 - 32.9,Z68.32
+162864005,E66.9,"Obesity: unspecified Default ""catch-all"" when cause/severity is not documented.(Note: Your system defaults to this for BMI 30–39.9)",33.0 - 33.9,Z68.33
+162864005,E66.9,"Obesity: unspecified Default ""catch-all"" when cause/severity is not documented.(Note: Your system defaults to this for BMI 30–39.9)",34.0 - 34.9,Z68.34
+162864005,E66.9,"Obesity: unspecified Default ""catch-all"" when cause/severity is not documented.(Note: Your system defaults to this for BMI 30–39.9)",35.0 - 35.9,Z68.35
+162864005,E66.9,"Obesity: unspecified Default ""catch-all"" when cause/severity is not documented.(Note: Your system defaults to this for BMI 30–39.9)",36.0 - 36.9,Z68.36
+162864005,E66.9,"Obesity: unspecified Default ""catch-all"" when cause/severity is not documented.(Note: Your system defaults to this for BMI 30–39.9)",37.0 - 37.9,Z68.37
+162864005,E66.9,"Obesity: unspecified Default ""catch-all"" when cause/severity is not documented.(Note: Your system defaults to this for BMI 30–39.9)",38.0 - 38.9,Z68.38
+162864005,E66.9,"Obesity: unspecified Default ""catch-all"" when cause/severity is not documented.(Note: Your system defaults to this for BMI 30–39.9)",39.0 - 39.9,Z68.39
+162864005,E66.01,Morbid (severe) obesity due to excess calories: Used for BMI ≥ 40 or BMI ≥ 35 with comorbidities.,40.0 - 44.9,Z68.41
+162864005,E66.01,Morbid (severe) obesity due to excess calories: Used for BMI ≥ 40 or BMI ≥ 35 with comorbidities.,45.0 - 49.9,Z68.42
+162864005,E66.01,Morbid (severe) obesity due to excess calories: Used for BMI ≥ 40 or BMI ≥ 35 with comorbidities.,50.0 - 59.9,Z68.43
+162864005,E66.01,Morbid (severe) obesity due to excess calories: Used for BMI ≥ 40 or BMI ≥ 35 with comorbidities.,60.0 - 69.9,Z68.44
+162864005,E66.01,Morbid (severe) obesity due to excess calories: Used for BMI ≥ 40 or BMI ≥ 35 with comorbidities.,≥ 70.0,Z68.45

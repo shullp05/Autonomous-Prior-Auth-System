@@ -18,7 +18,7 @@ Key fixes vs earlier version:
 - Adds claim_count (takes precedence over claim_rate) so experiments match your story.
 - Forces injected records to be "latest" by date (based on per-patient max date).
 - Sanitizes confounders so expected outcomes are stable and interpretable.
-- Writes output/scenario_manifest.json (+ optional CSV) with scenario + expected verdict.
+- Writes output/scenario_manifest.json (+ optional CSV) enriched with ICD-10/Z68 codes.
 
 Author: Peter Shull, PharmD
 License: MIT
@@ -29,10 +29,11 @@ from __future__ import annotations
 import json
 import logging
 import os
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -41,7 +42,6 @@ from config import DEFAULT_CLAIM_RATE
 from etl_pipeline import run_etl
 
 # Reuse policy constants to avoid "magic strings" diverging across modules.
-# These imports should exist in your repo (agent_logic.py already uses them).
 from policy_constants import (
     PROHIBITED_GLP1,
     SAFETY_GI_MOTILITY,
@@ -62,11 +62,11 @@ logger = logging.getLogger(__name__)
 class ScenarioSpec:
     name: str
     weight: float
-    expected_verdict: str  # policy_engine-style (APPROVED / DENIED_SAFETY / DENIED_CLINICAL / DENIED_MISSING_INFO / MANUAL_REVIEW)
+    expected_verdict: str  # policy_engine-style outcome
     description: str
 
 
-DEFAULT_SCENARIOS: List[ScenarioSpec] = [
+DEFAULT_SCENARIOS: list[ScenarioSpec] = [
     ScenarioSpec(
         name="SAFETY_MTC_MEN2",
         weight=0.10,
@@ -87,9 +87,9 @@ DEFAULT_SCENARIOS: List[ScenarioSpec] = [
     ),
     ScenarioSpec(
         name="DATA_GAP_HEIGHT_WEIGHT_ONLY",
-        weight=0.16,
-        expected_verdict="APPROVED",
-        description="Delete BMI; provide height+weight so BMI is calculated (obese range).",
+        weight=0.10,
+        expected_verdict="CDI_REQUIRED",
+        description="Delete BMI; provide height+weight so BMI is calculated (obese range). FAILS Admin check (no codes).",
     ),
     ScenarioSpec(
         name="DATA_GAP_MISSING_HEIGHT",
@@ -110,8 +110,14 @@ DEFAULT_SCENARIOS: List[ScenarioSpec] = [
         description="BMI >= 30 with no comorbidity requirement; should approve if safety clear.",
     ),
     ScenarioSpec(
+        name="OBESE_NO_CODES",
+        weight=0.10,
+        expected_verdict="CDI_REQUIRED",
+        description="BMI >= 30 and 'Obesity' text, but missing E66/Z68 codes. Should trigger CDI.",
+    ),
+    ScenarioSpec(
         name="OVERWEIGHT_VALID_COMORBIDITY",
-        weight=0.20,
+        weight=0.15,
         expected_verdict="APPROVED",
         description="BMI 27-29.9 + qualifying comorbidity; should approve if safety clear.",
     ),
@@ -139,49 +145,27 @@ DEFAULT_SCENARIOS: List[ScenarioSpec] = [
 # -----------------------------
 # Text match / sanitization lists
 # -----------------------------
-QUALIFYING_CONDITION_SUBSTRINGS: List[str] = [
-    # HTN
-    "hypertension",
-    "essential hypertension",
-    "htn",
-    # Lipids
-    "hyperlipidemia",
-    "dyslipidemia",
-    "high cholesterol",
-    "cholesterol",
-    # Diabetes (qualifying)
-    "type 2 diabetes",
-    "type ii diabetes",
-    "t2dm",
-    "diabetes mellitus type 2",
-    # OSA
-    "obstructive sleep apnea",
-    "osa",
-    # CVD / ASCVD
-    "coronary artery disease",
-    "cad",
-    "myocardial infarction",
-    "ischemic stroke",
-    "stroke",
-    "peripheral arterial disease",
-    "ascvd",
-    "cardiovascular disease",
-    "heart attack",
+QUALIFYING_CONDITION_SUBSTRINGS: list[str] = [
+    "hypertension", "essential hypertension", "htn",
+    "hyperlipidemia", "dyslipidemia", "high cholesterol", "cholesterol",
+    "type 2 diabetes", "type ii diabetes", "t2dm", "diabetes mellitus type 2",
+    "obstructive sleep apnea", "osa",
+    "coronary artery disease", "cad", "myocardial infarction",
+    "ischemic stroke", "stroke", "peripheral arterial disease", "ascvd",
+    "cardiovascular disease", "heart attack",
 ]
 
-AMBIGUOUS_TERMS: List[str] = [
+AMBIGUOUS_TERMS: list[str] = [
     "Prediabetes",
     "Impaired fasting glucose",
     "Elevated BP",
     "Borderline hypertension",
-    "Obesity",
-    "Body mass index 30+",
-    "Sleep apnea",  # intentionally generic (not "obstructive")
+    "Sleep apnea",
     "Malignant tumor of thyroid",
     "Thyroid malignancy",
 ]
 
-QUALIFYING_CONDITION_CANONICAL: List[str] = [
+QUALIFYING_CONDITION_CANONICAL: list[str] = [
     "Essential hypertension (disorder)",
     "Hypertension",
     "Hyperlipidemia",
@@ -196,23 +180,12 @@ QUALIFYING_CONDITION_CANONICAL: List[str] = [
     "Peripheral Arterial Disease",
 ]
 
-SAFETY_CONDITION_CANONICAL: List[str] = [
-    "Medullary Thyroid Carcinoma (MTC)",
-    "MTC",
-    "Multiple Endocrine Neoplasia type 2 (MEN2)",
-    "MEN2",
-    "Pregnant",
-    "Currently pregnant",
-    "Breastfeeding",
-    "Nursing",
-]
-
 
 # -----------------------------
 # Helpers
 # -----------------------------
 def _now_iso_utc() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+    return datetime.now(UTC).isoformat(timespec="seconds")
 
 
 def _ensure_output_dir(path: Path) -> None:
@@ -223,20 +196,55 @@ def _norm_str(x: Any) -> str:
     return str(x or "").strip()
 
 
-def _contains_any(haystack: str, needles: Sequence[str]) -> bool:
-    h = (haystack or "").lower()
-    return any(n.lower() in h for n in needles)
-
-
 def _safe_to_datetime_series(s: pd.Series) -> pd.Series:
-    # Parse YYYY-MM-DD best-effort; invalid -> NaT
     return pd.to_datetime(s, errors="coerce", utc=False)
 
 
-def _build_patient_attr_maps(df_p: pd.DataFrame) -> Tuple[Dict[str, str], Dict[str, str]]:
-    """Return pid->gender map and pid->race map (best-effort)."""
-    gender_map: Dict[str, str] = {}
-    race_map: Dict[str, str] = {}
+def _get_z68_code(bmi: float | None) -> str | None:
+    """Calculate Z68 code for a given BMI value."""
+    if bmi is None or pd.isna(bmi):
+        return None
+
+    if bmi < 20.0:
+        return 'Z68.1'
+    elif 20.0 <= bmi < 30.0:
+        digit = int(bmi) - 20
+        return f"Z68.2{digit}"
+    elif 30.0 <= bmi < 40.0:
+        digit = int(bmi) - 30
+        return f"Z68.3{digit}"
+    elif 40.0 <= bmi < 45.0:
+        return 'Z68.41'
+    elif 45.0 <= bmi < 50.0:
+        return 'Z68.42'
+    elif 50.0 <= bmi < 60.0:
+        return 'Z68.43'
+    elif 60.0 <= bmi < 70.0:
+        return 'Z68.44'
+    elif bmi >= 70.0:
+        return 'Z68.45'
+    return None
+
+
+def _get_icd10_code(bmi: float | None) -> str | None:
+    """Calculate ICD-10 diagnosis code for a given BMI value."""
+    if bmi is None or pd.isna(bmi):
+        return None
+
+    if bmi >= 40.0:
+        return 'E66.01'  # Morbid Obesity
+    elif 30.0 <= bmi < 40.0:
+        return 'E66.9'   # Obesity, Unspecified
+    elif 27.0 <= bmi < 30.0:
+        return 'E66.3'   # Overweight
+
+    # BMI < 27 typically doesn't trigger an E66 code in this context
+    return None
+
+
+def _build_patient_attr_maps(df_p: pd.DataFrame) -> tuple[dict[str, str], dict[str, str]]:
+    gender_map: dict[str, str] = {}
+    race_map: dict[str, str] = {}
     if df_p is None or df_p.empty:
         return gender_map, race_map
 
@@ -252,12 +260,8 @@ def _build_patient_attr_maps(df_p: pd.DataFrame) -> Tuple[Dict[str, str], Dict[s
     return gender_map, race_map
 
 
-def _max_date_by_patient(df: pd.DataFrame, pid_col: str, date_col: str) -> Dict[str, datetime]:
-    """
-    Compute per-patient max date from a DataFrame column containing YYYY-MM-DD.
-    Returns a dict pid -> datetime (naive, local) for max valid date.
-    """
-    out: Dict[str, datetime] = {}
+def _max_date_by_patient(df: pd.DataFrame, pid_col: str, date_col: str) -> dict[str, datetime]:
+    out: dict[str, datetime] = {}
     if df is None or df.empty or pid_col not in df.columns or date_col not in df.columns:
         return out
 
@@ -279,14 +283,11 @@ def _max_date_by_patient(df: pd.DataFrame, pid_col: str, date_col: str) -> Dict[
 
 def _next_injection_date(
     pid: str,
-    base_map: Dict[str, datetime],
+    base_map: dict[str, datetime],
     *,
-    fallback: Optional[datetime] = None,
+    fallback: datetime | None = None,
     days_ahead: int = 1,
 ) -> str:
-    """
-    Make sure injected events are "latest" for a patient by choosing max_date+days_ahead.
-    """
     base = base_map.get(str(pid))
     if base is None:
         base = fallback or datetime(2025, 1, 1)
@@ -333,12 +334,7 @@ def _drop_meds_matching(df_m: pd.DataFrame, pid: str, substrings: Sequence[str])
     return df_m.loc[~drop_mask].reset_index(drop=True)
 
 
-def _safety_substrings_from_constants() -> List[str]:
-    """
-    Build a consolidated list of safety substrings used elsewhere in the agent.
-    This helps sanitize non-safety scenarios so expected outcomes hold.
-    """
-    # These lists are typically substrings already; we normalize them as lower-case checks.
+def _safety_substrings_from_constants() -> list[str]:
     buckets = [
         SAFETY_MTC_MEN2,
         SAFETY_PREGNANCY_LACTATION,
@@ -347,7 +343,7 @@ def _safety_substrings_from_constants() -> List[str]:
         SAFETY_SUICIDALITY,
         SAFETY_GI_MOTILITY,
     ]
-    out: List[str] = []
+    out: list[str] = []
     for b in buckets:
         for term in (b or []):
             t = _norm_str(term)
@@ -356,7 +352,7 @@ def _safety_substrings_from_constants() -> List[str]:
     return out
 
 
-SAFETY_SUBSTRINGS: List[str] = _safety_substrings_from_constants()
+SAFETY_SUBSTRINGS: list[str] = _safety_substrings_from_constants()
 
 
 # -----------------------------
@@ -369,32 +365,15 @@ def inject_complex_scenarios(
     df_o: pd.DataFrame,
     *,
     claim_rate: float = DEFAULT_CLAIM_RATE,
-    claim_count: Optional[int] = None,
+    claim_count: int | None = None,
     seed: int = 42,
     sanitize_for_expected_outcome: bool = True,
     force_latest_dates: bool = True,
-    scenarios: Optional[List[ScenarioSpec]] = None,
+    scenarios: list[ScenarioSpec] | None = None,
     return_manifest: bool = False,
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame] | Tuple[
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame] | tuple[
     pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame
 ]:
-    """
-    Inject synthetic Wegovy prior-auth scenarios aligned to your agent/policy engine.
-
-    Args:
-        df_p/df_c/df_m/df_o: canonical ETL outputs.
-        claim_rate: fraction of patient cohort to receive Wegovy (ignored if claim_count set).
-        claim_count: absolute number of Wegovy claims to generate (takes precedence).
-        seed: RNG seed (deterministic).
-        sanitize_for_expected_outcome: removes confounders (safety terms, prohibited meds,
-            qualifying comorbidities) in scenarios where they would break ground truth.
-        force_latest_dates: injects dates newer than existing per-patient max dates.
-        scenarios: override default scenario mix.
-        return_manifest: if True, returns an additional DataFrame manifest.
-
-    Returns:
-        Either (df_p, df_c, df_m, df_o) or (df_p, df_c, df_m, df_o, df_manifest).
-    """
     df_p = df_p.copy()
     df_c = df_c.copy()
     df_m = df_m.copy()
@@ -409,13 +388,11 @@ def inject_complex_scenarios(
     rng = np.random.default_rng(seed)
     scenario_specs = scenarios or DEFAULT_SCENARIOS
 
-    # Normalize and validate weights
     weights = np.array([max(0.0, float(s.weight)) for s in scenario_specs], dtype=float)
     if weights.sum() <= 0:
         raise ValueError("Scenario weights must sum to > 0.")
     weights = weights / weights.sum()
 
-    # Patient universe
     df_p["patient_id"] = df_p["patient_id"].astype(str)
     all_ids = df_p["patient_id"].dropna().astype(str).unique().tolist()
     n_pat = len(all_ids)
@@ -432,102 +409,73 @@ def inject_complex_scenarios(
 
     logger.info("Generating %d Wegovy claims (seed=%s)", len(cohort_ids), seed)
 
-    # Maps for faster attribute lookup
     gender_map, race_map = _build_patient_attr_maps(df_p)
 
-    # Date maps to force "latest"
     obs_max = _max_date_by_patient(df_o, "patient_id", "date") if force_latest_dates else {}
     med_max = _max_date_by_patient(df_m, "patient_id", "date") if force_latest_dates else {}
     cond_max = _max_date_by_patient(df_c, "patient_id", "onset_date") if force_latest_dates else {}
 
-    # For quick "already has wegovy" checks
-    has_wegovy = set()
-    if df_m is not None and not df_m.empty and "medication_name" in df_m.columns and "patient_id" in df_m.columns:
-        m = df_m.copy()
-        m["patient_id"] = m["patient_id"].astype(str)
-        mname = m["medication_name"].astype(str)
-        hit = mname.str.contains("wegovy", case=False, na=False)
-        has_wegovy = set(m.loc[hit, "patient_id"].astype(str).tolist())
+    new_meds: list[dict[str, Any]] = []
+    new_obs: list[dict[str, Any]] = []
+    new_conds: list[dict[str, Any]] = []
 
-    # Collect new rows
-    new_meds: List[Dict[str, Any]] = []
-    new_obs: List[Dict[str, Any]] = []
-    new_conds: List[Dict[str, Any]] = []
+    manifest_rows: list[dict[str, Any]] = []
 
-    manifest_rows: List[Dict[str, Any]] = []
-
-    # Med injections
+    # --- Injection Helpers ---
     def add_wegovy(pid: str, date_str: str) -> None:
-        # If it already exists, we still add a row (it’s synthetic) unless you want to avoid duplicates.
-        # Keeping it explicit helps in audit logs.
-        new_meds.append(
-            {
-                "patient_id": pid,
-                "medication_name": "Wegovy 2.4 MG Injection",
-                "rx_code": "",
-                "date": date_str,
-                "status": "active",
-            }
-        )
+        new_meds.append({
+            "patient_id": pid,
+            "medication_name": "Wegovy 2.4 MG Injection",
+            "rx_code": "",
+            "date": date_str,
+            "status": "active",
+        })
 
     def add_concurrent_glp1(pid: str, date_str: str) -> None:
-        new_meds.append(
-            {
-                "patient_id": pid,
-                "medication_name": "Ozempic (semaglutide) injection",
-                "rx_code": "",
-                "date": date_str,
-                "status": "active",
-            }
-        )
+        new_meds.append({
+            "patient_id": pid,
+            "medication_name": "Ozempic (semaglutide) injection",
+            "rx_code": "",
+            "date": date_str,
+            "status": "active",
+        })
 
-    # Observation injections
     def add_bmi(pid: str, bmi: float, date_str: str) -> None:
-        new_obs.append(
-            {
-                "patient_id": pid,
-                "type": "BMI",
-                "value": round(float(bmi), 1),
-                "unit": "kg/m2",
-                "date": date_str,
-            }
-        )
+        # Calculate enrichments
+        icd10 = _get_icd10_code(bmi)
+        z68 = _get_z68_code(bmi)
+
+        new_obs.append({
+            "patient_id": pid,
+            "type": "BMI",
+            "value": round(float(bmi), 1),
+            "unit": "kg/m2",
+            "date": date_str,
+            "icd10_dx": icd10,   # Populate enriched columns
+            "icd10_bmi": z68
+        })
 
     def add_height_weight(pid: str, height_cm: float, weight_kg: float, date_str: str) -> None:
-        new_obs.append(
-            {"patient_id": pid, "type": "Height", "value": round(float(height_cm), 1), "unit": "cm", "date": date_str}
-        )
-        new_obs.append(
-            {"patient_id": pid, "type": "Weight", "value": round(float(weight_kg), 1), "unit": "kg", "date": date_str}
-        )
+        new_obs.append({"patient_id": pid, "type": "Height", "value": round(float(height_cm), 1), "unit": "cm", "date": date_str, "icd10_dx": None, "icd10_bmi": None})
+        new_obs.append({"patient_id": pid, "type": "Weight", "value": round(float(weight_kg), 1), "unit": "kg", "date": date_str, "icd10_dx": None, "icd10_bmi": None})
 
     def add_height_only(pid: str, height_cm: float, date_str: str) -> None:
-        new_obs.append(
-            {"patient_id": pid, "type": "Height", "value": round(float(height_cm), 1), "unit": "cm", "date": date_str}
-        )
+        new_obs.append({"patient_id": pid, "type": "Height", "value": round(float(height_cm), 1), "unit": "cm", "date": date_str, "icd10_dx": None, "icd10_bmi": None})
 
     def add_weight_only(pid: str, weight_kg: float, date_str: str) -> None:
-        new_obs.append(
-            {"patient_id": pid, "type": "Weight", "value": round(float(weight_kg), 1), "unit": "kg", "date": date_str}
-        )
+        new_obs.append({"patient_id": pid, "type": "Weight", "value": round(float(weight_kg), 1), "unit": "kg", "date": date_str, "icd10_dx": None, "icd10_bmi": None})
 
-    # Condition injections
-    def add_condition(pid: str, name: str, onset_str: str) -> None:
-        new_conds.append(
-            {
-                "patient_id": pid,
-                "condition_name": name,
-                "code": "",
-                "onset_date": onset_str,
-            }
-        )
-
-    # Scenario draw helper
-    scenario_names = [s.name for s in scenario_specs]
+    def add_condition(pid: str, name: str, onset_str: str, icd10_dx: str | None = None, icd10_bmi: str | None = None) -> None:
+        new_conds.append({
+            "patient_id": pid,
+            "condition_name": name,
+            "code": "",
+            "onset_date": onset_str,
+            "icd10_dx": icd10_dx,
+            "icd10_bmi": icd10_bmi,
+        })
 
     def draw_scenario_for_pid(pid: str) -> ScenarioSpec:
-        # Pregnancy scenario should only apply to females; resample otherwise.
-        # We do NOT silently mutate into a different scenario under the same label.
         gender = gender_map.get(pid, "")
         for _ in range(20):
             idx = int(rng.choice(len(scenario_specs), p=weights))
@@ -535,37 +483,30 @@ def inject_complex_scenarios(
             if spec.name == "SAFETY_PREGNANCY_NURSING" and "female" not in (gender or ""):
                 continue
             return spec
-        # Fallback: pick a non-pregnancy scenario
         non_preg = [s for s in scenario_specs if s.name != "SAFETY_PREGNANCY_NURSING"]
         idx = int(rng.integers(0, len(non_preg)))
         return non_preg[idx]
 
-    # Main injection loop
+    # --- Main Injection Loop ---
     for pid in cohort_ids:
         pid = str(pid)
 
-        # Choose dates (force "latest" per patient)
         obs_date = _next_injection_date(pid, obs_max, fallback=datetime(2025, 1, 1), days_ahead=1) if force_latest_dates else "2025-01-02"
         med_date = _next_injection_date(pid, med_max, fallback=datetime(2025, 1, 1), days_ahead=2) if force_latest_dates else "2025-01-03"
         onset_date = _next_injection_date(pid, cond_max, fallback=datetime(2024, 1, 1), days_ahead=1) if force_latest_dates else "2024-01-02"
 
         spec = draw_scenario_for_pid(pid)
 
-        # Optional sanitization to stabilize expected outcomes
         if sanitize_for_expected_outcome:
-            # For non-safety scenarios, remove safety-confounding conditions and prohibited meds
             if not spec.name.startswith("SAFETY_"):
                 df_c = _drop_conditions_matching(df_c, pid, SAFETY_SUBSTRINGS)
                 df_m = _drop_meds_matching(df_m, pid, PROHIBITED_GLP1)
-
-            # For scenarios where comorbidity must be absent (or ambiguous only), remove qualifying conditions
             if spec.name in ("OVERWEIGHT_AMBIGUOUS_TERM", "OVERWEIGHT_NO_COMORBIDITY", "BMI_UNDER_27", "OBESE_BMI30_PLUS"):
                 df_c = _drop_conditions_matching(df_c, pid, QUALIFYING_CONDITION_SUBSTRINGS)
 
-        # Always add Wegovy claim (even if already present; this is a test harness)
         add_wegovy(pid, med_date)
 
-        injected: Dict[str, Any] = {
+        injected: dict[str, Any] = {
             "injected_bmi": None,
             "injected_height_cm": None,
             "injected_weight_kg": None,
@@ -576,7 +517,7 @@ def inject_complex_scenarios(
             "weight_deleted": False,
         }
 
-        # Scenario behaviors
+        # Scenario Implementation
         if spec.name == "SAFETY_MTC_MEN2":
             bmi = float(rng.uniform(32.0, 40.0))
             add_bmi(pid, bmi, obs_date)
@@ -601,42 +542,28 @@ def inject_complex_scenarios(
             injected["injected_condition"] = cond
 
         elif spec.name == "DATA_GAP_HEIGHT_WEIGHT_ONLY":
-            # Delete BMI so engine must compute from height/weight (and make values obese-range)
             df_o = _drop_observations(df_o, pid, ["BMI"])
             injected["bmi_deleted"] = True
-
-            # Create obese BMI via height/weight: e.g., 175cm, 110kg => ~35.9
             height_cm = float(rng.uniform(165.0, 185.0))
-            # pick weight to roughly ensure BMI >= 30
             target_bmi = float(rng.uniform(31.0, 38.0))
             height_m = height_cm / 100.0
             weight_kg = target_bmi * (height_m**2)
-
             add_height_weight(pid, height_cm, weight_kg, obs_date)
             injected["injected_height_cm"] = round(height_cm, 1)
             injected["injected_weight_kg"] = round(weight_kg, 1)
 
         elif spec.name == "DATA_GAP_MISSING_HEIGHT":
-            # Delete BMI; provide weight only (remove existing height too if we want a true gap)
-            df_o = _drop_observations(df_o, pid, ["BMI"])
+            df_o = _drop_observations(df_o, pid, ["BMI", "Height"])
             injected["bmi_deleted"] = True
-
-            # Make sure height is missing: remove Height observations for this pid
-            df_o = _drop_observations(df_o, pid, ["Height"])
             injected["height_deleted"] = True
-
             weight_kg = float(rng.uniform(75.0, 140.0))
             add_weight_only(pid, weight_kg, obs_date)
             injected["injected_weight_kg"] = round(weight_kg, 1)
 
         elif spec.name == "DATA_GAP_MISSING_WEIGHT":
-            # Delete BMI; provide height only (remove existing weight too)
-            df_o = _drop_observations(df_o, pid, ["BMI"])
+            df_o = _drop_observations(df_o, pid, ["BMI", "Weight"])
             injected["bmi_deleted"] = True
-
-            df_o = _drop_observations(df_o, pid, ["Weight"])
             injected["weight_deleted"] = True
-
             height_cm = float(rng.uniform(150.0, 195.0))
             add_height_only(pid, height_cm, obs_date)
             injected["injected_height_cm"] = round(height_cm, 1)
@@ -646,23 +573,40 @@ def inject_complex_scenarios(
             add_bmi(pid, bmi, obs_date)
             injected["injected_bmi"] = round(bmi, 1)
 
+            # Strict Verification: Must have Obesity diagnosis with codes
+            # Derived from the injected observation logic
+            icd10_dx = _get_icd10_code(bmi) or "E66.9"
+            icd10_bmi = _get_z68_code(bmi)
+            add_condition(pid, "Obesity", onset_date, icd10_dx=icd10_dx, icd10_bmi=icd10_bmi)
+
+        elif spec.name == "OBESE_NO_CODES":
+            # New Scenario: High BMI and "Obesity" text, but NO underlying codes.
+            bmi = float(rng.uniform(30.0, 45.0))
+            add_bmi(pid, bmi, obs_date)
+            injected["injected_bmi"] = round(bmi, 1)
+
+            # Add "Obesity" text ONLY. No codes passed.
+            add_condition(pid, "Obesity", onset_date, icd10_dx=None, icd10_bmi=None)
+
         elif spec.name == "OVERWEIGHT_VALID_COMORBIDITY":
             bmi = float(rng.uniform(27.0, 29.9))
             add_bmi(pid, bmi, obs_date)
 
+            # Strict Verification: Must have Overweight diagnosis
+            icd10_dx = _get_icd10_code(bmi) or "E66.3"
+            icd10_bmi = _get_z68_code(bmi)
+            add_condition(pid, "Overweight", onset_date, icd10_dx=icd10_dx, icd10_bmi=icd10_bmi)
+
             cond = str(rng.choice(np.array(QUALIFYING_CONDITION_CANONICAL, dtype=object)))
             add_condition(pid, cond, onset_date)
-
             injected["injected_bmi"] = round(bmi, 1)
             injected["injected_condition"] = cond
 
         elif spec.name == "OVERWEIGHT_AMBIGUOUS_TERM":
             bmi = float(rng.uniform(27.0, 29.9))
             add_bmi(pid, bmi, obs_date)
-
             cond = str(rng.choice(np.array(AMBIGUOUS_TERMS, dtype=object)))
             add_condition(pid, cond, onset_date)
-
             injected["injected_bmi"] = round(bmi, 1)
             injected["injected_condition"] = cond
 
@@ -677,30 +621,31 @@ def inject_complex_scenarios(
             injected["injected_bmi"] = round(bmi, 1)
 
         else:
-            # Defensive: unknown scenario should be visible in manifest
             bmi = float(rng.uniform(27.0, 29.9))
             add_bmi(pid, bmi, obs_date)
             injected["injected_bmi"] = round(bmi, 1)
 
-        # Manifest row for ground truth
-        manifest_rows.append(
-            {
-                "patient_id": pid,
-                "scenario": spec.name,
-                "expected_verdict": spec.expected_verdict,
-                "scenario_description": spec.description,
-                "seed": seed,
-                "wegovy_injected": True,
-                "obs_date": obs_date,
-                "med_date": med_date,
-                "onset_date": onset_date,
-                "gender": gender_map.get(pid, ""),
-                "race": race_map.get(pid, ""),
-                **injected,
-            }
-        )
+        # Enrichment for Manifest
+        inj_bmi_val = injected.get("injected_bmi")
+        injected["injected_icd10"] = _get_icd10_code(inj_bmi_val)
+        injected["injected_z68"] = _get_z68_code(inj_bmi_val)
 
-    # Append new rows
+        manifest_rows.append({
+            "patient_id": pid,
+            "scenario": spec.name,
+            "expected_verdict": spec.expected_verdict,
+            "scenario_description": spec.description,
+            "seed": seed,
+            "wegovy_injected": True,
+            "obs_date": obs_date,
+            "med_date": med_date,
+            "onset_date": onset_date,
+            "gender": gender_map.get(pid, ""),
+            "race": race_map.get(pid, ""),
+            **injected,
+        })
+
+    # Concatenate new data
     if new_meds:
         df_m = pd.concat([df_m, pd.DataFrame(new_meds)], ignore_index=True)
     if new_obs:
@@ -708,19 +653,16 @@ def inject_complex_scenarios(
     if new_conds:
         df_c = pd.concat([df_c, pd.DataFrame(new_conds)], ignore_index=True)
 
-    # Normalize patient_id types
+    # Normalize
     for df in (df_p, df_c, df_m, df_o):
         if df is not None and not df.empty and "patient_id" in df.columns:
             df["patient_id"] = df["patient_id"].astype(str)
 
     manifest_df = pd.DataFrame(manifest_rows)
 
-    # Basic logging summary
     try:
         dist = manifest_df["scenario"].value_counts().to_dict()
         logger.info("Scenario distribution: %s", dist)
-        exp = manifest_df["expected_verdict"].value_counts().to_dict()
-        logger.info("Expected verdict distribution: %s", exp)
     except Exception:
         pass
 
@@ -729,9 +671,6 @@ def inject_complex_scenarios(
     return df_p, df_c, df_m, df_o
 
 
-# -----------------------------
-# Script entrypoint (writes artifacts)
-# -----------------------------
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,
@@ -742,15 +681,11 @@ if __name__ == "__main__":
     out_dir = Path("output")
     _ensure_output_dir(out_dir)
 
-    # Allow overriding from env so your experiment narratives match reality.
-    # Examples:
-    #   PA_CLAIM_COUNT=85 python chaos_monkey.py
-    #   PA_CLAIM_RATE=0.02125 python chaos_monkey.py
     env_claim_count = os.getenv("PA_CLAIM_COUNT")
     env_claim_rate = os.getenv("PA_CLAIM_RATE")
     env_seed = os.getenv("PA_SEED")
 
-    claim_count: Optional[int] = int(env_claim_count) if env_claim_count else None
+    claim_count: int | None = int(env_claim_count) if env_claim_count else None
     claim_rate: float = float(env_claim_rate) if env_claim_rate else float(DEFAULT_CLAIM_RATE)
     seed: int = int(env_seed) if env_seed else 42
 
@@ -772,7 +707,7 @@ if __name__ == "__main__":
     )
     df_p2, df_c2, df_m2, df_o2, manifest = res
 
-    # Write canonical CSVs (what your batch_runner expects)
+    # Write canonical CSVs
     df_p2.to_csv(out_dir / "data_patients.csv", index=False)
     df_c2.to_csv(out_dir / "data_conditions.csv", index=False)
     df_m2.to_csv(out_dir / "data_medications.csv", index=False)
@@ -792,23 +727,20 @@ if __name__ == "__main__":
             "expected_verdict uses policy_engine-style outcomes.",
             "sanitize_for_expected_outcome=True removes confounders so scenarios are stable.",
             "force_latest_dates=True ensures injected items are newest per patient.",
+            "Manifest enriched with injected_icd10 and injected_z68 codes.",
         ],
     }
 
-    payload = {"metadata": meta, "claims": manifest.to_dict(orient="records")}
+    # Sanitize manifest for JSON compliance (NaN -> None)
+    manifest_clean = manifest.astype(object).where(pd.notnull(manifest), None)
+    payload = {"metadata": meta, "claims": manifest_clean.to_dict(orient="records")}
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
 
-    # Optional: CSV version for quick inspection / pivoting
     try:
         manifest.to_csv(manifest_csv_path, index=False)
     except Exception as e:
         logger.warning("Could not write manifest CSV: %s", e)
 
     logger.info("Data generation complete.")
-    logger.info("Wrote: %s", (out_dir / "data_patients.csv"))
-    logger.info("Wrote: %s", (out_dir / "data_conditions.csv"))
-    logger.info("Wrote: %s", (out_dir / "data_medications.csv"))
-    logger.info("Wrote: %s", (out_dir / "data_observations.csv"))
-    logger.info("Wrote: %s", manifest_path)
-    logger.info("Wrote: %s", manifest_csv_path)
+    logger.info("Wrote enriched manifest to: %s", manifest_path)

@@ -1,5 +1,6 @@
 import os
 import tempfile
+
 from tools import repo_audit
 
 
@@ -48,9 +49,9 @@ def test_orphan_extension_categorization():
     """
     Test Issue #7: Verify that audit_repo now categorizes orphans by file extension.
     """
-    from collections import Counter
     import os
-    
+    from collections import Counter
+
     # Simulate the extension counting logic from repo_audit.py
     mock_orphans = [
         "path/to/file1.py",
@@ -62,9 +63,9 @@ def test_orphan_extension_categorization():
         "path/to/noext",  # No extension
         "path/to/.hidden",  # Hidden file with no ext
     ]
-    
+
     ext_counts = Counter(os.path.splitext(p)[1] or "(no ext)" for p in mock_orphans)
-    
+
     # Verify the counting logic works correctly
     assert ext_counts[".py"] == 2
     assert ext_counts[".json"] == 1
@@ -78,25 +79,25 @@ def test_audit_repo_includes_orphan_extensions():
     This tests the extension categorization logic directly.
     """
     from collections import Counter
-    
+
     # Directly test the extension counting logic that's now in repo_audit.py
     mock_orphans = [
         "./proj/orphan1.py",
-        "./proj/orphan2.py", 
+        "./proj/orphan2.py",
         "./proj/config.json",
         "./proj/data.csv",
     ]
-    
+
     # This mimics the exact logic added to repo_audit.py
     ext_counts = Counter(os.path.splitext(p)[1] or "(no ext)" for p in mock_orphans)
-    
+
     # Verify the report structure would be correct
     report = {
         "orphan_count": len(mock_orphans),
         "orphan_extensions": dict(ext_counts),
         "orphans": mock_orphans,
     }
-    
+
     assert "orphan_extensions" in report
     assert report["orphan_extensions"][".py"] == 2
     assert report["orphan_extensions"][".json"] == 1

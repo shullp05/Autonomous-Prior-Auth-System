@@ -162,11 +162,14 @@ h1 {
 }
 
 .kpi-label-row {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin-bottom: 12px;
+  justify-content: flex-end;
+  margin: 0;
 }
 
 .info-icon {
@@ -742,30 +745,30 @@ h1 {
 .metric-tooltip::after {
   content: '';
   position: absolute;
-  top: -6px;
-  right: 14px;
+  bottom: -6px;
+  left: 14px;
   /* Matches the icon position */
   width: 12px;
   height: 12px;
   background: white;
-  border-top: 1px solid var(--border-subtle);
-  border-left: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
   transform: rotate(45deg);
 }
 
 .metric-tooltip {
   /* Positioning */
   position: absolute;
-  top: 100%;
-  /* Push below the icon */
-  right: -10px;
+  bottom: 100%;
+  /* Push above the icon */
+  left: -10px;
   /* Align right edge slightly offset */
-  margin-top: 12px;
+  margin-bottom: 12px;
   /* Visual gap */
   z-index: 9999;
 
   /* Sizing */
-  width: 280px;
+  width: 300px;
 
   /* Visuals (Medical Grade) */
   background: #ffffff;
@@ -780,7 +783,7 @@ h1 {
   /* Animation State: Hidden */
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-4px);
+  transform: translateY(4px);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
 }

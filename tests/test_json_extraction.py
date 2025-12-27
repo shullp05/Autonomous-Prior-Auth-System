@@ -8,9 +8,9 @@ Tests the robust JSON extraction function that handles:
 - Malformed JSON that should raise errors
 """
 
-import sys
-import os
 import json
+import os
+import sys
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -22,9 +22,9 @@ import pytest
 def extract_func():
     """Import _extract_json_object after mocking data dependencies."""
     import pandas as pd
-    
+
     test_data_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    
+
     # Create minimal test data if not present
     if not os.path.exists(os.path.join(test_data_dir, "data_patients.csv")):
         pd.DataFrame({"patient_id": ["TEST001"], "name": ["Test"], "dob": ["2000-01-01"]}).to_csv(
@@ -42,7 +42,7 @@ def extract_func():
         pd.DataFrame({"patient_id": ["TEST001"], "type": ["BMI"], "value": [30.0], "date": ["2024-01-01"]}).to_csv(
             os.path.join(test_data_dir, "data_observations.csv"), index=False
         )
-    
+
     from agent_logic import _extract_json_object
     return _extract_json_object
 

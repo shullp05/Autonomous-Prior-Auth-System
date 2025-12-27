@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import threading
-from typing import TYPE_CHECKING, Any, List, Tuple
+from typing import TYPE_CHECKING, Any
 
 # IMPORTANT:
 # - Keep this module safe to import even when BCEmbedding / LangChain are not installed,
@@ -28,7 +28,7 @@ def _load_config() -> tuple[bool, str, str]:
     """
     try:
         # Prefer centralized config
-        from config import PA_ENABLE_RERANK, PA_RERANK_MODEL, PA_RERANK_DEVICE  # type: ignore
+        from config import PA_ENABLE_RERANK, PA_RERANK_DEVICE, PA_RERANK_MODEL  # type: ignore
 
         enabled = bool(PA_ENABLE_RERANK)
         model_name = str(PA_RERANK_MODEL)
@@ -113,7 +113,7 @@ def get_bce_reranker() -> Any:
         return _BCE_MODEL
 
 
-def rerank_bce(query: str, docs: List["Document"]) -> List[Tuple["Document", float]]:
+def rerank_bce(query: str, docs: list[Document]) -> list[tuple[Document, float]]:
     """
     Return docs with BCE relevance scores in descending order.
     If reranking is disabled, returns docs in original order with score 0.0.
@@ -130,7 +130,7 @@ def rerank_bce(query: str, docs: List["Document"]) -> List[Tuple["Document", flo
         return [(d, 0.0) for d in docs]
 
     # Defensive: docs should have page_content, but don't trust callers.
-    passages: List[str] = []
+    passages: list[str] = []
     for d in docs:
         try:
             passages.append(getattr(d, "page_content", "") or "")
@@ -153,7 +153,7 @@ def rerank_bce(query: str, docs: List["Document"]) -> List[Tuple["Document", flo
     if len(scores_list) != len(docs):
         scores_list = [0.0] * len(docs)
 
-    scored_docs: List[Tuple["Document", float]] = []
+    scored_docs: list[tuple[Document, float]] = []
     for d, s in zip(docs, scores_list):
         try:
             scored_docs.append((d, float(s)))
