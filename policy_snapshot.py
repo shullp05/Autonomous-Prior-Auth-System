@@ -197,11 +197,13 @@ def _parse_safety(lines: list[str]) -> tuple[list[dict[str, object]], list[str],
 
     current: dict[str, object] | None = None
     collecting_drugs = False
+    glp1_indent: int | None = None
     conflict_bullet = ""
     safety_bullet = ""
 
     for raw in lines:
         line = raw.strip()
+        indent = len(raw) - len(raw.lstrip(" \t"))
         if not line or line.startswith("#"):
             if collecting_drugs and conflict_bullet:
                 drug_conflicts.extend(_extract_values_from_bullet(conflict_bullet))
@@ -211,11 +213,33 @@ def _parse_safety(lines: list[str]) -> tuple[list[dict[str, object]], list[str],
         if _norm_upper(line).startswith("CLINICAL NOTE"):
             continue
 
+        if "GLP-1 / GLP-1/GIP agents to flag" in line:
+            collecting_drugs = True
+            glp1_indent = indent
+            continue
+
+        if collecting_drugs:
+            if glp1_indent is not None and indent < glp1_indent and line.startswith("- "):
+                if conflict_bullet:
+                    drug_conflicts.extend(_extract_values_from_bullet(conflict_bullet))
+                    conflict_bullet = ""
+                collecting_drugs = False
+                glp1_indent = None
+            else:
+                if line.startswith("-"):
+                    if conflict_bullet:
+                        drug_conflicts.extend(_extract_values_from_bullet(conflict_bullet))
+                    conflict_bullet = line
+                elif conflict_bullet:
+                    conflict_bullet = f"{conflict_bullet} {line}"
+                continue
+
         if line.startswith("- ") and line.endswith(":") and "GLP-1 / GLP-1/GIP agents to flag" not in line:
             if collecting_drugs and conflict_bullet:
                 drug_conflicts.extend(_extract_values_from_bullet(conflict_bullet))
                 conflict_bullet = ""
                 collecting_drugs = False
+                glp1_indent = None
 
             if safety_bullet and current:
                 current.setdefault("accepted_strings", []).extend(_extract_values_from_bullet(safety_bullet))
@@ -225,19 +249,6 @@ def _parse_safety(lines: list[str]) -> tuple[list[dict[str, object]], list[str],
                 safety_items.append(current)
 
             current = {"category": line.lstrip("- ").rstrip(":"), "accepted_strings": []}
-            continue
-
-        if "GLP-1 / GLP-1/GIP agents to flag" in line:
-            collecting_drugs = True
-            continue
-
-        if collecting_drugs:
-            if line.startswith("-"):
-                if conflict_bullet:
-                    drug_conflicts.extend(_extract_values_from_bullet(conflict_bullet))
-                conflict_bullet = line
-            elif conflict_bullet:
-                conflict_bullet = f"{conflict_bullet} {line}"
             continue
 
         if line.startswith("-"):

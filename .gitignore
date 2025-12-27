@@ -46,6 +46,7 @@ output/*
 chroma_db/
 .last_model_trace.json
 dashboard_data.json
+!tests/fixtures/dashboard_data.json
 governance_report.json
 orphan_report.json
 rag_sanity_out.json

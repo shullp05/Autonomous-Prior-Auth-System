@@ -243,7 +243,22 @@
       "Exenatide",
       "Byetta",
       "Bydureon",
-      "Bydureon BCise"
+      "Bydureon BCise",
+      "Liraglutide",
+      "Victoza",
+      "Saxenda",
+      "Xultophy",
+      "Lixisenatide",
+      "Adlyxin",
+      "Soliqua",
+      "Ozempic",
+      "Rybelsus",
+      "semaglutide",
+      "Tirzepatide",
+      "Mounjaro",
+      "Zepbound",
+      "Albiglutide",
+      "Tanzeum"
     ]
   },
   "effective_date": "2025-01-01",
@@ -411,51 +426,6 @@
     },
     {
       "accepted_strings": [
-        "Liraglutide",
-        "Victoza",
-        "Saxenda",
-        "Xultophy"
-      ],
-      "category": "Liraglutide",
-      "deny_type": "HARD_DENY"
-    },
-    {
-      "accepted_strings": [
-        "Lixisenatide",
-        "Adlyxin",
-        "Soliqua"
-      ],
-      "category": "Lixisenatide",
-      "deny_type": "HARD_DENY"
-    },
-    {
-      "accepted_strings": [
-        "Ozempic",
-        "Rybelsus",
-        "semaglutide"
-      ],
-      "category": "Semaglutide (other than Wegovy)",
-      "deny_type": "HARD_DENY"
-    },
-    {
-      "accepted_strings": [
-        "Tirzepatide",
-        "Mounjaro",
-        "Zepbound"
-      ],
-      "category": "Tirzepatide (GLP-1/GIP dual agonist)",
-      "deny_type": "HARD_DENY"
-    },
-    {
-      "accepted_strings": [
-        "Albiglutide",
-        "Tanzeum"
-      ],
-      "category": "Other GLP-1 RAs (legacy/rare)",
-      "deny_type": "HARD_DENY"
-    },
-    {
-      "accepted_strings": [
         "History of pancreatitis",
         "prior acute pancreatitis",
         "Chronic pancreatitis",
@@ -485,6 +455,6 @@
   ],
   "scope": "OBESITY/ CHRONIC WEIGHT MANAGEMENT  - NOT CV-RISK OR MASH PATHWAYS",
   "source_file": "UpdatedPAGuidelines.txt",
-  "source_hash": "5d6f5d3ff3173de5f0e06ebe75dc69440b65cd98d2d719958146055f8c15d00c",
+  "source_hash": "01a798fae1a2f611fd7d573855461c2ee787d99ec56e2783dd7ea6838fcfff4d",
   "title": "PAYER POLICY: Chronic Weight Management (Wegovy/Semaglutide)"
 }

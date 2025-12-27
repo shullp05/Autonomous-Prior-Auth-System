@@ -19,7 +19,7 @@ def test_audit_logging_gap():
         # E66.9 ensures admin_readiness so it hits the APPROVED return path
         patient_data = {
             "latest_bmi": "35.0",
-            "conditions": ["Obesity", "Obesity, unspecified (E66.9)"],
+            "conditions": ["Obesity", "Obesity, unspecified (E66.9)", "Z68.35"],
             "meds": [],
             "patient_id": "TEST_PATIENT_1"
         }

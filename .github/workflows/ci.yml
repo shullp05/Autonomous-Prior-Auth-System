@@ -28,13 +28,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: 'pip'
 
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov
+          pip install --no-cache-dir -r requirements-ci.txt
 
       - name: Run Tests with Coverage
         # Skips slow LLM tests and tests requiring Ollama (not available in CI)

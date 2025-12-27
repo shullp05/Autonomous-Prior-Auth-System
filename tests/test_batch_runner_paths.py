@@ -12,11 +12,15 @@ def test_batch_runner_checks_output_directory():
          patch("pandas.read_csv") as mock_read, \
          patch("logging.getLogger"):
 
-        # Setup: make "output/data_medications.csv" exist
+        # Setup: make required output files exist
+        required = {
+            "output/data_patients.csv",
+            "output/data_medications.csv",
+            "output/data_observations.csv",
+            "output/data_conditions.csv",
+        }
         def side_effect(path):
-            if path == "output/data_medications.csv":
-                return True
-            return False
+            return path in required
         mock_exists.side_effect = side_effect
 
         # We need to import run_batch inside the test or ensure the module is reloaded if we change os.path?

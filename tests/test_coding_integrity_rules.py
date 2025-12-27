@@ -30,7 +30,7 @@ def test_admin_readiness_missing_z68():
     ]
     is_ready, missing, _ = check_admin_readiness(diags, REQ_E66_OBESITY, REQ_Z68_OBESITY, REQ_STRINGS_OBESITY)
     assert is_ready is False
-    assert "BMI Z-Code" in missing
+    assert missing.startswith("Z68")
 
 def test_admin_readiness_missing_e66():
     """Verify failure if E66 is missing."""
@@ -39,7 +39,7 @@ def test_admin_readiness_missing_e66():
     ]
     is_ready, missing, _ = check_admin_readiness(diags, REQ_E66_OBESITY, REQ_Z68_OBESITY, REQ_STRINGS_OBESITY)
     assert is_ready is False
-    assert "ICD-10 Code" in missing
+    assert missing.startswith("E66")
 
 def test_admin_readiness_missing_text():
     """Verify failure if diagnosis text doesn't match required strings."""
@@ -68,4 +68,3 @@ def test_legacy_string_format_extraction():
     assert is_ready is True
     assert found["e66"] == "E66.9"
     assert found["z68"] == "Z68.32"
-

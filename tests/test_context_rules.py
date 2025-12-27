@@ -20,7 +20,7 @@ class TestContextRules:
         "MTC: Not detected"
     ])
     def test_negated(self, text):
-        assert classify_context(text, "MTC") == "NEGATED"
+        assert classify_context(text, "MTC").context_type == "NEGATED"
 
     # 2. FAMILY HISTORY
     @pytest.mark.parametrize("text", [
@@ -33,7 +33,7 @@ class TestContextRules:
         "FHx: MTC"
     ])
     def test_family_history(self, text):
-        assert classify_context(text, "MTC") == "FAMILY_HISTORY"
+        assert classify_context(text, "MTC").context_type == "FAMILY_HISTORY"
 
     # 3. HISTORICAL
     @pytest.mark.parametrize("text", [
@@ -48,7 +48,7 @@ class TestContextRules:
     ])
     def test_historical(self, text):
         # Note: "Postpartum" effectively means pregnancy is over/historical
-        assert classify_context(text, "MTC") == "HISTORICAL"
+        assert classify_context(text, "MTC").context_type == "HISTORICAL"
 
     # 4. HYPOTHETICAL
     @pytest.mark.parametrize("text", [
@@ -61,7 +61,7 @@ class TestContextRules:
         "Suspected MEN2"
     ])
     def test_hypothetical(self, text):
-        assert classify_context(text, "MTC") == "HYPOTHETICAL"
+        assert classify_context(text, "MTC").context_type == "HYPOTHETICAL"
 
     # 5. ACTIVE (Default / No Modifiers)
     @pytest.mark.parametrize("text", [
@@ -75,22 +75,22 @@ class TestContextRules:
         "Assessment: Medullary thyroid carcinoma"
     ])
     def test_active(self, text):
-        assert classify_context(text, "MTC") == "ACTIVE"
+        assert classify_context(text, "MTC").context_type == "ACTIVE"
 
     # Edge cases / Conflicts
     def test_precedence_negation_over_historical(self):
         # "Patient denies history of MTC" -> Should be NEGATED, not Historical
-        assert classify_context("Patient denies history of MTC", "MTC") == "NEGATED"
+        assert classify_context("Patient denies history of MTC", "MTC").context_type == "NEGATED"
 
     def test_precedence_family_over_historical(self):
         # "Family history of MTC" -> Should be FAMILY, not Historical
-        assert classify_context("Family history of MTC", "MTC") == "FAMILY_HISTORY"
+        assert classify_context("Family history of MTC", "MTC").context_type == "FAMILY_HISTORY"
 
     def test_complex_phrasing(self):
         # "No family history of MTC" -> Negation + Family?
         # Actually our rule checks negation first. "No ..." matches negation.
         # Ideally "No family history" means NO RISK. So NEGATED is correct outcome (not active).
-        assert classify_context("No family history of MTC", "MTC") == "NEGATED"
+        assert classify_context("No family history of MTC", "MTC").context_type == "NEGATED"
 
     def test_current_pregnancy(self):
-        assert classify_context("Patient is pregnant (12 weeks)", "PREGNANCY") == "ACTIVE"
+        assert classify_context("Patient is pregnant (12 weeks)", "PREGNANCY").context_type == "ACTIVE"

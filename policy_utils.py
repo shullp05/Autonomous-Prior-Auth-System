@@ -95,6 +95,8 @@ def expand_safety_variants(term: str) -> list[str]:
     # Remove "syndrome" suffix variant
     if base.endswith(" syndrome"):
         variants.add(base.replace(" syndrome", "").strip())
+    if " syndrome " in base:
+        variants.add(base.replace(" syndrome ", " ").strip())
 
     # Parenthetical abbreviation extraction
     if "(" in base and ")" in base:

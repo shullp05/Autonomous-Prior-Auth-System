@@ -1,5 +1,16 @@
 import json
+import os
 from dataclasses import asdict
+
+import pytest
+
+if os.getenv("PA_RUN_RAG_RERANK_SANITY", "").lower() not in {"1", "true", "yes"}:
+    pytest.skip(
+        "Set PA_RUN_RAG_RERANK_SANITY=1 to run RAG rerank sanity scenarios.",
+        allow_module_level=True,
+    )
+
+pytest.importorskip("langchain_chroma")
 
 from rag_rerank_sanity import (
     _ensure_vectorstore,

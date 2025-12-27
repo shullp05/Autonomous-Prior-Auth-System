@@ -1,0 +1,24 @@
+# Minimal dependencies for CI/unit tests (avoid heavyweight ML packages).
+
+# Core LangChain stack needed for imports
+langchain>=1.0.0,<2
+langchain-core>=1.0.0,<2
+langchain-community>=0.4.0,<1
+langchain-ollama>=1.0.0,<2
+langgraph>=1.0.0,<2
+langsmith>=0.4.0,<1
+
+# Data + validation
+pandas>=2.0.0,<3
+pydantic>=2.0.0,<3
+pydantic-settings>=2.0.0,<3
+python-dotenv>=1.0.0,<2
+jsonschema>=4.20.0,<5
+requests>=2.32.0,<3
+httpx>=0.28.0,<1
+psutil>=5.9.0,<7
+
+# Testing
+pytest>=9.0.0,<10
+pytest-cov>=6.0.0,<8
+coverage>=7.0.0,<8

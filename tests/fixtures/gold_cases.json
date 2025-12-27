@@ -5,7 +5,8 @@
             "latest_bmi": "32.5",
             "conditions": [
                 "Hypertension (I10)",
-                "Obesity, unspecified (E66.9)"
+                "Obesity, unspecified (E66.9)",
+                "Z68.32"
             ],
             "meds": [
                 "Lisinopril"
@@ -23,7 +24,8 @@
             "latest_bmi": "28.0",
             "conditions": [
                 "Type 2 diabetes mellitus (E11.9)",
-                "Overweight (E66.3)"
+                "Overweight (E66.3)",
+                "Z68.28"
             ],
             "meds": [
                 "Metformin"
@@ -200,7 +202,8 @@
             "latest_bmi": "34.0",
             "conditions": [
                 "Obesity (E66.9)",
-                "Patient denies pregnancy"
+                "Patient denies pregnancy",
+                "Z68.34"
             ],
             "meds": []
         },

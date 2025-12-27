@@ -18,5 +18,5 @@ def test_pathways_loaded():
 def test_model_config_removed():
     # Verify model_config.py does not exist or is empty/unused
     # Ideally import should fail
-    with pytest.raises(ImportError):
-        pass
+    with pytest.raises(ModuleNotFoundError):
+        __import__("model_config")

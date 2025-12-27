@@ -14,7 +14,7 @@ def test_t01_strict_neg():
     result = evaluate_eligibility(patient_data)
     # Expect CDI_REQUIRED because clinically eligible (BMI>30) but admin not ready
     assert result.verdict == "CDI_REQUIRED"
-    assert "Missing explicit ICD-10" in str(result.missing_anchor_code)
+    assert result.missing_anchor_code == "E66.9"
 
 # T02_Strict_Pos: BMI 32.0, Present Codes -> APPROVED
 def test_t02_strict_pos():
@@ -97,4 +97,3 @@ def test_t07_safety_stop():
     }
     result = evaluate_eligibility(patient_data)
     assert result.verdict == "DENIED_SAFETY"
-

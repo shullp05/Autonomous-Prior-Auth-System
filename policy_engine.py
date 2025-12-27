@@ -320,14 +320,14 @@ def _find_qualifying_comorbidity(conditions: list[str]) -> tuple[str, str]:
         for term in QUALIFYING_T2DM:
             if matches_term(cond, term) and classify_context(cond).context_type == "ACTIVE":
                 if not _is_overridden_by_ambiguity(cond, term):
-                    return "TYPE2_DIABETES", cond
+                    return "DIABETES", cond
 
     # 3. Dyslipidemia
     for cond in conditions:
         for term in QUALIFYING_LIPIDS:
             if matches_term(cond, term) and classify_context(cond).context_type == "ACTIVE":
                 if not _is_overridden_by_ambiguity(cond, term):
-                    return "DYSLIPIDEMIA", cond
+                    return "LIPIDS", cond
 
     # 4. OSA
     for cond in conditions:

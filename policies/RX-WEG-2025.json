@@ -243,7 +243,22 @@
       "Exenatide",
       "Byetta",
       "Bydureon",
-      "Bydureon BCise"
+      "Bydureon BCise",
+      "Liraglutide",
+      "Victoza",
+      "Saxenda",
+      "Xultophy",
+      "Lixisenatide",
+      "Adlyxin",
+      "Soliqua",
+      "Ozempic",
+      "Rybelsus",
+      "semaglutide",
+      "Tirzepatide",
+      "Mounjaro",
+      "Zepbound",
+      "Albiglutide",
+      "Tanzeum"
     ]
   },
   "effective_date": "2025-01-01",
@@ -407,51 +422,6 @@
         "The patient cannot be on any other medication that is a GLP-1 receptor agonist or GLP-1/GIP agonist, including combination products."
       ],
       "category": "No Concurrent GLP-1 or GLP-1/GIP Use",
-      "deny_type": "HARD_DENY"
-    },
-    {
-      "accepted_strings": [
-        "Liraglutide",
-        "Victoza",
-        "Saxenda",
-        "Xultophy"
-      ],
-      "category": "Liraglutide",
-      "deny_type": "HARD_DENY"
-    },
-    {
-      "accepted_strings": [
-        "Lixisenatide",
-        "Adlyxin",
-        "Soliqua"
-      ],
-      "category": "Lixisenatide",
-      "deny_type": "HARD_DENY"
-    },
-    {
-      "accepted_strings": [
-        "Ozempic",
-        "Rybelsus",
-        "semaglutide"
-      ],
-      "category": "Semaglutide (other than Wegovy)",
-      "deny_type": "HARD_DENY"
-    },
-    {
-      "accepted_strings": [
-        "Tirzepatide",
-        "Mounjaro",
-        "Zepbound"
-      ],
-      "category": "Tirzepatide (GLP-1/GIP dual agonist)",
-      "deny_type": "HARD_DENY"
-    },
-    {
-      "accepted_strings": [
-        "Albiglutide",
-        "Tanzeum"
-      ],
-      "category": "Other GLP-1 RAs (legacy/rare)",
       "deny_type": "HARD_DENY"
     },
     {

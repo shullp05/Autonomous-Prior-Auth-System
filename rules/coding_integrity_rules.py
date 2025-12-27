@@ -127,14 +127,32 @@ def check_admin_readiness(
                 break
 
     # Compile Verdict
-    missing = []
-    if not has_text: missing.append("Diagnosis Text")
-    if not has_e66: missing.append("ICD-10 Code (E66.x)")
-    if not has_z68: missing.append("BMI Z-Code (Z68.x)")
+    def _suggest_code(required: Set[str], preferred: List[str], fallback: str) -> str:
+        normalized = {c.upper() for c in required if c}
+        for candidate in preferred:
+            if candidate.upper() in normalized:
+                return candidate
+        for code in sorted(normalized):
+            if code and code[0].isalpha():
+                return code
+        return fallback
 
-    if missing:
-        msg = f"CDI_REQUIRED: Missing administrative elements: {', '.join(missing)}."
-        return False, msg, found_evidence
+    if not has_text or not has_e66 or not has_z68:
+        if not has_e66:
+            missing_code = _suggest_code(
+                required_e66_codes,
+                ["E66.3", "E66.9", "E66.01", "E66.09", "E66.0", "E66.x"],
+                "E66.x",
+            )
+        elif not has_z68:
+            missing_code = _suggest_code(
+                required_z68_codes,
+                ["Z68.x"],
+                "Z68.x",
+            )
+        else:
+            missing_code = "Diagnosis Text"
+
+        return False, missing_code, found_evidence
 
     return True, None, found_evidence
-

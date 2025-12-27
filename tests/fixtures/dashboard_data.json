@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "mode": "deterministic",
+    "total_claims": 1
+  },
+  "results": [
+    {
+      "patient_id": "TEST001",
+      "status": "APPROVED",
+      "duration_ms": 120
+    }
+  ]
+}

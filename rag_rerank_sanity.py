@@ -201,8 +201,25 @@ def _filter_docs_for_policy_path(
         )
         priority_order = [
             "safety_exclusions:mtc_men2",
+            "safety_exclusions:pregnancy_nursing",
             "safety_exclusions:concurrent_glp1",
             "drug_conflicts:glp1_glp1_gip",
+        ]
+    elif policy_path == "AMBIGUITY_MANUAL_REVIEW":
+        allowed_prefixes = (
+            "ambiguity:",
+            "eligibility:",
+            "diagnosis:obesity_strings",
+            "diagnosis:overweight_strings",
+            "documentation:requirements",
+        )
+        priority_order = [
+            "ambiguity:",
+            "eligibility:pathway1",
+            "eligibility:pathway2",
+            "diagnosis:obesity_strings",
+            "diagnosis:overweight_strings",
+            "documentation:requirements",
         ]
     else:
         # Unknown or non-Wegovy path → do not restrict further

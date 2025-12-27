@@ -21,7 +21,7 @@ def test_cdi_approved_bmi30_with_anchor():
     """Verify that a clinically eligible BMI>30 patient WITH E66.9 gets APPROVED."""
     patient_data = {
         "latest_bmi": "35.0",
-        "conditions": ["Hypertension (I10)", "Obesity, unspecified (E66.9)"],
+        "conditions": ["Hypertension (I10)", "Obesity, unspecified (E66.9)", "Z68.35"],
         "meds": []
     }
     result = evaluate_eligibility(patient_data)

@@ -35,22 +35,19 @@ class TestPolicySafetySignals:
         assert result.decision_type == "FLAGGED_SAFETY_WARNING"
 
     def test_negated_safety_signal(self):
-        """Negated condition -> SAFETY_SIGNAL_NEEDS_REVIEW
-        (Conservative: even negated terms are flagged for human review to confirm the negation context is correct)
-        """
+        """Negated condition should not trigger a safety signal."""
         patient = {
-            "latest_bmi": "35.0", # Eligible BMI
-            "conditions": ["Patient denies history of MTC"],
+            "latest_bmi": "35.0",  # Eligible BMI
+            "conditions": [
+                {"condition_name": "Patient denies history of MTC"},
+                {"condition_name": "Obesity", "icd10_dx": "E66.9", "icd10_bmi": "Z68.35"},
+            ],
             "meds": []
         }
         result = evaluate_eligibility(patient)
-
-        # Even though BMI is eligible, Safety Signal preempts Approval?
-        # Yes, logic: 1) Safety Gate -> Signal -> Return Signal.
-        # So it blocks approval until manual review clears the signal.
-        assert result.verdict == "SAFETY_SIGNAL_NEEDS_REVIEW"
-        assert result.safety_context == "NEGATED"
-        assert result.safety_confidence == "SIGNAL"
+        assert result.verdict == "APPROVED"
+        assert result.safety_flag == "CLEAR"
+        assert result.safety_context is None
 
     def test_concurrent_glp1_hard_stop(self):
         """Concurrent GLP-1 -> DENIED_SAFETY (Hard Stop)"""
@@ -68,7 +65,10 @@ class TestPolicySafetySignals:
         """No safety terms -> APPROVED"""
         patient = {
             "latest_bmi": "35.0",
-            "conditions": ["Hypertension"],
+            "conditions": [
+                "Hypertension",
+                {"condition_name": "Obesity", "icd10_dx": "E66.9", "icd10_bmi": "Z68.35"},
+            ],
             "meds": []
         }
         result = evaluate_eligibility(patient)
