@@ -55,8 +55,9 @@ import pandas as pd
 
 from offline_mode import enforce_offline
 
-# Enforce offline mode immediately if configured
-from offline_mode import enforce_offline
+# Enforce offline mode immediately if configured (allows localhost by default)
+enforce_offline()
+
 from policy_utils import format_criteria_list
 
 from audit_logger import get_audit_logger
