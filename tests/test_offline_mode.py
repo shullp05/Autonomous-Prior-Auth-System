@@ -171,4 +171,4 @@ def test_offline_udp_allows_loopback_send(monkeypatch: pytest.MonkeyPatch):
         sent = s.sendto(b"ping", ("127.0.0.1", 9999))
         assert sent == 4
     finally:
-        s.close()
+        s.close()   
