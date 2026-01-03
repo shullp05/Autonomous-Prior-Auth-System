@@ -7,6 +7,7 @@ import logging
 import math
 import os
 from pathlib import Path
+from datetime import datetime, timezone
 from typing import Any
 
 import pandas as pd
@@ -180,6 +181,106 @@ def _detect_safety_exclusion(conds: list[str], meds: list[str]) -> tuple[bool, s
     return False, ""
 
 
+_REFERENCE_YEAR: int | None = None
+
+
+def _env_reference_year() -> int | None:
+    ref_date = os.getenv("PA_REFERENCE_DATE", "").strip()
+    if ref_date:
+        try:
+            return int(pd.to_datetime(ref_date, errors="raise").year)
+        except Exception:
+            logger.warning("Invalid PA_REFERENCE_DATE=%s; ignoring.", ref_date)
+    ref_year = os.getenv("PA_REFERENCE_YEAR", "").strip()
+    if ref_year:
+        try:
+            return int(ref_year)
+        except Exception:
+            logger.warning("Invalid PA_REFERENCE_YEAR=%s; ignoring.", ref_year)
+    return None
+
+
+def _resolve_reference_year(candidates: list[tuple[pd.DataFrame, str]] | None = None) -> int:
+    env_year = _env_reference_year()
+    if env_year is not None:
+        return env_year
+    years: list[int] = []
+    if candidates:
+        for df, col in candidates:
+            if df is None or df.empty or col not in df.columns:
+                continue
+            dates = pd.to_datetime(df[col], errors="coerce")
+            if dates.empty:
+                continue
+            max_year = dates.dt.year.max()
+            if pd.notna(max_year):
+                years.append(int(max_year))
+    if years:
+        return max(years)
+    return datetime.now(timezone.utc).year
+
+
+def _current_year() -> int:
+    return _REFERENCE_YEAR or _resolve_reference_year()
+
+
+def _filter_current_year_rows(
+    df: pd.DataFrame,
+    date_col: str,
+    reference_year: int | None = None,
+) -> pd.DataFrame:
+    if df.empty or date_col not in df.columns:
+        return df
+    if reference_year is None:
+        reference_year = _REFERENCE_YEAR or _resolve_reference_year([(df, date_col)])
+    dates = pd.to_datetime(df[date_col], errors="coerce")
+    return df.loc[dates.dt.year == reference_year].copy()
+
+
+def _latest_bmi_observation(p_obs: pd.DataFrame) -> tuple[pd.Timestamp | None, float | None]:
+    if p_obs.empty or "date" not in p_obs.columns:
+        return None, None
+    bmi_rows = p_obs[p_obs["type"] == "BMI"].copy()
+    if bmi_rows.empty:
+        return None, None
+    bmi_rows["date_parsed"] = pd.to_datetime(bmi_rows["date"], errors="coerce")
+    bmi_rows = bmi_rows.dropna(subset=["date_parsed"]).sort_values("date_parsed", ascending=False)
+    if bmi_rows.empty:
+        return None, None
+    try:
+        return bmi_rows.iloc[0]["date_parsed"], float(bmi_rows.iloc[0]["value"])
+    except Exception:
+        return None, None
+
+
+def _latest_height_weight_pair(p_obs: pd.DataFrame) -> tuple[pd.Timestamp | None, float | None, float | None]:
+    if p_obs.empty or "date" not in p_obs.columns:
+        return None, None, None
+    obs = p_obs[p_obs["type"].isin(["Height", "Weight"])].copy()
+    if obs.empty:
+        return None, None, None
+    obs["date_parsed"] = pd.to_datetime(obs["date"], errors="coerce")
+    obs = obs.dropna(subset=["date_parsed"])
+    if obs.empty:
+        return None, None, None
+    height_rows = obs[obs["type"] == "Height"]
+    weight_rows = obs[obs["type"] == "Weight"]
+    if height_rows.empty or weight_rows.empty:
+        return None, None, None
+    height_by_date = height_rows.sort_values("date_parsed").groupby("date_parsed").tail(1)
+    weight_by_date = weight_rows.sort_values("date_parsed").groupby("date_parsed").tail(1)
+    common_dates = set(height_by_date["date_parsed"]) & set(weight_by_date["date_parsed"])
+    if not common_dates:
+        return None, None, None
+    latest_date = max(common_dates)
+    try:
+        height_cm = float(height_by_date[height_by_date["date_parsed"] == latest_date].iloc[0]["value"])
+        weight_kg = float(weight_by_date[weight_by_date["date_parsed"] == latest_date].iloc[0]["value"])
+    except Exception:
+        return None, None, None
+    return latest_date, height_cm, weight_kg
+
+
 def _get_latest_numeric_obs(df_obs: pd.DataFrame, pid: str, obs_type: str) -> float | None:
     if df_obs.empty:
         return None
@@ -187,6 +288,7 @@ def _get_latest_numeric_obs(df_obs: pd.DataFrame, pid: str, obs_type: str) -> fl
         return None
 
     p_obs = df_obs[df_obs["patient_id"] == pid].copy()
+    p_obs = _filter_current_year_rows(p_obs, "date")
     p_obs = p_obs[p_obs["type"] == obs_type].copy()
     if p_obs.empty:
         return None
@@ -202,22 +304,32 @@ def _get_latest_numeric_obs(df_obs: pd.DataFrame, pid: str, obs_type: str) -> fl
 
 
 def _calculate_bmi_ground_truth(df_obs: pd.DataFrame, pid: str) -> float | None:
-    bmi = _get_latest_numeric_obs(df_obs, pid, "BMI")
-    if bmi is not None:
-        if POLICY["min_reasonable_bmi"] <= bmi <= POLICY["max_reasonable_bmi"]:
-            return round(float(bmi), 1)
+    if df_obs.empty:
+        return None
+    p_obs = df_obs[df_obs["patient_id"] == pid].copy()
+    p_obs = _filter_current_year_rows(p_obs, "date")
+    if p_obs.empty:
         return None
 
-    wt = _get_latest_numeric_obs(df_obs, pid, "Weight")
-    ht = _get_latest_numeric_obs(df_obs, pid, "Height")
-    if wt is None or ht is None:
+    bmi_date, bmi_val = _latest_bmi_observation(p_obs)
+    hw_date, height_cm, weight_kg = _latest_height_weight_pair(p_obs)
+
+    if bmi_val is None and height_cm is None:
+        return None
+
+    if bmi_val is not None and (hw_date is None or (bmi_date is not None and bmi_date >= hw_date)):
+        if POLICY["min_reasonable_bmi"] <= bmi_val <= POLICY["max_reasonable_bmi"]:
+            return round(float(bmi_val), 1)
+        return None
+
+    if height_cm is None or weight_kg is None:
         return None
 
     try:
-        height_m = float(ht) / 100.0
+        height_m = float(height_cm) / 100.0
         if height_m <= 0:
             return None
-        bmi_calc = float(wt) / (height_m**2)
+        bmi_calc = float(weight_kg) / (height_m**2)
         if POLICY["min_reasonable_bmi"] <= bmi_calc <= POLICY["max_reasonable_bmi"]:
             return round(float(bmi_calc), 1)
         return None
@@ -395,14 +507,27 @@ def run_governance_audit(
             logger.error("Missing required data files: %s", missing)
             return
 
+        global _REFERENCE_YEAR
         df_pat = pd.read_csv(PATIENTS_CSV)
         df_obs = pd.read_csv(OBS_CSV)
         df_conds = pd.read_csv(CONDS_CSV)
         df_meds = pd.read_csv(MEDS_CSV)
 
+        _REFERENCE_YEAR = _resolve_reference_year(
+            [
+                (df_obs, "date"),
+                (df_conds, "onset_date"),
+                (df_meds, "date"),
+            ]
+        )
+
     except Exception as e:
         logger.error("Data Load Error: %s", e)
         return
+
+    df_obs = _filter_current_year_rows(df_obs, "date", _REFERENCE_YEAR)
+    df_conds = _filter_current_year_rows(df_conds, "onset_date", _REFERENCE_YEAR)
+    df_meds = _filter_current_year_rows(df_meds, "date", _REFERENCE_YEAR)
 
     if df_ai.empty:
         logger.warning("No AI results to audit.")

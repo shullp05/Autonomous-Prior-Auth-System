@@ -200,6 +200,42 @@ def _safe_to_datetime_series(s: pd.Series) -> pd.Series:
     return pd.to_datetime(s, errors="coerce", utc=False)
 
 
+def _env_reference_year() -> int | None:
+    ref_date = os.getenv("PA_REFERENCE_DATE", "").strip()
+    if ref_date:
+        try:
+            return int(pd.to_datetime(ref_date, errors="raise").year)
+        except Exception:
+            logger.warning("Invalid PA_REFERENCE_DATE=%s; ignoring.", ref_date)
+    ref_year = os.getenv("PA_REFERENCE_YEAR", "").strip()
+    if ref_year:
+        try:
+            return int(ref_year)
+        except Exception:
+            logger.warning("Invalid PA_REFERENCE_YEAR=%s; ignoring.", ref_year)
+    return None
+
+
+def _resolve_reference_year(candidates: list[tuple[pd.DataFrame | None, str]] | None = None) -> int:
+    env_year = _env_reference_year()
+    if env_year is not None:
+        return env_year
+    years: list[int] = []
+    if candidates:
+        for df, col in candidates:
+            if df is None or getattr(df, "empty", True) or col not in df.columns:
+                continue
+            dates = pd.to_datetime(df[col], errors="coerce")
+            if dates.empty:
+                continue
+            max_year = dates.dt.year.max()
+            if pd.notna(max_year):
+                years.append(int(max_year))
+    if years:
+        return max(years)
+    return datetime.now(UTC).year
+
+
 def _get_z68_code(bmi: float | None) -> str | None:
     """Calculate Z68 code for a given BMI value."""
     if bmi is None or pd.isna(bmi):
@@ -260,7 +296,12 @@ def _build_patient_attr_maps(df_p: pd.DataFrame) -> tuple[dict[str, str], dict[s
     return gender_map, race_map
 
 
-def _max_date_by_patient(df: pd.DataFrame, pid_col: str, date_col: str) -> dict[str, datetime]:
+def _max_date_by_patient(
+    df: pd.DataFrame,
+    pid_col: str,
+    date_col: str,
+    reference_year: int | None = None,
+) -> dict[str, datetime]:
     out: dict[str, datetime] = {}
     if df is None or df.empty or pid_col not in df.columns or date_col not in df.columns:
         return out
@@ -269,6 +310,8 @@ def _max_date_by_patient(df: pd.DataFrame, pid_col: str, date_col: str) -> dict[
     tmp[pid_col] = tmp[pid_col].astype(str)
     tmp["_dt"] = _safe_to_datetime_series(tmp[date_col].astype(str))
     tmp = tmp.dropna(subset=["_dt"])
+    if reference_year is not None:
+        tmp = tmp.loc[tmp["_dt"].dt.year == reference_year]
     if tmp.empty:
         return out
 
@@ -287,11 +330,16 @@ def _next_injection_date(
     *,
     fallback: datetime | None = None,
     days_ahead: int = 1,
+    reference_year: int | None = None,
 ) -> str:
     base = base_map.get(str(pid))
-    if base is None:
+    if reference_year is not None:
+        fallback = fallback or datetime(reference_year, 1, 1)
+    if base is None or (reference_year is not None and base.year != reference_year):
         base = fallback or datetime(2025, 1, 1)
     inj = base + timedelta(days=days_ahead)
+    if reference_year is not None and inj.year != reference_year:
+        inj = datetime(reference_year, 12, 31)
     return inj.strftime("%Y-%m-%d")
 
 
@@ -398,6 +446,14 @@ def inject_complex_scenarios(
     n_pat = len(all_ids)
     logger.info("Injecting scenarios into cohort of %d patients", n_pat)
 
+    reference_year = _resolve_reference_year(
+        [
+            (df_m, "date"),
+            (df_o, "date"),
+            (df_c, "onset_date"),
+        ]
+    )
+
     if claim_count is not None:
         sample_size = int(claim_count)
     else:
@@ -411,9 +467,21 @@ def inject_complex_scenarios(
 
     gender_map, race_map = _build_patient_attr_maps(df_p)
 
-    obs_max = _max_date_by_patient(df_o, "patient_id", "date") if force_latest_dates else {}
-    med_max = _max_date_by_patient(df_m, "patient_id", "date") if force_latest_dates else {}
-    cond_max = _max_date_by_patient(df_c, "patient_id", "onset_date") if force_latest_dates else {}
+    obs_max = (
+        _max_date_by_patient(df_o, "patient_id", "date", reference_year=reference_year)
+        if force_latest_dates
+        else {}
+    )
+    med_max = (
+        _max_date_by_patient(df_m, "patient_id", "date", reference_year=reference_year)
+        if force_latest_dates
+        else {}
+    )
+    cond_max = (
+        _max_date_by_patient(df_c, "patient_id", "onset_date", reference_year=reference_year)
+        if force_latest_dates
+        else {}
+    )
 
     new_meds: list[dict[str, Any]] = []
     new_obs: list[dict[str, Any]] = []
@@ -491,9 +559,40 @@ def inject_complex_scenarios(
     for pid in cohort_ids:
         pid = str(pid)
 
-        obs_date = _next_injection_date(pid, obs_max, fallback=datetime(2025, 1, 1), days_ahead=1) if force_latest_dates else "2025-01-02"
-        med_date = _next_injection_date(pid, med_max, fallback=datetime(2025, 1, 1), days_ahead=2) if force_latest_dates else "2025-01-03"
-        onset_date = _next_injection_date(pid, cond_max, fallback=datetime(2024, 1, 1), days_ahead=1) if force_latest_dates else "2024-01-02"
+        ref_fallback = datetime(reference_year, 1, 1)
+        obs_date = (
+            _next_injection_date(
+                pid,
+                obs_max,
+                fallback=ref_fallback,
+                days_ahead=1,
+                reference_year=reference_year,
+            )
+            if force_latest_dates
+            else f"{reference_year}-01-02"
+        )
+        med_date = (
+            _next_injection_date(
+                pid,
+                med_max,
+                fallback=ref_fallback,
+                days_ahead=2,
+                reference_year=reference_year,
+            )
+            if force_latest_dates
+            else f"{reference_year}-01-03"
+        )
+        onset_date = (
+            _next_injection_date(
+                pid,
+                cond_max,
+                fallback=ref_fallback,
+                days_ahead=1,
+                reference_year=reference_year,
+            )
+            if force_latest_dates
+            else f"{reference_year}-01-02"
+        )
 
         spec = draw_scenario_for_pid(pid)
 
@@ -717,9 +816,18 @@ if __name__ == "__main__":
     manifest_path = out_dir / "scenario_manifest.json"
     manifest_csv_path = out_dir / "scenario_manifest.csv"
 
+    reference_year = _resolve_reference_year(
+        [
+            (df_m2, "date"),
+            (df_o2, "date"),
+            (df_c2, "onset_date"),
+        ]
+    )
+
     meta = {
         "timestamp_utc": _now_iso_utc(),
         "seed": seed,
+        "reference_year": reference_year,
         "claim_count": int(claim_count) if claim_count is not None else None,
         "claim_rate": float(claim_rate) if claim_count is None else None,
         "scenario_mix": [asdict(s) for s in DEFAULT_SCENARIOS],

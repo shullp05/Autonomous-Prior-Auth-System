@@ -61,6 +61,7 @@ enforce_offline()
 from policy_utils import format_criteria_list
 
 from audit_logger import get_audit_logger
+from letter_service import LetterResult, generate_approved_letter
 from policy_engine import evaluate_eligibility
 from policy_snapshot import POLICY_ID, SNAPSHOT_PATH, load_policy_snapshot
 from schema_validation import validate_policy_snapshot
@@ -86,11 +87,12 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
+_REFERENCE_YEAR: int | None = None
 
 # ------------------------------
 # Configuration Constants
 # ------------------------------
-OUTPUT_DIR = Path("output")
+OUTPUT_DIR = Path(os.getenv("PA_OUTPUT_DIR", "output"))
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_PATH = OUTPUT_DIR / "dashboard_data.json"
 
@@ -105,6 +107,103 @@ TRACE_FILE = Path(".last_model_trace.json")
 def _now_iso() -> str:
     """Generate ISO 8601 timestamp in UTC."""
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _env_reference_year() -> int | None:
+    ref_date = os.getenv("PA_REFERENCE_DATE", "").strip()
+    if ref_date:
+        try:
+            return int(pd.to_datetime(ref_date, errors="raise").year)
+        except Exception:
+            logger.warning("Invalid PA_REFERENCE_DATE=%s; ignoring.", ref_date)
+    ref_year = os.getenv("PA_REFERENCE_YEAR", "").strip()
+    if ref_year:
+        try:
+            return int(ref_year)
+        except Exception:
+            logger.warning("Invalid PA_REFERENCE_YEAR=%s; ignoring.", ref_year)
+    return None
+
+
+def _resolve_reference_year(candidates: list[tuple[pd.DataFrame, str]] | None = None) -> int:
+    env_year = _env_reference_year()
+    if env_year is not None:
+        return env_year
+    years: list[int] = []
+    if candidates:
+        for df, col in candidates:
+            if df is None or df.empty or col not in df.columns:
+                continue
+            dates = pd.to_datetime(df[col], errors="coerce")
+            if dates.empty:
+                continue
+            max_year = dates.dt.year.max()
+            if pd.notna(max_year):
+                years.append(int(max_year))
+    if years:
+        return max(years)
+    return datetime.now(timezone.utc).year
+
+
+def _current_year() -> int:
+    return _REFERENCE_YEAR or _resolve_reference_year()
+
+
+def _filter_current_year_rows(
+    df: pd.DataFrame,
+    date_col: str,
+    reference_year: int | None = None,
+) -> pd.DataFrame:
+    if df.empty or date_col not in df.columns:
+        return df
+    if reference_year is None:
+        reference_year = _REFERENCE_YEAR or _resolve_reference_year([(df, date_col)])
+    dates = pd.to_datetime(df[date_col], errors="coerce")
+    return df.loc[dates.dt.year == reference_year].copy()
+
+
+def _latest_bmi_observation(p_obs: pd.DataFrame) -> tuple[pd.Timestamp | None, float | None]:
+    if p_obs.empty or "date" not in p_obs.columns:
+        return None, None
+    bmi_rows = p_obs[p_obs["type"] == "BMI"].copy()
+    if bmi_rows.empty:
+        return None, None
+    bmi_rows["date_parsed"] = pd.to_datetime(bmi_rows["date"], errors="coerce")
+    bmi_rows = bmi_rows.dropna(subset=["date_parsed"]).sort_values("date_parsed", ascending=False)
+    if bmi_rows.empty:
+        return None, None
+    try:
+        return bmi_rows.iloc[0]["date_parsed"], float(bmi_rows.iloc[0]["value"])
+    except Exception:
+        return None, None
+
+
+def _latest_height_weight_pair(p_obs: pd.DataFrame) -> tuple[pd.Timestamp | None, float | None, float | None]:
+    if p_obs.empty or "date" not in p_obs.columns:
+        return None, None, None
+    obs = p_obs[p_obs["type"].isin(["Height", "Weight"])].copy()
+    if obs.empty:
+        return None, None, None
+    obs["date_parsed"] = pd.to_datetime(obs["date"], errors="coerce")
+    obs = obs.dropna(subset=["date_parsed"])
+    if obs.empty:
+        return None, None, None
+    height_rows = obs[obs["type"] == "Height"]
+    weight_rows = obs[obs["type"] == "Weight"]
+    if height_rows.empty or weight_rows.empty:
+        return None, None, None
+    height_by_date = height_rows.sort_values("date_parsed").groupby("date_parsed").tail(1)
+    weight_by_date = weight_rows.sort_values("date_parsed").groupby("date_parsed").tail(1)
+    common_dates = set(height_by_date["date_parsed"]) & set(weight_by_date["date_parsed"])
+    if not common_dates:
+        return None, None, None
+    latest_date = max(common_dates)
+    try:
+        height_cm = float(height_by_date[height_by_date["date_parsed"] == latest_date].iloc[0]["value"])
+        weight_kg = float(weight_by_date[weight_by_date["date_parsed"] == latest_date].iloc[0]["value"])
+    except Exception:
+        return None, None, None
+    return latest_date, height_cm, weight_kg
 
 
 def _mirror_to_dashboard(src_path: Path) -> None:
@@ -223,51 +322,30 @@ def _load_patient_data(
 
     # Get latest BMI
     p_obs = df_obs[df_obs["patient_id"].astype(str) == pid_str].copy()
-    bmi_obs = p_obs[p_obs["type"] == "BMI"].copy()
+    p_obs = _filter_current_year_rows(p_obs, "date")
+    bmi_date, bmi_val = _latest_bmi_observation(p_obs)
+    hw_date, height_cm, weight_kg = _latest_height_weight_pair(p_obs)
 
-    if not bmi_obs.empty:
-        if "date" in bmi_obs.columns:
-            bmi_obs["date_parsed"] = pd.to_datetime(bmi_obs["date"], errors="coerce")
-            bmi_obs = bmi_obs.sort_values("date_parsed", ascending=False)
-        latest_bmi = str(bmi_obs.iloc[0]["value"])
+    if bmi_val is None and height_cm is None:
+        latest_bmi = "MISSING_DATA"
+    elif bmi_val is not None and (hw_date is None or (bmi_date is not None and bmi_date >= hw_date)):
+        latest_bmi = str(round(bmi_val, 1))
     else:
-        # Try to calculate from height/weight
-        ht_obs = p_obs[p_obs["type"] == "Height"].copy()
-        wt_obs = p_obs[p_obs["type"] == "Weight"].copy()
-
-        # Sort by date if present
-        if "date" in ht_obs.columns:
-            ht_obs["date_parsed"] = pd.to_datetime(ht_obs["date"], errors="coerce")
-            ht_obs = ht_obs.sort_values("date_parsed", ascending=False)
-        if "date" in wt_obs.columns:
-            wt_obs["date_parsed"] = pd.to_datetime(wt_obs["date"], errors="coerce")
-            wt_obs = wt_obs.sort_values("date_parsed", ascending=False)
-
-        if not ht_obs.empty and not wt_obs.empty:
-            try:
-                ht = float(ht_obs.iloc[0]["value"]) / 100.0  # cm to m
-                wt = float(wt_obs.iloc[0]["value"])
-                if ht > 0:
-                    calculated_bmi = wt / (ht**2)
-                    latest_bmi = f"{calculated_bmi:.1f} (Calculated)"
-                else:
-                    latest_bmi = "MISSING_DATA"
-            except (ValueError, TypeError):
+        # Calculate from height/weight (most recent visit with both values)
+        try:
+            ht = float(height_cm) / 100.0  # cm to m
+            wt = float(weight_kg)
+            if ht > 0:
+                calculated_bmi = wt / (ht**2)
+                latest_bmi = f"{calculated_bmi:.1f} (Calculated)"
+            else:
                 latest_bmi = "MISSING_DATA"
-        else:
+        except (ValueError, TypeError):
             latest_bmi = "MISSING_DATA"
 
-    # Get conditions
     # Get conditions (full details for coding integrity)
     cond_rows = df_conds[df_conds["patient_id"].astype(str) == pid_str]
-    # Ensure columns exist (in case of legacy CSV)
-    cols = ["condition_name"]
-    if "icd10_dx" in cond_rows.columns:
-        cols.append("icd10_dx")
-    if "icd10_bmi" in cond_rows.columns:
-        cols.append("icd10_bmi")
-
-    conditions = cond_rows[cols].to_dict(orient="records")
+    conditions = cond_rows.to_dict(orient="records")
 
     # Get medications
     meds = (
@@ -303,6 +381,15 @@ def run_batch() -> None:
     Raises:
         FileNotFoundError: If required CSV data files are missing.
     """
+    if USE_DETERMINISTIC:
+        letter_mode = os.getenv("PA_LETTER_MODE", "deterministic").strip().lower()
+        if letter_mode != "deterministic":
+            logger.warning(
+                "Overriding PA_LETTER_MODE=%s to deterministic for LLM-free batch run.",
+                letter_mode,
+            )
+            os.environ["PA_LETTER_MODE"] = "deterministic"
+
     # Provider-facing enforcement (skip in CI/pytest unless explicitly enabled)
     _require_provider_context_if_enforced()
 
@@ -318,10 +405,23 @@ def run_batch() -> None:
         logger.error("Missing required data files: %s", ", ".join(missing_files))
         return
 
+    global _REFERENCE_YEAR
     df_patients = pd.read_csv("output/data_patients.csv")
     df_meds = pd.read_csv("output/data_medications.csv")
     df_obs = pd.read_csv("output/data_observations.csv")
     df_conds = pd.read_csv("output/data_conditions.csv")
+
+    _REFERENCE_YEAR = _resolve_reference_year(
+        [
+            (df_meds, "date"),
+            (df_obs, "date"),
+            (df_conds, "onset_date"),
+        ]
+    )
+
+    df_meds = _filter_current_year_rows(df_meds, "date", _REFERENCE_YEAR)
+    df_obs = _filter_current_year_rows(df_obs, "date", _REFERENCE_YEAR)
+    df_conds = _filter_current_year_rows(df_conds, "onset_date", _REFERENCE_YEAR)
 
     target_meds = df_meds[df_meds["medication_name"].str.contains(DRUG_QUERY, case=False, na=False)]
     target_ids = target_meds["patient_id"].dropna().astype(str).unique().tolist()
@@ -467,6 +567,16 @@ def run_batch() -> None:
         det_result_obj = None
         llm_response_obj: dict[str, Any] | None = None
 
+        def _apply_letter_result(letter_res: Any) -> None:
+            nonlocal appeal, appeal_note
+            if isinstance(letter_res, LetterResult):
+                if letter_res.letter:
+                    appeal = letter_res.letter
+                if letter_res.note:
+                    appeal_note = letter_res.note
+            elif isinstance(letter_res, str) and letter_res.strip():
+                appeal = letter_res
+
         try:
             if USE_DETERMINISTIC:
                 patient_data = _load_patient_data(pid, df_patients, df_obs, df_conds, df_meds)
@@ -506,51 +616,18 @@ def run_batch() -> None:
                 # Letters: deterministic mode should remain LLM-free when possible.
                 # If agent_logic isn't importable (langchain deps missing), use safe deterministic templates.
                 if status == "APPROVED":
-                    try:
-                        from agent_logic import generate_approved_letter
-
-                        findings_dict = {
-                            "bmi_numeric": det_result_obj.bmi_numeric,
-                            "comorbidity_category": det_result_obj.comorbidity_category,
-                            "policy_path": det_result_obj.policy_path,
-                        }
-                        patient_data["patient_id"] = pid
-                        appeal = generate_approved_letter(patient_data, reason, findings_dict)
-                        if appeal:
-                            logger.info("Generated Letter of Medical Necessity for APPROVED patient %s", pid)
-                    except ImportError as e:
-                        logger.warning("Could not generate approved letter (missing deps): %s", e)
-                        bmi_val = det_result_obj.bmi_numeric
-                        comorbidity = det_result_obj.comorbidity_category or "NONE"
-                        bmi_str = f"{bmi_val:.1f} kg/m²" if bmi_val is not None else "[See chart]"
-                        comorbidity_line = (
-                            f"Qualifying Comorbidity: {comorbidity}" if comorbidity != "NONE" else ""
-                        )
-                        appeal = f"""LETTER OF MEDICAL NECESSITY
-Prior Authorization Request - Wegovy (Semaglutide 2.4mg)
-
-To: Medical Director, Utilization Management
-
-RE: Patient {pid}
-
-Dear Medical Director,
-
-I am writing to request prior authorization for Wegovy (semaglutide 2.4mg) for chronic weight management.
-
-CLINICAL JUSTIFICATION:
-{reason}
-
-Patient's current BMI: {bmi_str}
-{comorbidity_line}
-
-Based on the clinical criteria outlined above, this patient meets coverage requirements for Wegovy.
-
-I respectfully request approval of this prior authorization.
-
-Sincerely,
-_______________________________
-Prescriber Signature / Date
-"""
+                    findings_dict = {
+                        "bmi_numeric": det_result_obj.bmi_numeric,
+                        "comorbidity_category": det_result_obj.comorbidity_category,
+                        "policy_path": det_result_obj.policy_path,
+                    }
+                    patient_data["patient_id"] = pid
+                    letter_res = generate_approved_letter(patient_data, reason, findings_dict)
+                    _apply_letter_result(letter_res)
+                    if appeal:
+                        logger.info("Generated Letter of Medical Necessity for APPROVED patient %s", pid)
+                    elif appeal_note:
+                        logger.warning("Approved letter unavailable for %s: %s", pid, appeal_note)
                 elif status == "CDI_REQUIRED":
                      # Generate Physician Query Note (Deterministic)
                      criteria_list = format_criteria_list(
@@ -649,62 +726,28 @@ Clinical Pharmacy Review Team
 
                 # If APPROVED but no letter present, generate one (provider-facing)
                 if status == "APPROVED" and not appeal:
-                    try:
-                        from agent_logic import generate_approved_letter
+                    findings_dict = {
+                        "bmi_numeric": audit_findings.get("bmi_numeric") if audit_findings else None,
+                        "comorbidity_category": audit_findings.get("comorbidity_category", "NONE") if audit_findings else "NONE",
+                        "policy_path": policy_path,
+                        "found_diagnosis_string": audit_findings.get("found_diagnosis_string"),
+                        "found_e66_code": audit_findings.get("found_e66_code"),
+                        "found_z68_code": audit_findings.get("found_z68_code"),
+                        "found_comorbidity_evidence": audit_findings.get("evidence_quoted"),
+                    }
 
-                        findings_dict = {
-                            "bmi_numeric": audit_findings.get("bmi_numeric") if audit_findings else None,
-                            "comorbidity_category": audit_findings.get("comorbidity_category", "NONE") if audit_findings else "NONE",
-                            "policy_path": policy_path,
-                            "found_diagnosis_string": audit_findings.get("found_diagnosis_string"),
-                            "found_e66_code": audit_findings.get("found_e66_code"),
-                            "found_z68_code": audit_findings.get("found_z68_code"),
-                            "found_comorbidity_evidence": audit_findings.get("evidence_quoted"),
-                        }
+                    # Prefer agent-provided patient_data to avoid dataframe dependency drift
+                    patient_data = llm_response_obj.get("patient_data") or {}
+                    if not patient_data:
+                        patient_data = _load_patient_data(pid, df_patients, df_obs, df_conds, df_meds)
+                    patient_data["patient_id"] = pid
 
-                        # Prefer agent-provided patient_data to avoid dataframe dependency drift
-                        patient_data = llm_response_obj.get("patient_data") or {}
-                        if not patient_data:
-                            patient_data = _load_patient_data(pid, df_patients, df_obs, df_conds, df_meds)
-                        patient_data["patient_id"] = pid
-
-                        appeal = generate_approved_letter(patient_data, reason, findings_dict)
-                        if appeal:
-                            logger.info("Generated Letter of Medical Necessity for APPROVED patient %s", pid)
-                    except Exception as e:
-                        logger.warning("Could not generate approved letter for %s: %s", pid, e)
-
-                        bmi_val = audit_findings.get("bmi_numeric") if audit_findings else None
-                        comorbidity = audit_findings.get("comorbidity_category", "NONE") if audit_findings else "NONE"
-                        bmi_str = f"{float(bmi_val):.1f} kg/m²" if isinstance(bmi_val, (int, float)) else "[See chart]"
-                        comorbidity_line = (
-                            f"Qualifying Comorbidity: {comorbidity}" if comorbidity and comorbidity != "NONE" else ""
-                        )
-                        appeal = f"""LETTER OF MEDICAL NECESSITY
-Prior Authorization Request - Wegovy (Semaglutide 2.4mg)
-
-To: Medical Director, Utilization Management
-
-RE: Patient {pid}
-
-Dear Medical Director,
-
-I am writing to request prior authorization for Wegovy (semaglutide 2.4mg) for chronic weight management.
-
-CLINICAL JUSTIFICATION:
-{reason}
-
-Patient's current BMI: {bmi_str}
-{comorbidity_line}
-
-Based on the clinical criteria outlined above, this patient meets coverage requirements for Wegovy.
-
-I respectfully request approval of this prior authorization.
-
-Sincerely,
-_______________________________
-Prescriber Signature / Date
-"""
+                    letter_res = generate_approved_letter(patient_data, reason, findings_dict)
+                    _apply_letter_result(letter_res)
+                    if appeal:
+                        logger.info("Generated Letter of Medical Necessity for APPROVED patient %s", pid)
+                    elif appeal_note:
+                        logger.warning("Approved letter unavailable for %s: %s", pid, appeal_note)
 
                 elif status == "CDI_REQUIRED":
                      criteria_list = format_criteria_list(

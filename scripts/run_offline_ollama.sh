@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Offline Ollama run: allow loopback for local Ollama, block external egress.
+export PA_USE_DETERMINISTIC="false"
+export PA_LETTER_MODE="ollama"
+export PA_OFFLINE_MODE="true"
+export PA_OFFLINE_ALLOW_LOCALHOST="true"
+export PA_OFFLINE_STRICT_UNKNOWN_HOST="true"
+
+# Enforce offline + telemetry-off envs (explicit, not implicit).
+export HF_HUB_OFFLINE="1"
+export HF_HUB_DISABLE_TELEMETRY="1"
+export TRANSFORMERS_OFFLINE="1"
+export LANGCHAIN_TRACING_V2="false"
+export LANGSMITH_TRACING="false"
+export LANGSMITH_DISABLED="true"
+export ANONYMIZED_TELEMETRY="false"
+
+python batch_runner.py "$@"

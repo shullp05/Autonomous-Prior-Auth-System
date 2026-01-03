@@ -11,14 +11,18 @@ from typing import Any
 # ENVIRONMENT VARIABLES
 # =============================================================================
 
+
 def _as_bool(name: str, default: str = "false") -> bool:
     return os.getenv(name, default).strip().lower() in {"1", "true", "yes", "y", "on"}
+
 
 # IMPORTANT: True means use RAW upstream Ollama model names; False means use custom Modelfile-built aliases.
 USE_RAW_MODELS = _as_bool("PA_USE_RAW_MODELS", "false")  # FIXED (was inverted)
 AUDIT_MODEL_FLAVOR = os.getenv("PA_AUDIT_MODEL_FLAVOR", "nemo8b").strip()
 USE_DETERMINISTIC = _as_bool("PA_USE_DETERMINISTIC", "false")
 OFFLINE_MODE = _as_bool("PA_OFFLINE_MODE", "false")
+PA_LETTER_MODE = os.getenv("PA_LETTER_MODE", "deterministic").strip().lower()
+PA_ALLOW_LETTER_FALLBACK = _as_bool("PA_ALLOW_LETTER_FALLBACK", "false")
 
 # -----------------------------------------------------------------------------
 # Repository discovery configuration
@@ -39,8 +43,12 @@ PA_PRACTICE_ADDRESS = os.getenv("PA_PRACTICE_ADDRESS", "123 Main St, Anytown, US
 
 # Recipient defaults for payer-ready letters (override per client/demo)
 PA_UM_RECIPIENT_ORG = os.getenv("PA_UM_RECIPIENT_ORG", "Utilization Management").strip() or "Utilization Management"
-PA_UM_RECIPIENT_DEPT = os.getenv("PA_UM_RECIPIENT_DEPT", "Utilization Management Department").strip() or "Utilization Management Department"
+PA_UM_RECIPIENT_DEPT = (
+    os.getenv("PA_UM_RECIPIENT_DEPT", "Utilization Management Department").strip()
+    or "Utilization Management Department"
+)
 PA_UM_ATTENTION = os.getenv("PA_UM_ATTENTION", "Medical Director").strip() or "Medical Director"
+
 
 def require_provider_context() -> dict[str, str]:
     """
@@ -84,20 +92,38 @@ MODEL_MAP_CUSTOM: dict[str, dict[str, Any]] = {
         "ram_gb": 10,
     },
     "nemo8b": {
-        "name": "pa-audit-nemotron-cascade8b",
-        "options": {"temperature": 0.2, "top_p": 0.9, "top_k": 20, "repeat_penalty": 1.1, "repeat_last_n": 256, "num_predict": 768, "num_ctx": 4096, "seed": 42},
+        "name": "pa-audit-nemotron-cascade8b:latest",
+        "options": {
+            "temperature": 0.2,
+            "top_p": 0.9,
+            "top_k": 20,
+            "repeat_penalty": 1.1,
+            "repeat_last_n": 256,
+            "num_predict": 768,
+            "num_ctx": 4096,
+            "seed": 42,
+        },
         "ram_gb": 8,
         "stop": "<im_end>",
         "start": "<im_start>",
     },
     "nemo4b": {
-        "name": "pa-audit-nemo-cascade4b",
-        "options": {"temperature": 0.2, "top_p": 0.9, "top_k": 20, "repeat_penalty": 1.1, "repeat_last_n": 256, "num_predict": 768, "num_ctx": 4096, "seed": 42},
+        "name": "pa-audit-nemo-cascade4b:latest",
+        "options": {
+            "temperature": 0.2,
+            "top_p": 0.9,
+            "top_k": 20,
+            "repeat_penalty": 1.1,
+            "repeat_last_n": 256,
+            "num_predict": 768,
+            "num_ctx": 4096,
+            "seed": 42,
+        },
         "ram_gb": 6,
         "stop": "<im_end>",
         "start": "<im_start>",
     },
-    "qwen3": {"name": "pa-audit-qwen3", "options": {}, "ram_gb": 12},
+    "qwen3": {"name": "pa-audit-qwen3:latest", "options": {}, "ram_gb": 12},
 }
 
 MODEL_MAP_RAW: dict[str, dict[str, Any]] = {
@@ -113,14 +139,32 @@ MODEL_MAP_RAW: dict[str, dict[str, Any]] = {
     },
     "nemo8b": {
         "name": "hf.co/bartowski/nvidia_Nemotron-Cascade-8B-GGUF:Q6_K",
-        "options": {"temperature": 0.2, "top_p": 0.9, "top_k": 20, "repeat_penalty": 1.1, "repeat_last_n": 256, "num_predict": 768, "num_ctx": 4096, "seed": 42},
+        "options": {
+            "temperature": 0.2,
+            "top_p": 0.9,
+            "top_k": 20,
+            "repeat_penalty": 1.1,
+            "repeat_last_n": 256,
+            "num_predict": 768,
+            "num_ctx": 4096,
+            "seed": 42,
+        },
         "ram_gb": 8,
         "stop": "<im_end>",
         "start": "<im_start>",
     },
     "nemo4b": {
         "name": "hf.co/bartowski/nvidia_Nemotron-Cascade-8B-GGUF:Q4_K_M",
-        "options": {"temperature": 0.2, "top_p": 0.9, "top_k": 20, "repeat_penalty": 1.1, "repeat_last_n": 256, "num_predict": 768, "num_ctx": 4096, "seed": 42},
+        "options": {
+            "temperature": 0.2,
+            "top_p": 0.9,
+            "top_k": 20,
+            "repeat_penalty": 1.1,
+            "repeat_last_n": 256,
+            "num_predict": 768,
+            "num_ctx": 4096,
+            "seed": 42,
+        },
         "ram_gb": 6,
         "stop": "<im_end>",
         "start": "<im_start>",
@@ -164,7 +208,7 @@ POLICY_ID = os.getenv("PA_POLICY_ID", "RX-WEG-2025").strip()
 # =============================================================================
 FNR_ALERT_THRESHOLD = 0.10
 CLAIM_VALUE_USD = 1350.00
-DEFAULT_CLAIM_RATE = 0.15
+DEFAULT_CLAIM_RATE = 0.25
 
 
 # =============================================================================
@@ -175,19 +219,14 @@ LOINC_WEIGHT = "29463-7"
 LOINC_HEIGHT = "8302-2"
 
 # SNOMED-CT (Conditions/Findings)
-SNOMED_OBESE = "162864005"       # Obesity (BMI 30+)
+SNOMED_OBESE = "162864005"  # Obesity (BMI 30+)
 SNOMED_OVERWEIGHT = "162863004"  # Overweight (BMI 25-29)
 
 # ICD-10-CM (Diagnosis Codes)
-ICD10_OVERWEIGHT = "E66.3"       # Overweight
-ICD10_OBESITY = "E66.9"          # Obesity, unspecified
-ICD10_MORBID = "E66.01"          # Morbid Obesity
+ICD10_OVERWEIGHT = "E66.3"  # Overweight
+ICD10_OBESITY = "E66.9"  # Obesity, unspecified
+ICD10_MORBID = "E66.01"  # Morbid Obesity
 
 # Strict Validation Lists
-VALID_OBESITY_DX_CODES = {
-    ICD10_OVERWEIGHT,
-    ICD10_OBESITY,
-    ICD10_MORBID,
-    "E66.09", "E66.1", "E66.2", "E66.8", "E66.0"
-}
+VALID_OBESITY_DX_CODES = {ICD10_OVERWEIGHT, ICD10_OBESITY, ICD10_MORBID, "E66.09", "E66.1", "E66.2", "E66.8", "E66.0"}
 VALID_BMI_Z_PREFIX = "Z68"

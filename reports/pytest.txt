@@ -1,0 +1,165 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.1, pluggy-1.6.0
+rootdir: /root/projects/PriorAuth
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.12.0, langsmith-0.4.49, cov-7.0.0
+collected 261 items / 1 skipped
+
+tests/test_adversarial.py .............................................. [ 17%]
+........................................................................ [ 45%]
+....                                                                     [ 46%]
+tests/test_audit_bug.py ..                                               [ 47%]
+tests/test_audit_fix.py .                                                [ 47%]
+tests/test_batch_runner_paths.py .                                       [ 48%]
+tests/test_clinical_logic.py .......                                     [ 50%]
+tests/test_coding_integrity_rules.py ......                              [ 53%]
+tests/test_config_constants.py ..                                        [ 54%]
+tests/test_context_rules.py .........................................    [ 69%]
+tests/test_gold_regression.py .............                              [ 74%]
+tests/test_json_extraction.py ...................                        [ 81%]
+tests/test_letter_mode_offline.py ..                                     [ 82%]
+tests/test_offline_mode.py ......                                        [ 85%]
+tests/test_policy_cdi.py ....                                            [ 86%]
+tests/test_policy_engine_structured.py ..                                [ 87%]
+tests/test_policy_integration.py ............                            [ 91%]
+tests/test_policy_safety_signal.py .....                                 [ 93%]
+tests/test_policy_snapshot.py .....                                      [ 95%]
+tests/test_policy_utils.py .....                                         [ 97%]
+tests/test_rag_sections.py .                                             [ 98%]
+tests/test_repo_audit.py ....                                            [ 99%]
+tests/test_schema_validation.py .                                        [100%]
+
+=============================== warnings summary ===============================
+../../micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:441
+  /root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:441: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+    _torch_pytree._register_pytree_node(
+
+../../micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:309
+  /root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:309: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+    _torch_pytree._register_pytree_node(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================= 261 passed, 1 skipped, 2 warnings in 10.60s ==================
+
+
+===== Pytest (full) 2026-01-02T16:55:39Z =====
+
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.1, pluggy-1.6.0
+rootdir: /root/projects/PriorAuth
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.12.0, langsmith-0.4.49, cov-7.0.0
+collected 265 items / 1 skipped
+
+tests/test_adversarial.py .............................................. [ 17%]
+........................................................................ [ 44%]
+....                                                                     [ 46%]
+tests/test_audit_bug.py ..                                               [ 46%]
+tests/test_audit_fix.py .                                                [ 47%]
+tests/test_batch_runner_paths.py .                                       [ 47%]
+tests/test_clinical_logic.py .......                                     [ 50%]
+tests/test_coding_integrity_dicts.py ....                                [ 51%]
+tests/test_coding_integrity_rules.py ......                              [ 53%]
+tests/test_config_constants.py ..                                        [ 54%]
+tests/test_context_rules.py .........................................    [ 70%]
+tests/test_gold_regression.py .............                              [ 75%]
+tests/test_json_extraction.py ...................                        [ 82%]
+tests/test_letter_mode_offline.py FF                                     [ 83%]
+tests/test_offline_mode.py .....F                                        [ 85%]
+tests/test_policy_cdi.py ....                                            [ 86%]
+tests/test_policy_engine_structured.py ..                                [ 87%]
+tests/test_policy_integration.py ............                            [ 92%]
+tests/test_policy_safety_signal.py .....                                 [ 93%]
+tests/test_policy_snapshot.py .....                                      [ 95%]
+tests/test_policy_utils.py .....                                         [ 97%]
+tests/test_rag_sections.py .                                             [ 98%]
+tests/test_repo_audit.py ....                                            [ 99%]
+tests/test_schema_validation.py .                                        [100%]
+
+=================================== FAILURES ===================================
+______________ test_deterministic_letter_mode_blocks_all_sockets _______________
+tests/test_letter_mode_offline.py:43: in test_deterministic_letter_mode_blocks_all_sockets
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/micromamba/envs/revenue_agent/lib/python3.11/socket.py:232: in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+E   PermissionError: [Errno 1] Operation not permitted
+_________________ test_ollama_letter_mode_allows_loopback_only _________________
+tests/test_letter_mode_offline.py:69: in test_ollama_letter_mode_allows_loopback_only
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/micromamba/envs/revenue_agent/lib/python3.11/socket.py:232: in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+E   PermissionError: [Errno 1] Operation not permitted
+____________________ test_offline_udp_allows_loopback_send _____________________
+tests/test_offline_mode.py:169: in test_offline_udp_allows_loopback_send
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/micromamba/envs/revenue_agent/lib/python3.11/socket.py:232: in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+E   PermissionError: [Errno 1] Operation not permitted
+=============================== warnings summary ===============================
+../../micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:441
+  /root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:441: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+    _torch_pytree._register_pytree_node(
+
+../../micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:309
+  /root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:309: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+    _torch_pytree._register_pytree_node(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_letter_mode_offline.py::test_deterministic_letter_mode_blocks_all_sockets
+FAILED tests/test_letter_mode_offline.py::test_ollama_letter_mode_allows_loopback_only
+FAILED tests/test_offline_mode.py::test_offline_udp_allows_loopback_send - Pe...
+============= 3 failed, 262 passed, 1 skipped, 2 warnings in 6.49s =============
+
+
+===== Pytest (full, escalated) 2026-01-02T16:56:06Z =====
+
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.1, pluggy-1.6.0
+rootdir: /root/projects/PriorAuth
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.12.0, langsmith-0.4.49, cov-7.0.0
+collected 265 items / 1 skipped
+
+tests/test_adversarial.py .............................................. [ 17%]
+........................................................................ [ 44%]
+....                                                                     [ 46%]
+tests/test_audit_bug.py ..                                               [ 46%]
+tests/test_audit_fix.py .                                                [ 47%]
+tests/test_batch_runner_paths.py .                                       [ 47%]
+tests/test_clinical_logic.py .......                                     [ 50%]
+tests/test_coding_integrity_dicts.py ....                                [ 51%]
+tests/test_coding_integrity_rules.py ......                              [ 53%]
+tests/test_config_constants.py ..                                        [ 54%]
+tests/test_context_rules.py .........................................    [ 70%]
+tests/test_gold_regression.py .............                              [ 75%]
+tests/test_json_extraction.py ...................                        [ 82%]
+tests/test_letter_mode_offline.py ..                                     [ 83%]
+tests/test_offline_mode.py ......                                        [ 85%]
+tests/test_policy_cdi.py ....                                            [ 86%]
+tests/test_policy_engine_structured.py ..                                [ 87%]
+tests/test_policy_integration.py ............                            [ 92%]
+tests/test_policy_safety_signal.py .....                                 [ 93%]
+tests/test_policy_snapshot.py .....                                      [ 95%]
+tests/test_policy_utils.py .....                                         [ 97%]
+tests/test_rag_sections.py .                                             [ 98%]
+tests/test_repo_audit.py ....                                            [ 99%]
+tests/test_schema_validation.py .                                        [100%]
+
+=============================== warnings summary ===============================
+../../micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:441
+  /root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:441: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+    _torch_pytree._register_pytree_node(
+
+../../micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:309
+  /root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:309: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+    _torch_pytree._register_pytree_node(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================= 265 passed, 1 skipped, 2 warnings in 13.10s ==================

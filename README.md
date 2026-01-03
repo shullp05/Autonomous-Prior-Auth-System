@@ -2,8 +2,23 @@
 
 > **"A Deterministic-Guardrailed AI Architect for High-Stakes Clinical Decision Making."**
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-2b9348?style=for-the-badge)](LICENSE)
+[![Third-Party Licenses](https://img.shields.io/badge/Third--Party_Licenses-Recorded-2d6a4f?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
+[![Python License: PSF](https://img.shields.io/badge/Python_License-PSF-2b9348?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
+[![Model License: NVIDIA OML](https://img.shields.io/badge/Model_License-NVIDIA_Open_Model_License-005f73?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
+[![Model Licenses: Upstream](https://img.shields.io/badge/Model_Licenses-Upstream_See_Modelfiles-0a9396?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
+[![Offline Mode](https://img.shields.io/badge/Offline_Mode-Localhost_Safe-1b4965?style=for-the-badge)](SECURITY.md)
+[![Deterministic Engine](https://img.shields.io/badge/Deterministic_Engine-Source_of_Truth-5fa8d3?style=for-the-badge)](ARCHITECTURE.md)
+
+[![LangChain: MIT](https://img.shields.io/badge/LangChain-MIT-6c757d?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
+[![LangGraph: MIT](https://img.shields.io/badge/LangGraph-MIT-6c757d?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
+[![ChromaDB: Apache-2.0](https://img.shields.io/badge/ChromaDB-Apache--2.0-6c757d?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
+[![Ollama: MIT](https://img.shields.io/badge/Ollama-MIT-6c757d?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
+[![BCEmbedding: Apache-2.0](https://img.shields.io/badge/BCEmbedding-Apache--2.0-6c757d?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
+[![PyTorch: BSD-3-Clause](https://img.shields.io/badge/PyTorch-BSD--3--Clause-6c757d?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
+
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-200%20Passing-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-Pytest-brightgreen?style=for-the-badge)
 ![LangChain](https://img.shields.io/badge/LangChain-Integration-DD0031?style=for-the-badge&logo=langchain&logoColor=white)
 ![RAG](https://img.shields.io/badge/Architecture-RAG-orange?style=for-the-badge)
 ![Ollama](https://img.shields.io/badge/LLM-Local%20Inference-000000?style=for-the-badge&logo=ollama&logoColor=white)
@@ -12,11 +27,22 @@
 
 ## 🚀 Executive Summary
 
-The **Autonomous Clinical Prior Authorization Agent (AI-Pa)** is a production-grade system designed to automate the complex, high-liability process of medical insurance prior authorization for Wegovy (semaglutide) weight management prescriptions.
+The **Autonomous Clinical Prior Authorization Agent (AI-Pa)** automates the high-liability process of medical prior authorization for Wegovy (semaglutide) weight management prescriptions.
 
-Unlike standard "chatbots," AI-Pa leverages a novel **"Split-Brain" Architecture** that separates **Deterministic Governance** (hard rules, safety exclusions) from **Probabilistic Reasoning** (clinical nuance, unstructured data extraction).
+Unlike standard chatbots, AI-Pa uses a **Split-Brain Architecture** where the **deterministic policy engine** is the source of truth and the LLM is constrained to evidence-grounded narrative and extraction.
 
-This system solves a critical healthcare inefficiency: manual review of prior auth requests often leads to delays in patient care. AI-Pa ingests patient data (CSV/FHIR), retrieves policy guidelines via **RAG (Retrieval Augmented Generation)**, and executes a multi-step audit to render a verdict (Approve/Deny) with full clinical evidence and appeal generation capabilities.
+AI-Pa ingests patient data (CSV/FHIR), retrieves policy guidelines via **RAG**, and executes a multi-step audit to render a verdict (Approve/Deny) with evidence trails and appeal generation. The default inference path is local-only (Ollama), and offline mode can block outbound egress while still permitting localhost calls. The repo ships synthetic data only; no PHI is included.
+
+---
+
+## Media (placeholders)
+
+![Dashboard UI placeholder](docs/media/screenshot-dashboard.svg)
+![Governance UI placeholder](docs/media/screenshot-governance.svg)
+
+Video placeholders:
+- [End-to-end demo clip (placeholder)](docs/media/demo-clip.mp4)
+- [Short demo clip (placeholder)](docs/media/demo-clip-short.mp4)
 
 ---
 
@@ -53,10 +79,10 @@ graph TD
 
 ### Data Flow
 1.  **Ingestion**: Patient observations (BMI, Conditions, Meds) are loaded from CSV/FHIR.
-2.  **Retrieval**: ChromaDB retrieves relevant policy sections using embeddings + BCEmbedding reranking.
-3.  **Audit**: A local LLM (Qwen 2.5 14B) analyzes clinical data against retrieved policy.
-4.  **Governance**: A deterministic Python layer (`policy_engine.py`) cross-verifies the LLM's findings against hardcoded safety rules to prevent hallucinations.
-5.  **Output**: Structured JSON decisions + automated Appeal Letters if denied.
+2.  **Retrieval**: ChromaDB retrieves policy atoms via MedEmbed embeddings (k=25 by default), with optional BCE reranking; the top 8 docs feed the LLM by default.
+3.  **Audit**: A local LLM (default flavor `nemo8b`, override via `PA_AUDIT_MODEL_FLAVOR`) analyzes clinical data against retrieved policy evidence.
+4.  **Governance**: A deterministic Python layer (`policy_engine.py`) cross-verifies the LLM's findings against safety and eligibility rules.
+5.  **Output**: Structured JSON decisions plus optional appeal letter artifacts.
 
 ---
 
@@ -66,9 +92,9 @@ graph TD
 *   **Language**: Python 3.11+
 *   **Orchestration**: LangGraph, LangChain
 *   **Vector Query**: ChromaDB, BCEmbedding (Reranker)
-*   **LLM Serving**: Ollama (Local) - Default: `qwen2.5:14b-instruct-q4_K_M`
+*   **LLM Serving**: Ollama (Local) - Default: `pa-audit-nemotron-cascade8b:latest` via `PA_AUDIT_MODEL_FLAVOR=nemo8b` (custom Modelfile; raw models available via `PA_USE_RAW_MODELS=true`)
 *   **Validation**: Pydantic (Strict Schema Enforcement)
-*   **Testing**: Pytest (200+ tests covering unit, integration, adversarial, and safety)
+*   **Testing**: Pytest (unit, integration, adversarial, and safety tests)
 
 ### Key Features
 *   **🛡️ Deterministic Guardrails**: Prevents the "black box" problem. Safety exclusions (e.g., Pregnancy, MTC, concurrent GLP-1) are hard-coded checks that override any AI hallucination.
@@ -113,11 +139,11 @@ The analytics dashboard provides real-time visibility into the prior authorizati
 ### Hours Saved Calculation
 Distinctly separates "System Processing Velocity" from "Staff Governance Assumptions".
 
-*   **Processing Velocity (System)**: ~0.02s (Deterministic) vs ~12s (LLM) per case.
+*   **Processing Velocity (System)**: Use `benchmark.py` to measure on your dataset (see `reports/benchmark.txt` for the latest local run).
 *   **Staff Hours Saved (Governance)**:
     *   **Formula**: `Auto-Resolved Cases × Governance Constant`
-    *   **Assumption**: 25 minutes (Staff time) per complex PA review.
-    *   **Basis**: Used purely for ROI estimation, unrelated to compute speed.
+    *   **Assumption**: Define per-organization (e.g., minutes per complex PA review).
+    *   **Basis**: Purely an ROI input, unrelated to compute speed.
 
 ---
 
@@ -125,13 +151,14 @@ Distinctly separates "System Processing Velocity" from "Staff Governance Assumpt
 Security and trust are architectural first principles, not afterthoughts.
 
 ### 1. Offline Enforcement & Reproducibility
-*   **Network Dead-Man Switch**: Runtime patching of `socket` and `requests` ensures **ZERO** data leakage.
-    *   Enabled via `PA_OFFLINE_MODE=true`.
-    *   Crashes immediately if any code attempts network access.
+*   **Offline Enforcement**: Runtime patching of `socket`, `getaddrinfo`, `urllib`, and `requests` blocks outbound egress while allowing localhost (Ollama).
+    *   Enabled via `PA_OFFLINE_MODE=true` (opt-in).
+    *   Raises standard network exceptions when blocked; loopback aliases remain allowed by default.
+*   **Offline Env Guardrails**: `HF_HUB_OFFLINE=1`, `HF_HUB_DISABLE_TELEMETRY=1`, `TRANSFORMERS_OFFLINE=1`, `LANGSMITH_DISABLED=true`, and `ANONYMIZED_TELEMETRY=false` are set in offline runtime scripts and docker compose.
 *   **Dependency Locking**: `requirements.lock` generated via `scripts/freeze_dependencies.sh`.
 
 ### 2. Tamper-Evident Audit
-*   **Cryptographic Chaining**: All decisions are logged to `audit_log.jsonl` using SHA-256 hash chaining.
+*   **Cryptographic Chaining**: All decisions are logged to `audit_log.jsonl` using SHA-256 hash chaining (runtime artifact; gitignored).
 *   **Verification**: A standalone script (`verify_audit.py`) detects any modification, deletion, or reordering of the log history.
 *   **Centralized Logging**: `audit_logger.py` singleton captures every automated decision (input + output).
 
@@ -156,7 +183,7 @@ Security and trust are architectural first principles, not afterthoughts.
 ├── chaos_monkey.py        # 🐒 Adversarial test data generator
 ├── setup_rag.py           # 🔍 ChromaDB vector store setup
 ├── policies/              # 📂 JSON Policy Snapshots (Version Controlled)
-├── tests/                 # 🧪 Pytest suite (200+ tests)
+├── tests/                 # 🧪 Pytest suite (unit + safety coverage)
 ├── dashboard/             # 📊 React/Vite analytics dashboard
 └── output/                # 📊 Generated artifacts (CSVs, Logs, Reports)
 ```
@@ -179,13 +206,49 @@ Security and trust are architectural first principles, not afterthoughts.
 
 2.  **Install Dependencies**
     ```bash
-    pip install -r requirements.txt
+    pip install -r requirements.lock
+    # or: pip install -r requirements.txt (dev installs)
     ```
+
+### Offline Artifacts (optional)
+Build wheelhouse + model staging (online build step):
+```bash
+scripts/build_artifacts_linux.sh requirements.lock
+# Windows:
+# powershell -ExecutionPolicy Bypass -File scripts/build_artifacts_windows.ps1 -RequirementsFile requirements.lock
+```
+
+Install from wheelhouse only (offline runtime):
+```bash
+scripts/install_offline_linux.sh requirements.lock
+# Windows:
+# powershell -ExecutionPolicy Bypass -File scripts/install_offline_windows.ps1 -RequirementsFile requirements.lock
+```
+This follows a **build-time online / run-time offline** split: download wheels/models once, then install with `--no-index --find-links` only.
+
+### Docker (CPU default)
+```bash
+docker build --build-arg REQUIREMENTS_FILE=requirements-docker-cpu.txt -t priorauth:local .
+docker run --rm priorauth:local pytest -q
+```
+
+### Docker (CUDA build)
+```bash
+docker build --build-arg REQUIREMENTS_FILE=requirements.txt -t priorauth:cuda .
+docker run --rm priorauth:cuda pytest -q
+```
+CUDA builds download large NVIDIA CUDA wheels and require a compatible NVIDIA runtime.
+
+### Docker (Black-box offline, no network)
+```bash
+docker compose -f docker-compose.blackbox.yml up --build
+```
+This deployment runs the agent with `network_mode: "none"` and read-only `/models` mounts.
 
 3.  **Setup Environment**
     Create a `.env` file (or rely on defaults in `config.py`):
     ```ini
-    PA_AUDIT_MODEL_FLAVOR=qwen25
+    PA_AUDIT_MODEL_FLAVOR=nemo8b
     PA_EMBED_MODEL=kronos483/MedEmbed-large-v0.1:latest
     ```
 
@@ -202,9 +265,32 @@ python setup_rag.py
 python batch_runner.py
 ```
 
+**Runtime Modes (Letters + Offline):**
+```bash
+# Deterministic letters (default, zero LLM calls)
+PA_LETTER_MODE=deterministic python batch_runner.py
+
+# Ollama letters (requires local Ollama/model)
+PA_LETTER_MODE=ollama python batch_runner.py
+
+# Optional: allow explicit fallback if Ollama is unavailable
+PA_ALLOW_LETTER_FALLBACK=1 PA_LETTER_MODE=ollama python batch_runner.py
+
+# Offline deterministic (no sockets allowed)
+scripts/run_offline_deterministic.sh
+
+# Offline Ollama (loopback allowed, external blocked)
+scripts/run_offline_ollama.sh
+```
+
+Offline enforcement note: **offline ≠ no sockets allowed**. Offline mode blocks external egress while
+optionally allowing loopback for local Ollama; set `PA_OFFLINE_ALLOW_LOCALHOST=false` to block all sockets.
+CI/sandbox note: if your environment blocks all sockets, `PA_LETTER_MODE=ollama` will surface `LLM_UNAVAILABLE`;
+use deterministic mode or run Ollama locally with loopback allowed.
+
 **Run Verification Tests:**
 ```bash
-pytest tests/ -v
+pytest -q
 ```
 
 ---
@@ -219,11 +305,12 @@ The test suite includes:
 - **JSON Extraction**: Robust parsing from LLM output
 
 ```bash
-# Run all tests (200+ passing)
-pytest tests/ -v --tb=short
+# Run all tests
+pytest -q
 ```
+
+Local evidence from this repo run: `reports/pytest.txt` (265 passed, 1 skipped).
 
 ---
 
 *Engineered with precision. Designed for trust.*
-

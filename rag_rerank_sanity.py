@@ -150,6 +150,47 @@ def _check_expected_sections(sections: Sequence[str],
     return {e: (e.lower() in joined) for e in expected}
 
 
+def _is_ollama_unavailable(exc: Exception) -> bool:
+    msg = str(exc).lower()
+    if isinstance(exc, ConnectionError):
+        return True
+    if "failed to connect to ollama" in msg:
+        return True
+    if "http://127.0.0.1:11434" in msg and ("connect" in msg or "connection" in msg):
+        return True
+    if "socket: operation not permitted" in msg:
+        return True
+    if "connection refused" in msg:
+        return True
+    if "ollama" in msg and "not found" in msg and "model" in msg:
+        return True
+    return False
+
+
+def _preflight_ollama_embeddings() -> tuple[bool, str | None]:
+    try:
+        from langchain_ollama import OllamaEmbeddings
+        embeddings = OllamaEmbeddings(model=EMBED_MODEL_NAME)
+        embeddings.embed_query("healthcheck")
+        return True, None
+    except Exception as exc:
+        if _is_ollama_unavailable(exc):
+            return False, str(exc)
+        raise
+
+
+def _cond(
+    name: str,
+    icd10_dx: str | None = None,
+    icd10_bmi: str | None = None,
+) -> dict[str, str | None]:
+    return {
+        "condition_name": name,
+        "icd10_dx": icd10_dx,
+        "icd10_bmi": icd10_bmi,
+    }
+
+
 def _filter_docs_for_policy_path(
     docs: Sequence[Document],
     policy_path: str | None,
@@ -270,7 +311,9 @@ def build_scenarios() -> list[ScenarioConfig]:
             name="BMI_35_OBESITY_PATHWAY",
             patient={
                 "latest_bmi": "35.2",
-                "conditions": ["Obesity due to excess calories (E66.0)"],
+                "conditions": [
+                    _cond("Obesity due to excess calories (E66.0)", icd10_dx="E66.0", icd10_bmi="Z68.35"),
+                ],
                 "meds": [],
             },
             expected_sections=[
@@ -284,7 +327,10 @@ def build_scenarios() -> list[ScenarioConfig]:
             name="BMI_28_HTN_OVERWEIGHT_PATHWAY",
             patient={
                 "latest_bmi": "28.4",
-                "conditions": ["Overweight (E66.3)", "Hypertension"],
+                "conditions": [
+                    _cond("Overweight (E66.3)", icd10_dx="E66.3", icd10_bmi="Z68.28"),
+                    _cond("Hypertension"),
+                ],
                 "meds": [],
             },
             expected_sections=[
@@ -299,8 +345,8 @@ def build_scenarios() -> list[ScenarioConfig]:
             patient={
                 "latest_bmi": "33.0",
                 "conditions": [
-                    "Personal or family history of Medullary Thyroid Carcinoma",
-                    "Type 2 diabetes mellitus",
+                    _cond("Personal or family history of Medullary Thyroid Carcinoma"),
+                    _cond("Type 2 diabetes mellitus"),
                 ],
                 "meds": ["Ozempic"],
             },
@@ -317,8 +363,8 @@ def build_scenarios() -> list[ScenarioConfig]:
             patient={
                 "latest_bmi": "31.0",
                 "conditions": [
-                    "Thyroid cancer",
-                    "Obesity due to excess calories (E66.0)",
+                    _cond("Thyroid cancer"),
+                    _cond("Obesity due to excess calories (E66.0)", icd10_dx="E66.0", icd10_bmi="Z68.31"),
                 ],
                 "meds": [],
             },
@@ -335,8 +381,8 @@ def build_scenarios() -> list[ScenarioConfig]:
             patient={
                 "latest_bmi": "28.0",
                 "conditions": [
-                    "Overweight (E66.3)",
-                    "Elevated blood pressure",
+                    _cond("Overweight (E66.3)", icd10_dx="E66.3", icd10_bmi="Z68.28"),
+                    _cond("Elevated blood pressure"),
                 ],
                 "meds": [],
             },
@@ -353,8 +399,8 @@ def build_scenarios() -> list[ScenarioConfig]:
             patient={
                 "latest_bmi": "32.0",
                 "conditions": [
-                    "Pregnancy, unspecified",
-                    "Obesity due to excess calories (E66.0)",
+                    _cond("Pregnancy, unspecified"),
+                    _cond("Obesity due to excess calories (E66.0)", icd10_dx="E66.0", icd10_bmi="Z68.32"),
                 ],
                 "meds": [],
             },
@@ -521,12 +567,62 @@ def main():
     )
 
     vectordb = _ensure_vectorstore()
+    ok, err = _preflight_ollama_embeddings()
+    if not ok:
+        logger.warning("Ollama unavailable; skipping RAG/rerank sanity run: %s", err)
+        summary = {
+            "config": {
+                "policy_id": POLICY_ID,
+                "embed_model": EMBED_MODEL_NAME,
+                "collection": COLLECTION_NAME,
+                "k_vector": K_VECTOR,
+                "top_k_docs": TOP_K_DOCS,
+                "score_floor": SCORE_FLOOR,
+                "min_docs": MIN_DOCS,
+            },
+            "status": "OLLAMA_UNAVAILABLE",
+            "error": err,
+            "scenarios": [],
+        }
+        print("\n=== RAG / RERANK SANITY SUMMARY (JSON) ===")
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return
+
     scenarios = build_scenarios()
 
     results: list[ScenarioResult] = []
-    for cfg in scenarios:
-        res = run_scenario(cfg, vectordb)
-        results.append(res)
+    try:
+        for cfg in scenarios:
+            res = run_scenario(cfg, vectordb)
+            results.append(res)
+    except Exception as exc:
+        if _is_ollama_unavailable(exc):
+            logger.warning(
+                "Ollama unavailable; short-circuiting after %d/%d scenarios: %s",
+                len(results),
+                len(scenarios),
+                exc,
+            )
+            summary = {
+                "config": {
+                    "policy_id": POLICY_ID,
+                    "embed_model": EMBED_MODEL_NAME,
+                    "collection": COLLECTION_NAME,
+                    "k_vector": K_VECTOR,
+                    "top_k_docs": TOP_K_DOCS,
+                    "score_floor": SCORE_FLOOR,
+                    "min_docs": MIN_DOCS,
+                },
+                "status": "OLLAMA_UNAVAILABLE",
+                "error": str(exc),
+                "scenarios_completed": len(results),
+                "scenarios_total": len(scenarios),
+                "scenarios": [asdict(r) for r in results],
+            }
+            print("\n=== RAG / RERANK SANITY SUMMARY (JSON) ===")
+            print(json.dumps(summary, indent=2, sort_keys=True))
+            return
+        raise
 
     summary = {
         "config": {

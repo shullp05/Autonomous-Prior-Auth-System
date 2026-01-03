@@ -1,0 +1,91 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0
+rootdir: /app
+configfile: pyproject.toml
+testpaths: tests
+plugins: cov-7.0.0, langsmith-0.5.1, anyio-4.12.0
+collected 261 items / 1 skipped
+
+tests/test_adversarial.py .............................................. [ 17%]
+........................................................................ [ 45%]
+....                                                                     [ 46%]
+tests/test_audit_bug.py ..                                               [ 47%]
+tests/test_audit_fix.py .                                                [ 47%]
+tests/test_batch_runner_paths.py .                                       [ 48%]
+tests/test_clinical_logic.py .......                                     [ 50%]
+tests/test_coding_integrity_rules.py ......                              [ 53%]
+tests/test_config_constants.py ..                                        [ 54%]
+tests/test_context_rules.py .........................................    [ 69%]
+tests/test_gold_regression.py .............                              [ 74%]
+tests/test_json_extraction.py ...................                        [ 81%]
+tests/test_letter_mode_offline.py ..                                     [ 82%]
+tests/test_offline_mode.py ......                                        [ 85%]
+tests/test_policy_cdi.py ....                                            [ 86%]
+tests/test_policy_engine_structured.py ..                                [ 87%]
+tests/test_policy_integration.py ............                            [ 91%]
+tests/test_policy_safety_signal.py .....                                 [ 93%]
+tests/test_policy_snapshot.py .....                                      [ 95%]
+tests/test_policy_utils.py .....                                         [ 97%]
+tests/test_rag_sections.py .                                             [ 98%]
+tests/test_repo_audit.py ....                                            [ 99%]
+tests/test_schema_validation.py .                                        [100%]
+
+=============================== warnings summary ===============================
+../usr/local/lib/python3.11/site-packages/transformers/utils/generic.py:441
+  /usr/local/lib/python3.11/site-packages/transformers/utils/generic.py:441: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+    _torch_pytree._register_pytree_node(
+
+../usr/local/lib/python3.11/site-packages/transformers/utils/generic.py:309
+  /usr/local/lib/python3.11/site-packages/transformers/utils/generic.py:309: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+    _torch_pytree._register_pytree_node(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================== 261 passed, 1 skipped, 2 warnings in 5.81s ==================
+
+
+===== Docker Test (CUDA) 2026-01-03T13:13:38Z =====
+
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0
+rootdir: /app
+configfile: pyproject.toml
+testpaths: tests
+plugins: cov-7.0.0, langsmith-0.5.1, anyio-4.12.0
+collected 265 items / 1 skipped
+
+tests/test_adversarial.py .............................................. [ 17%]
+........................................................................ [ 44%]
+....                                                                     [ 46%]
+tests/test_audit_bug.py ..                                               [ 46%]
+tests/test_audit_fix.py .                                                [ 47%]
+tests/test_batch_runner_paths.py .                                       [ 47%]
+tests/test_clinical_logic.py .......                                     [ 50%]
+tests/test_coding_integrity_dicts.py ....                                [ 51%]
+tests/test_coding_integrity_rules.py ......                              [ 53%]
+tests/test_config_constants.py ..                                        [ 54%]
+tests/test_context_rules.py .........................................    [ 70%]
+tests/test_gold_regression.py .............                              [ 75%]
+tests/test_json_extraction.py ...................                        [ 82%]
+tests/test_letter_mode_offline.py ..                                     [ 83%]
+tests/test_offline_mode.py ......                                        [ 85%]
+tests/test_policy_cdi.py ....                                            [ 86%]
+tests/test_policy_engine_structured.py ..                                [ 87%]
+tests/test_policy_integration.py ............                            [ 92%]
+tests/test_policy_safety_signal.py .....                                 [ 93%]
+tests/test_policy_snapshot.py .....                                      [ 95%]
+tests/test_policy_utils.py .....                                         [ 97%]
+tests/test_rag_sections.py .                                             [ 98%]
+tests/test_repo_audit.py ....                                            [ 99%]
+tests/test_schema_validation.py .                                        [100%]
+
+=============================== warnings summary ===============================
+../usr/local/lib/python3.11/site-packages/transformers/utils/generic.py:441
+  /usr/local/lib/python3.11/site-packages/transformers/utils/generic.py:441: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+    _torch_pytree._register_pytree_node(
+
+../usr/local/lib/python3.11/site-packages/transformers/utils/generic.py:309
+  /usr/local/lib/python3.11/site-packages/transformers/utils/generic.py:309: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+    _torch_pytree._register_pytree_node(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================== 265 passed, 1 skipped, 2 warnings in 4.45s ==================

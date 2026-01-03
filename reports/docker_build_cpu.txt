@@ -1,0 +1,93 @@
+
+
+===== Docker Build (CPU) 2026-01-02T16:56:34Z =====
+
+
+
+===== Docker Build (CPU, no BuildKit) 2026-01-03T12:56:26Z =====
+
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            BuildKit is currently disabled; enable it by removing the DOCKER_BUILDKIT=0
+            environment-variable.
+
+unknown flag: --progress
+
+Usage:  docker build [OPTIONS] PATH | URL | -
+
+Run 'docker build --help' for more information
+
+
+===== Docker Build (CPU, legacy) 2026-01-03T12:56:49Z =====
+
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            BuildKit is currently disabled; enable it by removing the DOCKER_BUILDKIT=0
+            environment-variable.
+
+
+
+===== Docker Build (CPU, BuildKit plain) 2026-01-03T12:59:30Z =====
+
+
+
+===== Docker Build (CPU) Note 2026-01-03T13:04:24Z =====
+
+Build attempts hung with no output; Docker daemon did not respond (see reports/docker_info.txt).
+
+
+===== Docker Build (CPU, BuildKit) 2026-01-03T13:11:46Z =====
+
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 894B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim-bookworm
+#2 DONE 0.1s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 545B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [1/7] FROM docker.io/library/python:3.11-slim-bookworm@sha256:917ec0e42cd6af87657a768449c2f604a6b67c7ab8e10ff917b8724799f816d3
+#5 resolve docker.io/library/python:3.11-slim-bookworm@sha256:917ec0e42cd6af87657a768449c2f604a6b67c7ab8e10ff917b8724799f816d3 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 22.06MB 0.2s done
+#4 DONE 0.2s
+
+#6 [2/7] WORKDIR /app
+#6 CACHED
+
+#7 [3/7] RUN apt-get update && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*
+#7 CACHED
+
+#8 [4/7] COPY requirements.txt requirements.lock requirements-ci.txt requirements-docker-cpu.txt /tmp/
+#8 CACHED
+
+#9 [5/7] RUN pip install --no-cache-dir -r /tmp/requirements-docker-cpu.txt
+#9 CACHED
+
+#10 [6/7] COPY . .
+#10 DONE 1.9s
+
+#11 [7/7] RUN useradd -m appuser && chown -R appuser /app
+#11 DONE 2.8s
+
+#12 exporting to image
+#12 exporting layers
+#12 exporting layers 5.7s done
+#12 exporting manifest sha256:3fac3aa1b540cc993f5bfc10d4c242ed00c82c708065669a2023336167f93407 0.0s done
+#12 exporting config sha256:f6e4ecd5579bb658c36cbaa64767646cd7c74ceb6c11a3fd7f34040d9858cc8b 0.0s done
+#12 exporting attestation manifest sha256:791c3e9daa774160565b6403ac74d12edcdeeb69527b291e6ca0ce5f0b0a57f5
+#12 exporting attestation manifest sha256:791c3e9daa774160565b6403ac74d12edcdeeb69527b291e6ca0ce5f0b0a57f5 0.1s done
+#12 exporting manifest list sha256:f2104982d3279f977604fed4e91248b2abf7795f68f96903b5e771b1914cbe2f 0.0s done
+#12 naming to docker.io/library/priorauth:local
+#12 naming to docker.io/library/priorauth:local done
+#12 unpacking to docker.io/library/priorauth:local
+#12 unpacking to docker.io/library/priorauth:local 1.4s done
+#12 DONE 7.4s

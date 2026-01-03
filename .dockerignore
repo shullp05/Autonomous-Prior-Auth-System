@@ -1,0 +1,38 @@
+# VCS
+.git
+.gitignore
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual envs
+.venv/
+venv/
+env/
+ENV/
+
+# Local artifacts
+output/
+chroma_db/
+reports/
+.last_model_trace.json
+
+# Frontend build artifacts
+dashboard/node_modules/
+dashboard/dist/
+dashboard/.next/
+dashboard/out/
+dashboard/package-lock.json
+
+# Large test fixtures (keep required small fixtures)
+tests/fixtures/*
+!tests/fixtures/gold_cases.json
+!tests/fixtures/dashboard_data.json
+
+# IDEs
+.vscode/
+.idea/

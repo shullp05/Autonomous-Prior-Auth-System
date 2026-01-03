@@ -106,6 +106,23 @@ def get_offline_config() -> OfflineConfig:
     )
 
 
+def apply_offline_env() -> None:
+    """
+    Enforce offline-friendly environment variables for HF/transformers and telemetry.
+    """
+    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
+    os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+
+    # Disable LangChain/LangSmith telemetry
+    os.environ.setdefault("LANGCHAIN_TRACING_V2", "false")
+    os.environ.setdefault("LANGSMITH_TRACING", "false")
+    os.environ.setdefault("LANGSMITH_DISABLED", "true")
+
+    # Disable Chroma anonymized telemetry
+    os.environ.setdefault("ANONYMIZED_TELEMETRY", "false")
+
+
 _LOOPBACK_ALIASES = frozenset(
     {
         "localhost",
@@ -199,10 +216,21 @@ _ORIG_CREATE_CONNECTION = None
 _ORIG_URLOPEN = None
 _ORIG_REQUESTS_SESSION_REQUEST = None
 
+_PATCHED_SOCKET_CONNECT = None
+_PATCHED_SOCKET_CONNECT_EX = None
+_PATCHED_SOCKET_SENDTO = None
+_PATCHED_SOCKET_SENDMSG = None
+_PATCHED_GETADDRINFO = None
+_PATCHED_CREATE_CONNECTION = None
+_PATCHED_URLOPEN = None
+_PATCHED_REQUESTS_SESSION_REQUEST = None
+
 
 def _patch_socket(cfg: OfflineConfig) -> None:
     global _ORIG_SOCKET_CONNECT, _ORIG_SOCKET_CONNECT_EX, _ORIG_SOCKET_SENDTO, _ORIG_SOCKET_SENDMSG
     global _ORIG_GETADDRINFO, _ORIG_CREATE_CONNECTION
+    global _PATCHED_SOCKET_CONNECT, _PATCHED_SOCKET_CONNECT_EX, _PATCHED_SOCKET_SENDTO
+    global _PATCHED_SOCKET_SENDMSG, _PATCHED_GETADDRINFO, _PATCHED_CREATE_CONNECTION
 
     if _ORIG_SOCKET_CONNECT is None:
         _ORIG_SOCKET_CONNECT = socket.socket.connect
@@ -223,6 +251,8 @@ def _patch_socket(cfg: OfflineConfig) -> None:
             _block_if_needed(host, cfg, op="socket.connect")
         return _ORIG_SOCKET_CONNECT(self, address)  # type: ignore[misc]
 
+    _PATCHED_SOCKET_CONNECT = patched_connect
+
     def patched_connect_ex(self: socket.socket, address: Any) -> int:
         host = _extract_host_from_sockaddr(address)
         if host is not None:
@@ -232,11 +262,15 @@ def _patch_socket(cfg: OfflineConfig) -> None:
                 return errno.EACCES
         return _ORIG_SOCKET_CONNECT_EX(self, address)  # type: ignore[misc]
 
+    _PATCHED_SOCKET_CONNECT_EX = patched_connect_ex
+
     def patched_sendto(self: socket.socket, data: Any, address: Any, *args: Any) -> Any:
         host = _extract_host_from_sockaddr(address)
         if host is not None:
             _block_if_needed(host, cfg, op="socket.sendto")
         return _ORIG_SOCKET_SENDTO(self, data, address, *args)  # type: ignore[misc]
+
+    _PATCHED_SOCKET_SENDTO = patched_sendto
 
     socket.socket.connect = patched_connect  # type: ignore[assignment]
     socket.socket.connect_ex = patched_connect_ex  # type: ignore[assignment]
@@ -256,6 +290,7 @@ def _patch_socket(cfg: OfflineConfig) -> None:
                 _block_if_needed(host, cfg, op="socket.sendmsg")
             return _ORIG_SOCKET_SENDMSG(self, *args, **kwargs)  # type: ignore[misc]
 
+        _PATCHED_SOCKET_SENDMSG = patched_sendmsg
         setattr(socket.socket, "sendmsg", patched_sendmsg)  # type: ignore[arg-type]
 
     def patched_getaddrinfo(host: Any, port: Any, *args: Any, **kwargs: Any) -> Any:
@@ -269,18 +304,22 @@ def _patch_socket(cfg: OfflineConfig) -> None:
             raise socket.gaierror(socket.EAI_NONAME, "Name or service not known (offline mode)")
         return _ORIG_GETADDRINFO(host, port, *args, **kwargs)  # type: ignore[misc]
 
+    _PATCHED_GETADDRINFO = patched_getaddrinfo
+
     def patched_create_connection(address: Any, *args: Any, **kwargs: Any) -> socket.socket:
         host = _extract_host_from_sockaddr(address)
         if host is not None:
             _block_if_needed(host, cfg, op="socket.create_connection")
         return _ORIG_CREATE_CONNECTION(address, *args, **kwargs)  # type: ignore[misc]
 
+    _PATCHED_CREATE_CONNECTION = patched_create_connection
+
     socket.getaddrinfo = patched_getaddrinfo  # type: ignore[assignment]
     socket.create_connection = patched_create_connection  # type: ignore[assignment]
 
 
 def _patch_urllib(cfg: OfflineConfig) -> None:
-    global _ORIG_URLOPEN
+    global _ORIG_URLOPEN, _PATCHED_URLOPEN
     try:
         import urllib.request as _urllib_request
     except Exception:
@@ -298,11 +337,12 @@ def _patch_urllib(cfg: OfflineConfig) -> None:
         _block_if_needed(parsed.hostname, cfg, op="urllib.request.urlopen")
         return _ORIG_URLOPEN(url, *args, **kwargs)  # type: ignore[misc]
 
+    _PATCHED_URLOPEN = patched_urlopen
     _urllib_request.urlopen = patched_urlopen  # type: ignore[assignment]
 
 
 def _patch_requests(cfg: OfflineConfig) -> None:
-    global _ORIG_REQUESTS_SESSION_REQUEST
+    global _ORIG_REQUESTS_SESSION_REQUEST, _PATCHED_REQUESTS_SESSION_REQUEST
     try:
         import requests  # type: ignore
     except Exception:
@@ -316,6 +356,7 @@ def _patch_requests(cfg: OfflineConfig) -> None:
         _block_if_needed(parsed.hostname, cfg, op="requests.Session.request")
         return _ORIG_REQUESTS_SESSION_REQUEST(self, method, url, *args, **kwargs)  # type: ignore[misc]
 
+    _PATCHED_REQUESTS_SESSION_REQUEST = patched_requests_request
     requests.sessions.Session.request = patched_requests_request  # type: ignore[assignment]
 
 
@@ -358,6 +399,45 @@ def disable_offline() -> None:
     _PATCHED = False
 
 
+def _patches_active() -> bool:
+    if not _PATCHED:
+        return False
+    if _PATCHED_SOCKET_CONNECT is not None and socket.socket.connect is not _PATCHED_SOCKET_CONNECT:
+        return False
+    if _PATCHED_SOCKET_CONNECT_EX is not None and socket.socket.connect_ex is not _PATCHED_SOCKET_CONNECT_EX:
+        return False
+    if _PATCHED_SOCKET_SENDTO is not None and socket.socket.sendto is not _PATCHED_SOCKET_SENDTO:
+        return False
+    if _PATCHED_SOCKET_SENDMSG is not None and hasattr(socket.socket, "sendmsg"):
+        if getattr(socket.socket, "sendmsg") is not _PATCHED_SOCKET_SENDMSG:
+            return False
+    if _PATCHED_GETADDRINFO is not None and socket.getaddrinfo is not _PATCHED_GETADDRINFO:
+        return False
+    if _PATCHED_CREATE_CONNECTION is not None and socket.create_connection is not _PATCHED_CREATE_CONNECTION:
+        return False
+
+    try:
+        import urllib.request as _urllib_request
+
+        if _PATCHED_URLOPEN is not None and _urllib_request.urlopen is not _PATCHED_URLOPEN:
+            return False
+    except Exception:
+        pass
+
+    try:
+        import requests  # type: ignore
+
+        if (
+            _PATCHED_REQUESTS_SESSION_REQUEST is not None
+            and requests.sessions.Session.request is not _PATCHED_REQUESTS_SESSION_REQUEST
+        ):
+            return False
+    except Exception:
+        pass
+
+    return True
+
+
 def enforce_offline(*, force: bool = False) -> OfflineConfig:
     """
     Enable offline mode (patch network functions) if configured or forced.
@@ -377,8 +457,11 @@ def enforce_offline(*, force: bool = False) -> OfflineConfig:
 
     if not cfg.enabled:
         return cfg
-    if _PATCHED:
+    apply_offline_env()
+    if _PATCHED and _patches_active():
         return cfg
+    if _PATCHED and not _patches_active():
+        _PATCHED = False
 
     _patch_socket(cfg)
     _patch_urllib(cfg)

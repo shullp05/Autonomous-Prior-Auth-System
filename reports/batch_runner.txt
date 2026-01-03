@@ -1,0 +1,369 @@
+2025-12-28 18:21:26 [INFO] __main__: Batch starting [DETERMINISTIC (no LLM)]: Found 200 Wegovy claims -> output/dashboard_data.json
+2025-12-28 18:21:26 [INFO] __main__: [1/200] Patient 187598d1-e699-3149-b217-96584215071e -> FLAGGED (43ms)
+/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:441: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+  _torch_pytree._register_pytree_node(
+2025-12-28 18:21:28 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:28 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 963ca4a6-3682-f207-6b45-37793c2c1eba
+2025-12-28 18:21:28 [INFO] __main__: [2/200] Patient 963ca4a6-3682-f207-6b45-37793c2c1eba -> APPROVED (2069ms)
+2025-12-28 18:21:28 [INFO] __main__: [3/200] Patient 81f93797-cf6c-c281-7f75-feac8de8b509 -> DENIED (8ms)
+2025-12-28 18:21:28 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:28 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 7f68bf10-b1e8-e313-900d-3216a2f9d1ae
+2025-12-28 18:21:28 [INFO] __main__: [4/200] Patient 7f68bf10-b1e8-e313-900d-3216a2f9d1ae -> APPROVED (51ms)
+2025-12-28 18:21:28 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:28 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient e1706d28-2989-cfb1-3458-920950f75e62
+2025-12-28 18:21:28 [INFO] __main__: [5/200] Patient e1706d28-2989-cfb1-3458-920950f75e62 -> APPROVED (55ms)
+2025-12-28 18:21:28 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:28 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient db6afa1f-a8d3-b7f1-60a6-3d36e2b79870
+2025-12-28 18:21:28 [INFO] __main__: [6/200] Patient db6afa1f-a8d3-b7f1-60a6-3d36e2b79870 -> APPROVED (58ms)
+2025-12-28 18:21:28 [INFO] __main__: [7/200] Patient 7b1a8a0a-9cf0-c8d6-c4a4-a7da04c93827 -> CDI_REQUIRED (27ms)
+2025-12-28 18:21:28 [INFO] __main__: [8/200] Patient 67847dea-9327-da0b-dccd-0d739ca6152c -> DENIED (7ms)
+2025-12-28 18:21:28 [INFO] __main__: [9/200] Patient b734e913-8aff-4d8d-ebdd-5f68e4cc364c -> DENIED (23ms)
+2025-12-28 18:21:28 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:28 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient e1d97fea-5f94-9b06-87b4-74dc78d80f41
+2025-12-28 18:21:28 [INFO] __main__: [10/200] Patient e1d97fea-5f94-9b06-87b4-74dc78d80f41 -> APPROVED (41ms)
+2025-12-28 18:21:29 [INFO] __main__: [11/200] Patient 5870fe1f-91b6-9767-da27-2696d8ed203a -> FLAGGED (36ms)
+2025-12-28 18:21:29 [INFO] __main__: [12/200] Patient 278dd07c-f28e-61a7-31f2-65deec6afb42 -> DENIED (15ms)
+2025-12-28 18:21:29 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:29 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient b0563363-a285-fb73-f1cd-2fedd227b039
+2025-12-28 18:21:29 [INFO] __main__: [13/200] Patient b0563363-a285-fb73-f1cd-2fedd227b039 -> APPROVED (47ms)
+2025-12-28 18:21:29 [INFO] __main__: [14/200] Patient 37d40951-0590-f66d-6a3b-e9837705d9a1 -> DENIED (7ms)
+2025-12-28 18:21:29 [INFO] __main__: [15/200] Patient 93219af8-27dc-4120-f63b-add7790d34f9 -> PROVIDER_ACTION_REQUIRED (27ms)
+2025-12-28 18:21:29 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:29 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 2f72ccb8-65b5-8177-6efa-800f154d4774
+2025-12-28 18:21:29 [INFO] __main__: [16/200] Patient 2f72ccb8-65b5-8177-6efa-800f154d4774 -> APPROVED (57ms)
+2025-12-28 18:21:29 [INFO] __main__: [17/200] Patient f763691a-41ef-14c8-2323-b885448d5ae2 -> FLAGGED (25ms)
+2025-12-28 18:21:29 [INFO] __main__: [18/200] Patient a1846dbe-fbd1-8586-247f-4b844d60cf39 -> FLAGGED (29ms)
+2025-12-28 18:21:29 [INFO] __main__: [19/200] Patient 15a0c6c8-2b61-99f7-58ef-3a4db0741b55 -> FLAGGED (18ms)
+2025-12-28 18:21:29 [INFO] __main__: [20/200] Patient 2d845d2c-f971-2fc3-5f2c-bd622c8a8103 -> DENIED (14ms)
+2025-12-28 18:21:29 [INFO] __main__: [21/200] Patient e1195c84-d639-b324-e544-af36137e2ffb -> FLAGGED (38ms)
+2025-12-28 18:21:29 [INFO] __main__: [22/200] Patient 27eafb7c-196c-7f11-456b-7e7b527be954 -> PROVIDER_ACTION_REQUIRED (20ms)
+2025-12-28 18:21:29 [INFO] __main__: [23/200] Patient a300580a-6762-ff09-4ae9-94a46028f096 -> PROVIDER_ACTION_REQUIRED (42ms)
+2025-12-28 18:21:29 [INFO] __main__: [24/200] Patient 69430a1f-1280-a43a-db43-5fbadc3e2b8a -> FLAGGED (28ms)
+2025-12-28 18:21:29 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:29 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient b51084d0-e2b7-24ac-0a99-b9c34ff377e7
+2025-12-28 18:21:29 [INFO] __main__: [25/200] Patient b51084d0-e2b7-24ac-0a99-b9c34ff377e7 -> APPROVED (49ms)
+2025-12-28 18:21:29 [INFO] __main__: [26/200] Patient 869586bd-fcaa-5707-7615-cdd2a6c588c0 -> DENIED (6ms)
+2025-12-28 18:21:29 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:29 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 76830ce1-0605-1e39-2460-d912658bdacf
+2025-12-28 18:21:29 [INFO] __main__: [27/200] Patient 76830ce1-0605-1e39-2460-d912658bdacf -> APPROVED (51ms)
+2025-12-28 18:21:29 [INFO] __main__: [28/200] Patient d1e9e9b0-a390-16eb-3740-abc5761bff89 -> FLAGGED (83ms)
+2025-12-28 18:21:29 [INFO] __main__: [29/200] Patient d6eb4480-4dcb-670e-d3b5-5349d236c33b -> FLAGGED (33ms)
+2025-12-28 18:21:29 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:29 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 452d736b-16d0-3ae6-1c2d-14a304f7f721
+2025-12-28 18:21:29 [INFO] __main__: [30/200] Patient 452d736b-16d0-3ae6-1c2d-14a304f7f721 -> APPROVED (45ms)
+2025-12-28 18:21:29 [INFO] __main__: [31/200] Patient 4f60720c-fd9b-9303-59c3-697f463a2339 -> DENIED (7ms)
+2025-12-28 18:21:29 [INFO] __main__: [32/200] Patient ad622643-4159-b0af-98c2-46b1f4f4dc86 -> DENIED (7ms)
+2025-12-28 18:21:29 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:29 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 0071303b-e279-eb7b-2b4f-3c5d9cd1e9dc
+2025-12-28 18:21:29 [INFO] __main__: [33/200] Patient 0071303b-e279-eb7b-2b4f-3c5d9cd1e9dc -> APPROVED (56ms)
+2025-12-28 18:21:29 [INFO] __main__: [34/200] Patient c7f9be18-d7d8-c164-12c5-26ebe6472e8d -> PROVIDER_ACTION_REQUIRED (26ms)
+2025-12-28 18:21:29 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:29 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient dbecd301-54b0-87cc-82f1-6bd899c5a81c
+2025-12-28 18:21:29 [INFO] __main__: [35/200] Patient dbecd301-54b0-87cc-82f1-6bd899c5a81c -> APPROVED (50ms)
+2025-12-28 18:21:29 [INFO] __main__: [36/200] Patient 27223a02-54f4-2dc2-4822-eb7ee813f467 -> CDI_REQUIRED (31ms)
+2025-12-28 18:21:29 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:29 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 513b0fb3-0e6e-e85d-0c30-e999c504b8ce
+2025-12-28 18:21:29 [INFO] __main__: [37/200] Patient 513b0fb3-0e6e-e85d-0c30-e999c504b8ce -> APPROVED (49ms)
+2025-12-28 18:21:29 [INFO] __main__: [38/200] Patient 0a3b46c0-acaf-8598-382e-8fb960589f98 -> DENIED (11ms)
+2025-12-28 18:21:29 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:29 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient a18732f9-8b8c-6b74-8995-9419d4b2a97a
+2025-12-28 18:21:29 [INFO] __main__: [39/200] Patient a18732f9-8b8c-6b74-8995-9419d4b2a97a -> APPROVED (57ms)
+2025-12-28 18:21:29 [INFO] __main__: [40/200] Patient 0259b572-0e72-6af0-54f7-3630405c64d3 -> CDI_REQUIRED (40ms)
+2025-12-28 18:21:30 [INFO] __main__: [41/200] Patient 7beea769-6883-21c7-a43e-84acd69224b2 -> DENIED (8ms)
+2025-12-28 18:21:30 [INFO] __main__: [42/200] Patient db092ffb-364f-62f0-5fc0-47a5ef124746 -> CDI_REQUIRED (39ms)
+2025-12-28 18:21:30 [INFO] __main__: [43/200] Patient 44bab9b1-6132-9bd5-5796-c34e7498c9de -> FLAGGED (23ms)
+2025-12-28 18:21:30 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:30 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 817101db-75dc-3fe8-0f17-8efec7d6ac10
+2025-12-28 18:21:30 [INFO] __main__: [44/200] Patient 817101db-75dc-3fe8-0f17-8efec7d6ac10 -> APPROVED (52ms)
+2025-12-28 18:21:30 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:30 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 971d5ee6-cc4a-b777-d554-2994e964ab4d
+2025-12-28 18:21:30 [INFO] __main__: [45/200] Patient 971d5ee6-cc4a-b777-d554-2994e964ab4d -> APPROVED (52ms)
+2025-12-28 18:21:30 [INFO] __main__: [46/200] Patient 880a9719-5a3c-fa15-8647-624f920e8719 -> FLAGGED (25ms)
+2025-12-28 18:21:30 [INFO] __main__: [47/200] Patient 0003c187-9dcb-0c93-7226-d9832239cb05 -> PROVIDER_ACTION_REQUIRED (22ms)
+2025-12-28 18:21:30 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:30 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient f47e4a20-1797-62c7-e467-c3c04361ab81
+2025-12-28 18:21:30 [INFO] __main__: [48/200] Patient f47e4a20-1797-62c7-e467-c3c04361ab81 -> APPROVED (52ms)
+2025-12-28 18:21:30 [INFO] __main__: [49/200] Patient 72aa4d82-6c14-3366-1e56-833f67effb04 -> PROVIDER_ACTION_REQUIRED (26ms)
+2025-12-28 18:21:30 [INFO] __main__: [50/200] Patient d0b4fbc3-126a-2167-9eb4-d0d40927eb97 -> PROVIDER_ACTION_REQUIRED (77ms)
+2025-12-28 18:21:30 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:30 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 2434868d-4d73-722f-e92a-23088a745253
+2025-12-28 18:21:30 [INFO] __main__: [51/200] Patient 2434868d-4d73-722f-e92a-23088a745253 -> APPROVED (56ms)
+2025-12-28 18:21:30 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:30 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 1afdab80-504b-558b-0625-7f142779c477
+2025-12-28 18:21:30 [INFO] __main__: [52/200] Patient 1afdab80-504b-558b-0625-7f142779c477 -> APPROVED (55ms)
+2025-12-28 18:21:30 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:30 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 5e174115-7aa9-2bed-2de0-510fbcb0a637
+2025-12-28 18:21:30 [INFO] __main__: [53/200] Patient 5e174115-7aa9-2bed-2de0-510fbcb0a637 -> APPROVED (123ms)
+2025-12-28 18:21:30 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:30 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient a3a75126-41fc-e9df-c7f8-b75a8f4867a6
+2025-12-28 18:21:30 [INFO] __main__: [54/200] Patient a3a75126-41fc-e9df-c7f8-b75a8f4867a6 -> APPROVED (63ms)
+2025-12-28 18:21:30 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:30 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 0bee3392-63e0-13d2-b19f-5a989670cad1
+2025-12-28 18:21:30 [INFO] __main__: [55/200] Patient 0bee3392-63e0-13d2-b19f-5a989670cad1 -> APPROVED (56ms)
+2025-12-28 18:21:30 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:30 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient fc3e4cd5-d2c4-cdf3-e46f-9b94071e9b93
+2025-12-28 18:21:30 [INFO] __main__: [56/200] Patient fc3e4cd5-d2c4-cdf3-e46f-9b94071e9b93 -> APPROVED (47ms)
+2025-12-28 18:21:30 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:30 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 9e9ea847-b947-1420-08b2-a0c9744aef82
+2025-12-28 18:21:30 [INFO] __main__: [57/200] Patient 9e9ea847-b947-1420-08b2-a0c9744aef82 -> APPROVED (58ms)
+2025-12-28 18:21:30 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:30 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient cfd7c66f-d051-428b-8751-36c2a2ccd47a
+2025-12-28 18:21:30 [INFO] __main__: [58/200] Patient cfd7c66f-d051-428b-8751-36c2a2ccd47a -> APPROVED (60ms)
+2025-12-28 18:21:30 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:30 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient a5d6a863-267a-f610-81ae-d45e3019ff59
+2025-12-28 18:21:30 [INFO] __main__: [59/200] Patient a5d6a863-267a-f610-81ae-d45e3019ff59 -> APPROVED (53ms)
+2025-12-28 18:21:31 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:31 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 41f7ddbb-dab7-5e44-415d-544de80e260a
+2025-12-28 18:21:31 [INFO] __main__: [60/200] Patient 41f7ddbb-dab7-5e44-415d-544de80e260a -> APPROVED (49ms)
+2025-12-28 18:21:31 [INFO] __main__: [61/200] Patient 0938cbad-b0f7-7e2d-b8fe-a9dccfda56de -> DENIED (15ms)
+2025-12-28 18:21:31 [INFO] __main__: [62/200] Patient f40d620a-0ea8-02f2-539a-cfecec072b9b -> DENIED (25ms)
+2025-12-28 18:21:31 [INFO] __main__: [63/200] Patient 23bac73a-f64d-a7e5-2aff-9ceba9656bbe -> CDI_REQUIRED (24ms)
+2025-12-28 18:21:31 [INFO] __main__: [64/200] Patient 775da2ca-1c15-544f-45a7-280ff14d23d9 -> CDI_REQUIRED (21ms)
+2025-12-28 18:21:31 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:31 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient ef9f53c0-dda7-d667-2863-61405b3ef47f
+2025-12-28 18:21:31 [INFO] __main__: [65/200] Patient ef9f53c0-dda7-d667-2863-61405b3ef47f -> APPROVED (59ms)
+2025-12-28 18:21:31 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:31 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 73e75c28-3c52-a920-3a30-89cfd4b8c196
+2025-12-28 18:21:31 [INFO] __main__: [66/200] Patient 73e75c28-3c52-a920-3a30-89cfd4b8c196 -> APPROVED (46ms)
+2025-12-28 18:21:31 [INFO] __main__: [67/200] Patient b34692f4-b94c-5985-6b13-987e87bbb654 -> CDI_REQUIRED (15ms)
+2025-12-28 18:21:31 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:31 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 9d140f3f-3c45-8a4d-6764-77d33f753b2a
+2025-12-28 18:21:31 [INFO] __main__: [68/200] Patient 9d140f3f-3c45-8a4d-6764-77d33f753b2a -> APPROVED (60ms)
+2025-12-28 18:21:31 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:31 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 7a78e24b-0a77-8362-7433-887bbee1e105
+2025-12-28 18:21:31 [INFO] __main__: [69/200] Patient 7a78e24b-0a77-8362-7433-887bbee1e105 -> APPROVED (50ms)
+2025-12-28 18:21:31 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:31 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 8f3e94a7-51e5-6141-406e-4d48669bda29
+2025-12-28 18:21:31 [INFO] __main__: [70/200] Patient 8f3e94a7-51e5-6141-406e-4d48669bda29 -> APPROVED (56ms)
+2025-12-28 18:21:31 [INFO] __main__: [71/200] Patient 6b833d4c-3301-9e98-5103-437041fb1436 -> FLAGGED (22ms)
+2025-12-28 18:21:31 [INFO] __main__: [72/200] Patient 86a167f8-0ff9-2d13-4f7f-d121c65657f5 -> DENIED (7ms)
+2025-12-28 18:21:31 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:31 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 48606bfb-3f33-e19a-c0e6-aeafc429c214
+2025-12-28 18:21:31 [INFO] __main__: [73/200] Patient 48606bfb-3f33-e19a-c0e6-aeafc429c214 -> APPROVED (65ms)
+2025-12-28 18:21:31 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:31 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 14747422-4e94-f083-9a5a-ab9d4c14d790
+2025-12-28 18:21:31 [INFO] __main__: [74/200] Patient 14747422-4e94-f083-9a5a-ab9d4c14d790 -> APPROVED (55ms)
+2025-12-28 18:21:31 [INFO] __main__: [75/200] Patient 632a1214-8ac8-6bef-29f4-cdf6b2a9bc4b -> CDI_REQUIRED (34ms)
+2025-12-28 18:21:31 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:31 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient a2423e3e-f1ad-a7f2-42c6-61a5f50dbd79
+2025-12-28 18:21:31 [INFO] __main__: [76/200] Patient a2423e3e-f1ad-a7f2-42c6-61a5f50dbd79 -> APPROVED (69ms)
+2025-12-28 18:21:31 [INFO] __main__: [77/200] Patient 1d12e102-d794-9b1d-5a65-23786ce6305d -> DENIED (9ms)
+2025-12-28 18:21:31 [INFO] __main__: [78/200] Patient 4029d2fb-614e-4ad6-539b-eaf639991545 -> FLAGGED (28ms)
+2025-12-28 18:21:31 [INFO] __main__: [79/200] Patient efc2ebf0-8f91-d362-b20f-2656541cc13e -> PROVIDER_ACTION_REQUIRED (12ms)
+2025-12-28 18:21:31 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:31 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 9fc6fa3e-d0ee-f1ca-769f-8af6f3e4a009
+2025-12-28 18:21:31 [INFO] __main__: [80/200] Patient 9fc6fa3e-d0ee-f1ca-769f-8af6f3e4a009 -> APPROVED (52ms)
+2025-12-28 18:21:31 [INFO] __main__: [81/200] Patient 4ba397c2-a309-d9f3-3782-fcd3daa16104 -> FLAGGED (29ms)
+2025-12-28 18:21:31 [INFO] __main__: [82/200] Patient 50064ae8-9ef4-c35d-5633-943896f70f38 -> DENIED (26ms)
+2025-12-28 18:21:31 [INFO] __main__: [83/200] Patient 19e442cd-5345-78c5-614d-6fb8be7bed02 -> DENIED (31ms)
+2025-12-28 18:21:31 [INFO] __main__: [84/200] Patient 437c130a-8ba9-2d37-347d-3f15909fbd27 -> FLAGGED (30ms)
+2025-12-28 18:21:31 [INFO] __main__: [85/200] Patient b2975f97-4113-a24c-704e-e21cd5b9b051 -> DENIED (8ms)
+2025-12-28 18:21:31 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:31 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 3395c04d-eddc-83f5-4557-2fd6d5a821f1
+2025-12-28 18:21:31 [INFO] __main__: [86/200] Patient 3395c04d-eddc-83f5-4557-2fd6d5a821f1 -> APPROVED (53ms)
+2025-12-28 18:21:31 [INFO] __main__: [87/200] Patient 6d0c8294-b56f-d5b3-ca44-5b307b53a0b4 -> CDI_REQUIRED (31ms)
+2025-12-28 18:21:32 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:32 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 0df3d3ac-f749-fdbf-c810-99387a32af07
+2025-12-28 18:21:32 [INFO] __main__: [88/200] Patient 0df3d3ac-f749-fdbf-c810-99387a32af07 -> APPROVED (53ms)
+2025-12-28 18:21:32 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:32 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 127c1380-39c9-708b-b904-667290a2a4ff
+2025-12-28 18:21:32 [INFO] __main__: [89/200] Patient 127c1380-39c9-708b-b904-667290a2a4ff -> APPROVED (58ms)
+2025-12-28 18:21:32 [INFO] __main__: [90/200] Patient 0ef32dbd-9dea-28b1-7cd4-4c52fc574663 -> DENIED (8ms)
+2025-12-28 18:21:32 [INFO] __main__: [91/200] Patient 748c0c68-730f-92a0-a807-2c265051062a -> FLAGGED (18ms)
+2025-12-28 18:21:32 [INFO] __main__: [92/200] Patient 08f83a92-30eb-a2e2-8c57-8c29e4044843 -> DENIED (7ms)
+2025-12-28 18:21:32 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:32 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient b5aff90d-d7a9-3034-1581-0be2a44869e1
+2025-12-28 18:21:32 [INFO] __main__: [93/200] Patient b5aff90d-d7a9-3034-1581-0be2a44869e1 -> APPROVED (48ms)
+2025-12-28 18:21:32 [INFO] __main__: [94/200] Patient af182c18-d55a-25af-56de-9578a6e8895b -> DENIED (18ms)
+2025-12-28 18:21:32 [INFO] __main__: [95/200] Patient 439d0cf6-61d5-ae99-dfb6-fcc400030480 -> DENIED (9ms)
+2025-12-28 18:21:32 [INFO] __main__: [96/200] Patient dcac9f34-4581-2e26-a418-bc37001fb50b -> CDI_REQUIRED (18ms)
+2025-12-28 18:21:32 [INFO] __main__: [97/200] Patient b8265144-8813-6149-c4b7-b83044663e78 -> DENIED (8ms)
+2025-12-28 18:21:32 [INFO] __main__: [98/200] Patient 3cd3a010-48a2-97b1-d7cc-832deb321389 -> DENIED (8ms)
+2025-12-28 18:21:32 [INFO] __main__: [99/200] Patient c658a5fd-8dcc-c1b3-6b8e-07048deadbfe -> DENIED (8ms)
+2025-12-28 18:21:32 [INFO] __main__: [100/200] Patient c68f35c1-c4f8-af70-e6d3-a611fba35984 -> DENIED (7ms)
+2025-12-28 18:21:32 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:32 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient f08bae26-1638-f7a6-5176-400739d19557
+2025-12-28 18:21:32 [INFO] __main__: [101/200] Patient f08bae26-1638-f7a6-5176-400739d19557 -> APPROVED (46ms)
+2025-12-28 18:21:32 [INFO] __main__: [102/200] Patient ec61b2d2-b1c9-16b9-f475-392f2c85b232 -> FLAGGED (38ms)
+2025-12-28 18:21:32 [INFO] __main__: [103/200] Patient be8485a9-f9ea-fcef-efcf-9de902d23407 -> DENIED (10ms)
+2025-12-28 18:21:32 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:32 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 5aa68761-8e83-c3f1-1399-0d104ff797d7
+2025-12-28 18:21:32 [INFO] __main__: [104/200] Patient 5aa68761-8e83-c3f1-1399-0d104ff797d7 -> APPROVED (47ms)
+2025-12-28 18:21:32 [INFO] __main__: [105/200] Patient 7cb2abc8-27ee-bd0f-91cc-31d84fc78b05 -> FLAGGED (20ms)
+2025-12-28 18:21:32 [INFO] __main__: [106/200] Patient a0d4203d-eb33-961d-a154-2998c9107d82 -> CDI_REQUIRED (23ms)
+2025-12-28 18:21:32 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:32 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 8b574d5c-8526-01d2-3593-e8d593f771cc
+2025-12-28 18:21:32 [INFO] __main__: [107/200] Patient 8b574d5c-8526-01d2-3593-e8d593f771cc -> APPROVED (56ms)
+2025-12-28 18:21:32 [INFO] __main__: [108/200] Patient 2a66ab22-b995-fa64-b2c2-e14eb288d8d0 -> CDI_REQUIRED (17ms)
+2025-12-28 18:21:32 [INFO] __main__: [109/200] Patient e3ce5a7a-3176-5418-06a1-a06d8726b916 -> FLAGGED (27ms)
+2025-12-28 18:21:32 [INFO] __main__: [110/200] Patient 510b2995-6a78-14a8-4e32-fec29ef752bd -> DENIED (7ms)
+2025-12-28 18:21:32 [INFO] __main__: [111/200] Patient a1c9cecf-b8c0-1a0b-e4e9-c067d1c72be1 -> DENIED (10ms)
+2025-12-28 18:21:32 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:32 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 04cea133-6e43-f909-8c23-7d3ef9f262c9
+2025-12-28 18:21:32 [INFO] __main__: [112/200] Patient 04cea133-6e43-f909-8c23-7d3ef9f262c9 -> APPROVED (44ms)
+2025-12-28 18:21:32 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:32 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient eb770771-df4e-21a4-605b-fdfbda23c856
+2025-12-28 18:21:32 [INFO] __main__: [113/200] Patient eb770771-df4e-21a4-605b-fdfbda23c856 -> APPROVED (58ms)
+2025-12-28 18:21:32 [INFO] __main__: [114/200] Patient 4a0e9b11-da39-0753-3095-72bbef691365 -> FLAGGED (44ms)
+2025-12-28 18:21:32 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:32 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient b96ebbce-72a9-0153-eefe-ff92346c74b6
+2025-12-28 18:21:32 [INFO] __main__: [115/200] Patient b96ebbce-72a9-0153-eefe-ff92346c74b6 -> APPROVED (60ms)
+2025-12-28 18:21:32 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:32 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 235851d4-649c-0dbc-72f6-e80c7e1546d1
+2025-12-28 18:21:32 [INFO] __main__: [116/200] Patient 235851d4-649c-0dbc-72f6-e80c7e1546d1 -> APPROVED (59ms)
+2025-12-28 18:21:32 [INFO] __main__: [117/200] Patient 6351da81-26c5-e46c-cbcc-09d444e90395 -> DENIED (7ms)
+2025-12-28 18:21:32 [INFO] __main__: [118/200] Patient f6a6daca-72e4-bbe6-7733-d4fa7c5521e5 -> PROVIDER_ACTION_REQUIRED (15ms)
+2025-12-28 18:21:32 [INFO] __main__: [119/200] Patient 3db45a0a-f2d0-9cec-06b0-7f7d8d4b2937 -> DENIED (8ms)
+2025-12-28 18:21:32 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:32 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 29691d7c-c3aa-d7ab-d252-080f4dad6013
+2025-12-28 18:21:32 [INFO] __main__: [120/200] Patient 29691d7c-c3aa-d7ab-d252-080f4dad6013 -> APPROVED (70ms)
+2025-12-28 18:21:32 [INFO] __main__: [121/200] Patient 460069d5-a06b-a34e-bf18-7d7d4d90719b -> CDI_REQUIRED (16ms)
+2025-12-28 18:21:32 [INFO] __main__: [122/200] Patient b98aca7a-4864-0904-c50c-4c0c48d9f395 -> PROVIDER_ACTION_REQUIRED (23ms)
+2025-12-28 18:21:32 [INFO] __main__: [123/200] Patient 0bb148fd-1ddf-c0f6-ecb1-9131781ccff3 -> DENIED (9ms)
+2025-12-28 18:21:32 [INFO] __main__: [124/200] Patient 6ddfc531-c1e0-bec8-130c-0a328ca6ff5d -> DENIED (6ms)
+2025-12-28 18:21:33 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:33 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 9264c318-b907-7105-f228-f804c1e7b7bf
+2025-12-28 18:21:33 [INFO] __main__: [125/200] Patient 9264c318-b907-7105-f228-f804c1e7b7bf -> APPROVED (95ms)
+2025-12-28 18:21:33 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:33 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 660f3fb2-8e9d-67a2-da82-2acfb69fd65c
+2025-12-28 18:21:33 [INFO] __main__: [126/200] Patient 660f3fb2-8e9d-67a2-da82-2acfb69fd65c -> APPROVED (101ms)
+2025-12-28 18:21:33 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:33 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient a7a2cb02-8791-c6d7-e568-6e7db7cd2e1d
+2025-12-28 18:21:33 [INFO] __main__: [127/200] Patient a7a2cb02-8791-c6d7-e568-6e7db7cd2e1d -> APPROVED (61ms)
+2025-12-28 18:21:33 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:33 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 1452f535-0b78-9e2d-f451-823f2a795b01
+2025-12-28 18:21:33 [INFO] __main__: [128/200] Patient 1452f535-0b78-9e2d-f451-823f2a795b01 -> APPROVED (51ms)
+2025-12-28 18:21:33 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:33 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient c5cfaf3a-a002-acc0-b6a6-cf2a41faa003
+2025-12-28 18:21:33 [INFO] __main__: [129/200] Patient c5cfaf3a-a002-acc0-b6a6-cf2a41faa003 -> APPROVED (54ms)
+2025-12-28 18:21:33 [INFO] __main__: [130/200] Patient bd819df5-3564-5ff3-36a6-8477c816e06e -> PROVIDER_ACTION_REQUIRED (19ms)
+2025-12-28 18:21:33 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:33 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 9a894383-a95f-be23-a8c9-e3d9dae28c06
+2025-12-28 18:21:33 [INFO] __main__: [131/200] Patient 9a894383-a95f-be23-a8c9-e3d9dae28c06 -> APPROVED (58ms)
+2025-12-28 18:21:33 [INFO] __main__: [132/200] Patient fe176da3-1417-1e4c-d24d-fb3d492a9cf0 -> DENIED (36ms)
+2025-12-28 18:21:33 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:33 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 373ac3e8-30d6-a72c-196f-4a799e89f646
+2025-12-28 18:21:33 [INFO] __main__: [133/200] Patient 373ac3e8-30d6-a72c-196f-4a799e89f646 -> APPROVED (60ms)
+2025-12-28 18:21:33 [INFO] __main__: [134/200] Patient 3bba66df-4776-a13f-088a-2944f2c5d44d -> CDI_REQUIRED (14ms)
+2025-12-28 18:21:33 [INFO] __main__: [135/200] Patient b64ecf65-c957-299e-700a-74cc532352f3 -> DENIED (5ms)
+2025-12-28 18:21:33 [INFO] __main__: [136/200] Patient 06ed3ed7-d878-3ea6-9933-e2f36f0b90ed -> FLAGGED (33ms)
+2025-12-28 18:21:33 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:33 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 839e1e43-f4f7-f69c-d148-23409ff0038c
+2025-12-28 18:21:33 [INFO] __main__: [137/200] Patient 839e1e43-f4f7-f69c-d148-23409ff0038c -> APPROVED (53ms)
+2025-12-28 18:21:33 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:33 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 0dd7728b-ca40-a6f2-74bd-97664e825e24
+2025-12-28 18:21:33 [INFO] __main__: [138/200] Patient 0dd7728b-ca40-a6f2-74bd-97664e825e24 -> APPROVED (195ms)
+2025-12-28 18:21:33 [INFO] __main__: [139/200] Patient fa6a2dfa-8aac-4342-6baa-b0f2e90d9ac0 -> FLAGGED (23ms)
+2025-12-28 18:21:33 [INFO] __main__: [140/200] Patient af2756b7-26dc-b40c-6060-196c5f6b8b49 -> DENIED (10ms)
+2025-12-28 18:21:33 [INFO] __main__: [141/200] Patient f1a187ea-abea-f2f7-3ac3-e895ee681279 -> DENIED (9ms)
+2025-12-28 18:21:33 [INFO] __main__: [142/200] Patient 7fdff70b-6996-a73a-0735-869b44c15068 -> FLAGGED (33ms)
+2025-12-28 18:21:33 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:33 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 0f925be1-1a5b-a450-db15-49ddbc2dec20
+2025-12-28 18:21:33 [INFO] __main__: [143/200] Patient 0f925be1-1a5b-a450-db15-49ddbc2dec20 -> APPROVED (57ms)
+2025-12-28 18:21:34 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:34 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 5558d0da-ef13-95b9-7348-4eb9428f6044
+2025-12-28 18:21:34 [INFO] __main__: [144/200] Patient 5558d0da-ef13-95b9-7348-4eb9428f6044 -> APPROVED (81ms)
+2025-12-28 18:21:34 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:34 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 97514052-1f92-9be9-a798-fbe5d262adf4
+2025-12-28 18:21:34 [INFO] __main__: [145/200] Patient 97514052-1f92-9be9-a798-fbe5d262adf4 -> APPROVED (57ms)
+2025-12-28 18:21:34 [INFO] __main__: [146/200] Patient 346c45e9-1fb0-ae27-e4c1-e3af57538778 -> DENIED (10ms)
+2025-12-28 18:21:34 [INFO] __main__: [147/200] Patient 11ea88ba-075d-7ecf-5b1c-1b672f5d5454 -> DENIED (7ms)
+2025-12-28 18:21:34 [INFO] __main__: [148/200] Patient 83ed4884-6b58-6b0f-c09d-9baf116a61c1 -> DENIED (35ms)
+2025-12-28 18:21:34 [INFO] __main__: [149/200] Patient c82a5694-534b-ee78-d459-8fc029ddba04 -> FLAGGED (19ms)
+2025-12-28 18:21:34 [INFO] __main__: [150/200] Patient 68196498-89ec-a5bb-4dc8-885040eb0edd -> DENIED (11ms)
+2025-12-28 18:21:34 [INFO] __main__: [151/200] Patient f756adf7-33fe-fe20-6931-3d16a61fc6f0 -> PROVIDER_ACTION_REQUIRED (88ms)
+2025-12-28 18:21:34 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:34 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 4cd1f1d4-af3f-bc7a-a85d-59539156c991
+2025-12-28 18:21:34 [INFO] __main__: [152/200] Patient 4cd1f1d4-af3f-bc7a-a85d-59539156c991 -> APPROVED (145ms)
+2025-12-28 18:21:34 [INFO] __main__: [153/200] Patient 277b0357-b145-a264-f816-983c3cb54a88 -> DENIED (8ms)
+2025-12-28 18:21:34 [INFO] __main__: [154/200] Patient 3837e2f9-e17a-4157-f466-befda9a36247 -> CDI_REQUIRED (24ms)
+2025-12-28 18:21:34 [INFO] __main__: [155/200] Patient b13abc99-6872-6ed0-1219-a82eabf28eac -> DENIED (11ms)
+2025-12-28 18:21:34 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:34 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 88d1e396-78b3-b93a-dadd-9de234fbc2a2
+2025-12-28 18:21:34 [INFO] __main__: [156/200] Patient 88d1e396-78b3-b93a-dadd-9de234fbc2a2 -> APPROVED (45ms)
+2025-12-28 18:21:34 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:34 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient e21107de-8186-20e8-59e1-8b88c42813b6
+2025-12-28 18:21:34 [INFO] __main__: [157/200] Patient e21107de-8186-20e8-59e1-8b88c42813b6 -> APPROVED (61ms)
+2025-12-28 18:21:34 [INFO] __main__: [158/200] Patient 91ed7125-40b0-a07c-1309-3afe2b97de32 -> CDI_REQUIRED (9ms)
+2025-12-28 18:21:34 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:34 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient facbce58-8ee6-2d7d-8152-e516523c8c70
+2025-12-28 18:21:34 [INFO] __main__: [159/200] Patient facbce58-8ee6-2d7d-8152-e516523c8c70 -> APPROVED (65ms)
+2025-12-28 18:21:34 [INFO] __main__: [160/200] Patient b9e4d0a9-9b90-c759-f400-7237685854ff -> DENIED (9ms)
+2025-12-28 18:21:34 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:34 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 72227b87-5ad7-7268-505c-77ce29b0baa6
+2025-12-28 18:21:34 [INFO] __main__: [161/200] Patient 72227b87-5ad7-7268-505c-77ce29b0baa6 -> APPROVED (49ms)
+2025-12-28 18:21:34 [INFO] __main__: [162/200] Patient 3310d524-4ca6-55d8-2cc2-6bd56e0c23ca -> FLAGGED (21ms)
+2025-12-28 18:21:34 [INFO] __main__: [163/200] Patient b0de3cb4-0384-8cfa-8b1d-b895efec1a81 -> FLAGGED (25ms)
+2025-12-28 18:21:34 [INFO] __main__: [164/200] Patient db3ddab1-a0c3-64cd-d1bc-7cbf9059de1c -> CDI_REQUIRED (33ms)
+2025-12-28 18:21:34 [INFO] __main__: [165/200] Patient 429fd9d4-ff62-f874-debf-d560a7027c02 -> FLAGGED (34ms)
+2025-12-28 18:21:34 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:34 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 57086369-0abe-65ff-704b-350a36f3f084
+2025-12-28 18:21:34 [INFO] __main__: [166/200] Patient 57086369-0abe-65ff-704b-350a36f3f084 -> APPROVED (46ms)
+2025-12-28 18:21:34 [INFO] __main__: [167/200] Patient e2cb09fe-f68c-faaa-3380-9324a2462f32 -> PROVIDER_ACTION_REQUIRED (16ms)
+2025-12-28 18:21:34 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:34 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 3c8125dd-6ab8-629a-033d-46613ae5d820
+2025-12-28 18:21:34 [INFO] __main__: [168/200] Patient 3c8125dd-6ab8-629a-033d-46613ae5d820 -> APPROVED (62ms)
+2025-12-28 18:21:35 [INFO] __main__: [169/200] Patient a44d1962-74fd-05d7-c497-66b3f8e82106 -> PROVIDER_ACTION_REQUIRED (78ms)
+2025-12-28 18:21:35 [INFO] __main__: [170/200] Patient 75ffba06-4753-6b6b-a423-8eee6ad3c371 -> DENIED (10ms)
+2025-12-28 18:21:35 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:35 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 085ac6fd-b822-e0e0-be39-00c30f4ee37c
+2025-12-28 18:21:35 [INFO] __main__: [171/200] Patient 085ac6fd-b822-e0e0-be39-00c30f4ee37c -> APPROVED (90ms)
+2025-12-28 18:21:35 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:35 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 5c5551b2-70f9-6f9d-1985-bf47ff8c0895
+2025-12-28 18:21:35 [INFO] __main__: [172/200] Patient 5c5551b2-70f9-6f9d-1985-bf47ff8c0895 -> APPROVED (58ms)
+2025-12-28 18:21:35 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:35 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient c94b141c-a738-f7a0-1269-d47848e0e6c8
+2025-12-28 18:21:35 [INFO] __main__: [173/200] Patient c94b141c-a738-f7a0-1269-d47848e0e6c8 -> APPROVED (56ms)
+2025-12-28 18:21:35 [INFO] __main__: [174/200] Patient ecd029c3-5b83-f9b0-e0bb-27539f2cae63 -> DENIED (28ms)
+2025-12-28 18:21:35 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:35 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 72814cbd-532d-ffeb-c3d6-421d5aca75e5
+2025-12-28 18:21:35 [INFO] __main__: [175/200] Patient 72814cbd-532d-ffeb-c3d6-421d5aca75e5 -> APPROVED (56ms)
+2025-12-28 18:21:35 [INFO] __main__: [176/200] Patient 9017d43a-237c-c20e-5531-be1a49e5cdb2 -> DENIED (57ms)
+2025-12-28 18:21:35 [INFO] __main__: [177/200] Patient 0c481bec-d117-175a-8f92-c0b081cd1920 -> DENIED (21ms)
+2025-12-28 18:21:35 [INFO] __main__: [178/200] Patient 75769e72-a006-310d-b12a-c88001c9c0d4 -> FLAGGED (25ms)
+2025-12-28 18:21:35 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:35 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 7a7fa702-9a71-fda4-f7c7-3810a4e15e80
+2025-12-28 18:21:35 [INFO] __main__: [179/200] Patient 7a7fa702-9a71-fda4-f7c7-3810a4e15e80 -> APPROVED (55ms)
+2025-12-28 18:21:35 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:35 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 206df747-24d1-b407-37c2-fb3c4dfc79c5
+2025-12-28 18:21:35 [INFO] __main__: [180/200] Patient 206df747-24d1-b407-37c2-fb3c4dfc79c5 -> APPROVED (55ms)
+2025-12-28 18:21:35 [INFO] __main__: [181/200] Patient 4563f843-3825-b582-2db0-e97df8efeee6 -> DENIED (11ms)
+2025-12-28 18:21:35 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:35 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 2a6288f0-e5d0-b72d-cc9a-0cd035d8a872
+2025-12-28 18:21:35 [INFO] __main__: [182/200] Patient 2a6288f0-e5d0-b72d-cc9a-0cd035d8a872 -> APPROVED (52ms)
+2025-12-28 18:21:35 [INFO] __main__: [183/200] Patient 69dfac96-8bd2-b4df-6ead-2488a07684f1 -> DENIED (21ms)
+2025-12-28 18:21:35 [INFO] __main__: [184/200] Patient 76b3deae-2bec-9c4c-140f-db4782b7c16d -> FLAGGED (29ms)
+2025-12-28 18:21:35 [INFO] __main__: [185/200] Patient 2cc4950f-1cae-7e01-b53a-9891976dcc19 -> DENIED (24ms)
+2025-12-28 18:21:35 [INFO] __main__: [186/200] Patient dc6ae6cb-b781-4ded-b259-2d00c77c5738 -> DENIED (34ms)
+2025-12-28 18:21:35 [INFO] __main__: [187/200] Patient 97990fd0-9ec7-e53d-bac8-b94a67a5fe4f -> CDI_REQUIRED (68ms)
+2025-12-28 18:21:35 [INFO] __main__: [188/200] Patient 662fe358-9352-e5a8-dd72-d48b4445b969 -> FLAGGED (42ms)
+2025-12-28 18:21:35 [INFO] __main__: [189/200] Patient d431cce3-b5cd-f665-ae29-77127b9229fd -> FLAGGED (27ms)
+2025-12-28 18:21:35 [INFO] __main__: [190/200] Patient 99a02fd2-49ac-20ba-c221-d2c593a6a5df -> DENIED (7ms)
+2025-12-28 18:21:35 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:35 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient d8a159f4-6903-5bc1-a3fd-9bde8045a681
+2025-12-28 18:21:35 [INFO] __main__: [191/200] Patient d8a159f4-6903-5bc1-a3fd-9bde8045a681 -> APPROVED (55ms)
+2025-12-28 18:21:35 [INFO] __main__: [192/200] Patient 8d8a9e90-7ad6-bc97-3007-385f4fe5f9a9 -> FLAGGED (21ms)
+2025-12-28 18:21:35 [INFO] __main__: [193/200] Patient 8e53da48-403d-f01c-afd1-1ff1df3672db -> FLAGGED (22ms)
+2025-12-28 18:21:36 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:36 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient 88d51aea-ab52-73f3-164a-30819903377d
+2025-12-28 18:21:36 [INFO] __main__: [194/200] Patient 88d51aea-ab52-73f3-164a-30819903377d -> APPROVED (51ms)
+2025-12-28 18:21:36 [INFO] __main__: [195/200] Patient dce04c85-f044-d8f0-020f-df141e6d354e -> DENIED (15ms)
+2025-12-28 18:21:36 [ERROR] agent_logic: Error generating approved letter (structured): [Errno 1] Operation not permitted
+2025-12-28 18:21:36 [INFO] __main__: Generated Letter of Medical Necessity for APPROVED patient d9561a93-66ac-5fe9-811a-44cac88ad9e1
+2025-12-28 18:21:36 [INFO] __main__: [196/200] Patient d9561a93-66ac-5fe9-811a-44cac88ad9e1 -> APPROVED (62ms)
+2025-12-28 18:21:36 [INFO] __main__: [197/200] Patient 9bc4aa76-bfc3-28c6-4598-ab918eba995c -> DENIED (18ms)
+2025-12-28 18:21:36 [INFO] __main__: [198/200] Patient ca4fa33b-c9c3-0976-b947-93336cc7223d -> DENIED (7ms)
+2025-12-28 18:21:36 [INFO] __main__: [199/200] Patient 74896944-922c-612d-a728-ef799b5f3ea0 -> PROVIDER_ACTION_REQUIRED (19ms)
+2025-12-28 18:21:36 [INFO] __main__: [200/200] Patient 5896b6e6-87a3-d29c-79f1-036937a849c7 -> CDI_REQUIRED (29ms)
+2025-12-28 18:21:36 [INFO] __main__: Results saved to 'output/dashboard_data.json'. Processed 200/200 claims.
+2025-12-28 18:21:36 [INFO] __main__: Mirrored 'dashboard_data.json' to 'dashboard/public/dashboard_data.json'
+2025-12-28 18:21:36 [INFO] governance_audit: Running clinical fairness audit (equal opportunity / FNR parity) on output/dashboard_data.json
+2025-12-28 18:21:36 [INFO] governance_audit: Calculating Ground Truth (policy-aligned)...
+2025-12-28 18:21:40 [INFO] governance_audit: Analyzing Disparities (Minimum Eligible N=30)...
+2025-12-28 18:21:40 [INFO] governance_audit: Governance report saved to output/governance_report.json
+2025-12-28 18:21:40 [INFO] __main__: Mirrored 'governance_report.json' to 'dashboard/public/governance_report.json'
+2025-12-28 18:21:40 [INFO] __main__: Mirrored '.last_model_trace.json' to 'dashboard/public/.last_model_trace.json'
+
+
+===== Batch Runner (deterministic, ref=2025) 2026-01-02T15:29:01Z =====
+

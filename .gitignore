@@ -25,6 +25,7 @@ MANIFEST
 venv/
 env/
 ENV/
+.venv/
 
 # Testing & Coverage
 .coverage
@@ -45,6 +46,7 @@ output/*
 !output/.gitkeep
 chroma_db/
 .last_model_trace.json
+audit_log.jsonl
 dashboard_data.json
 !tests/fixtures/dashboard_data.json
 governance_report.json

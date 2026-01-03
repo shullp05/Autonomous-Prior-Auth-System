@@ -7,7 +7,7 @@
 # - Forced non-thinking mode by appending " /no_think" to every user turn
 #
 # Build:
-#   ollama create pa-audit-nemo-cascade8b -f Modelfile
+#   ollama create pa-audit-nemotron-cascade8b:latest -f Modelfile
 
 FROM hf.co/bartowski/nvidia_Nemotron-Cascade-8B-GGUF:Q6_K
 

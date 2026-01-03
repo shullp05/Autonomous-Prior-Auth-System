@@ -1,0 +1,14 @@
+2025-12-28 18:20:11 [INFO] etl_pipeline: Scanning for FHIR files with glob: ./output/fhir/**/*.json
+2025-12-28 18:20:55 [INFO] etl_pipeline: Enriching observations with ICD-10 and Z68 codes...
+2025-12-28 18:20:55 [INFO] etl_pipeline: Enriching conditions with diagnosis map and patient BMI context...
+2025-12-28 18:20:57 [INFO] etl_pipeline: ETL Complete: parsed=573 skipped=2 patients=573 conditions=24360 meds=31596 obs=22986
+2025-12-28 18:20:57 [INFO] etl_pipeline: Wrote CSVs to output
+2025-12-28 18:20:57 [INFO] __main__: Injecting scenarios into cohort of 573 patients
+2025-12-28 18:20:57 [INFO] __main__: Generating 200 Wegovy claims (seed=42)
+2025-12-28 18:21:02 [INFO] __main__: Scenario distribution: {'OVERWEIGHT_AMBIGUOUS_TERM': 33, 'OVERWEIGHT_VALID_COMORBIDITY': 28, 'SAFETY_DUPLICATE_GLP1': 23, 'OBESE_BMI30_PLUS': 21, 'OBESE_NO_CODES': 20, 'OVERWEIGHT_NO_COMORBIDITY': 19, 'DATA_GAP_HEIGHT_WEIGHT_ONLY': 16, 'SAFETY_MTC_MEN2': 12, 'DATA_GAP_MISSING_WEIGHT': 11, 'BMI_UNDER_27': 7, 'SAFETY_PREGNANCY_NURSING': 6, 'DATA_GAP_MISSING_HEIGHT': 4}
+2025-12-28 18:21:03 [INFO] __main__: Data generation complete.
+2025-12-28 18:21:03 [INFO] __main__: Wrote enriched manifest to: output/scenario_manifest.json
+
+
+===== Chaos Monkey (claim_count=200, ref=2025) 2026-01-02T12:50:56Z =====
+

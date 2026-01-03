@@ -1,0 +1,2 @@
+IMAGE            ID             DISK USAGE   CONTENT SIZE   EXTRA
+priorauth:cuda   30d7b27c1e0b       13.8GB         4.88GB        
