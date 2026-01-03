@@ -17,16 +17,22 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements.lock
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --no-cache-dir -r requirements-ci.txt
+          python -m pip install -r requirements.lock
 
-      - name: Run unit tests (no Ollama required)
-        # Skip tests that require Ollama or ChromaDB - these are integration tests
+      - name: Verify dependencies
         run: |
-          pytest tests/ -v \
-            --ignore=tests/test_rag_rerank_sanity.py \
-            --ignore=tests/test_rag_sections.py \
-            -m "not slow"
+          python -m pip check
+
+      - name: Byte-compile
+        run: |
+          python -m compileall -q .
+
+      - name: Run tests
+        run: |
+          pytest -q

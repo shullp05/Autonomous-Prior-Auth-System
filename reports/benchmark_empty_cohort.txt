@@ -1,0 +1,29 @@
+
+
+===== LLM Benchmark (empty cohort, ref=1900) 2026-01-02T14:20:53Z =====
+
+
+======================================================================
+  PRIORAUTH BENCHMARK: Deterministic vs LLM Engine Comparison
+======================================================================
+
+Loading data...
+Benchmarking 0 patients (total pool: 0)
+
+Running benchmark...
+----------------------------------------------------------------------
+No patients available after filtering; check PA_REFERENCE_DATE/PA_REFERENCE_YEAR.
+
+======================================================================
+  BENCHMARK RESULTS SUMMARY
+======================================================================
+
+📊 Deterministic Engine Performance:
+   • Average: 0.00 ms/patient
+   • Total:   0 ms (0.00 sec)
+   • Min:     n/a
+   • Max:     n/a
+
+📁 Results saved to: benchmark_results_empty_cohort.json
+======================================================================
+

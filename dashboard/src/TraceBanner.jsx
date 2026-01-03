@@ -5,6 +5,8 @@ const RUN_PARAMS = {
   "pa-audit-qwen25": { temperature: 0.2, top_p: 0.9, num_predict: 768 },
   "pa-audit-mistral": { temperature: 0.2, top_p: 0.9, num_predict: 512 },
   "pa-audit-qwen3": { temperature: 0.25, top_p: 0.95, num_predict: 512 },
+  "pa-audit-nemotron-cascade8b:latest": { temperature: 0.2, top_p: 0.9, num_predict: 768 },
+  "pa-audit-nemo-cascade4b:latest": { temperature: 0.2, top_p: 0.9, num_predict: 768 },
   "pa-audit-nemo8b": { temperature: 0.2, top_p: 0.9, num_predict: 768 },
   "pa-audit-nemo4b": { temperature: 0.2, top_p: 0.9, num_predict: 768 },
 };

@@ -1,0 +1,17 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.1, pluggy-1.6.0
+rootdir: /root/projects/PriorAuth
+configfile: pyproject.toml
+plugins: anyio-4.12.0, langsmith-0.4.49, cov-7.0.0
+collected 8 items
+
+tests/test_offline_mode.py ......                                        [ 75%]
+tests/test_letter_mode_offline.py ..                                     [100%]
+
+=============================== warnings summary ===============================
+tests/test_letter_mode_offline.py::test_ollama_letter_mode_allows_loopback_only
+  /root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:441: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+    _torch_pytree._register_pytree_node(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 8 passed, 1 warning in 10.18s =========================

@@ -1,0 +1,1435 @@
+/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:441: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+  _torch_pytree._register_pytree_node(
+2026-01-02 10:02:50 [INFO] rag_rerank_sanity: Loaded policy snapshot RX-WEG-2025 (effective 2025-01-01, source_hash=01a798fae1a2f611fd7d573855461c2ee787d99ec56e2783dd7ea6838fcfff4d)
+2026-01-02 10:02:50 [INFO] rag_rerank_sanity: Using embedding model for sanity tests: kronos483/MedEmbed-large-v0.1:latest
+2026-01-02 10:02:51 [INFO] chromadb.telemetry.product.posthog: Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2026-01-02 10:02:51 [INFO] rag_rerank_sanity: === Scenario: BMI_35_OBESITY_PATHWAY ===
+2026-01-02 10:02:51 [INFO] rag_rerank_sanity: Deterministic verdict=APPROVED | BMI=35.20 | policy_path=BMI30_OBESITY
+2026-01-02 10:02:51 [INFO] rag_rerank_sanity: Query: Wegovy prior authorization policy. BMI 35.2. Verdict APPROVED. Policy path BMI30_OBESITY. Comorbidity NONE. Evidence . Conditions: Obesity due to excess calories (E66.0)
+Traceback (most recent call last):
+  File "/root/projects/PriorAuth/rag_rerank_sanity.py", line 566, in <module>
+    main()
+  File "/root/projects/PriorAuth/rag_rerank_sanity.py", line 545, in main
+    res = run_scenario(cfg, vectordb)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/projects/PriorAuth/rag_rerank_sanity.py", line 411, in run_scenario
+    vector_docs: list[Document] = vectordb.similarity_search(
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/langchain_chroma/vectorstores.py", line 695, in similarity_search
+    docs_and_scores = self.similarity_search_with_score(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/langchain_chroma/vectorstores.py", line 795, in similarity_search_with_score
+    query_embedding = self._embedding_function.embed_query(query)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/langchain_ollama/embeddings.py", line 307, in embed_query
+    return self.embed_documents([text])[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/langchain_ollama/embeddings.py", line 301, in embed_documents
+    return self._client.embed(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/ollama/_client.py", line 393, in embed
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/ollama/_client.py", line 189, in _request
+    return cls(**self._request_raw(*args, **kwargs).json())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/ollama/_client.py", line 135, in _request_raw
+    raise ConnectionError(CONNECTION_ERROR_MESSAGE) from None
+ConnectionError: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download
+2026-01-02 10:02:51 [WARNING] urllib3.connectionpool: Retrying (Retry(total=1, connect=1, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fa5e8ba5b50>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:02:51 [WARNING] urllib3.connectionpool: Retrying (Retry(total=0, connect=0, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fa71901ae50>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:02:51 [INFO] backoff: Backing off send_request(...) for 0.3s (requests.exceptions.ConnectionError: HTTPSConnectionPool(host='us.i.posthog.com', port=443): Max retries exceeded with url: /batch/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fa71901b850>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")))
+2026-01-02 10:02:51 [WARNING] urllib3.connectionpool: Retrying (Retry(total=1, connect=1, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fa5e3146a10>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:02:51 [WARNING] urllib3.connectionpool: Retrying (Retry(total=0, connect=0, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fa5e31470d0>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:02:51 [INFO] backoff: Backing off send_request(...) for 0.4s (requests.exceptions.ConnectionError: HTTPSConnectionPool(host='us.i.posthog.com', port=443): Max retries exceeded with url: /batch/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fa5e3147790>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")))
+2026-01-02 10:02:52 [WARNING] urllib3.connectionpool: Retrying (Retry(total=1, connect=1, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fa5e3170690>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:02:52 [WARNING] urllib3.connectionpool: Retrying (Retry(total=0, connect=0, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fa5e3170dd0>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:02:52 [INFO] backoff: Backing off send_request(...) for 3.3s (requests.exceptions.ConnectionError: HTTPSConnectionPool(host='us.i.posthog.com', port=443): Max retries exceeded with url: /batch/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fa5e3171590>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")))
+2026-01-02 10:02:55 [WARNING] urllib3.connectionpool: Retrying (Retry(total=1, connect=1, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fa5e3147250>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:02:55 [WARNING] urllib3.connectionpool: Retrying (Retry(total=0, connect=0, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fa5e31468d0>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:02:55 [ERROR] backoff: Giving up send_request(...) after 4 tries (requests.exceptions.ConnectionError: HTTPSConnectionPool(host='us.i.posthog.com', port=443): Max retries exceeded with url: /batch/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fa5e30f7790>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")))
+/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:441: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+  _torch_pytree._register_pytree_node(
+2026-01-02 10:05:31 [INFO] rag_rerank_sanity: Loaded policy snapshot RX-WEG-2025 (effective 2025-01-01, source_hash=01a798fae1a2f611fd7d573855461c2ee787d99ec56e2783dd7ea6838fcfff4d)
+2026-01-02 10:05:31 [INFO] rag_rerank_sanity: Using embedding model for sanity tests: kronos483/MedEmbed-large-v0.1:latest
+2026-01-02 10:05:31 [INFO] chromadb.telemetry.product.posthog: Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2026-01-02 10:05:31 [INFO] rag_rerank_sanity: === Scenario: BMI_35_OBESITY_PATHWAY ===
+2026-01-02 10:05:31 [INFO] rag_rerank_sanity: Deterministic verdict=APPROVED | BMI=35.20 | policy_path=BMI30_OBESITY
+2026-01-02 10:05:31 [INFO] rag_rerank_sanity: Query: Wegovy prior authorization policy. BMI 35.2. Verdict APPROVED. Policy path BMI30_OBESITY. Comorbidity NONE. Evidence . Conditions: Obesity due to excess calories (E66.0)
+Traceback (most recent call last):
+  File "/root/projects/PriorAuth/rag_rerank_sanity.py", line 566, in <module>
+    main()
+  File "/root/projects/PriorAuth/rag_rerank_sanity.py", line 545, in main
+    res = run_scenario(cfg, vectordb)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/projects/PriorAuth/rag_rerank_sanity.py", line 411, in run_scenario
+    vector_docs: list[Document] = vectordb.similarity_search(
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/langchain_chroma/vectorstores.py", line 695, in similarity_search
+    docs_and_scores = self.similarity_search_with_score(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/langchain_chroma/vectorstores.py", line 795, in similarity_search_with_score
+    query_embedding = self._embedding_function.embed_query(query)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/langchain_ollama/embeddings.py", line 307, in embed_query
+    return self.embed_documents([text])[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/langchain_ollama/embeddings.py", line 301, in embed_documents
+    return self._client.embed(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/ollama/_client.py", line 393, in embed
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/ollama/_client.py", line 189, in _request
+    return cls(**self._request_raw(*args, **kwargs).json())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/ollama/_client.py", line 135, in _request_raw
+    raise ConnectionError(CONNECTION_ERROR_MESSAGE) from None
+ConnectionError: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download
+2026-01-02 10:05:32 [WARNING] urllib3.connectionpool: Retrying (Retry(total=1, connect=1, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f54057ca050>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:05:32 [WARNING] urllib3.connectionpool: Retrying (Retry(total=0, connect=0, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f55375dac50>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:05:32 [INFO] backoff: Backing off send_request(...) for 0.0s (requests.exceptions.ConnectionError: HTTPSConnectionPool(host='us.i.posthog.com', port=443): Max retries exceeded with url: /batch/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f55375db790>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")))
+2026-01-02 10:05:32 [WARNING] urllib3.connectionpool: Retrying (Retry(total=1, connect=1, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f54056df550>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:05:32 [WARNING] urllib3.connectionpool: Retrying (Retry(total=0, connect=0, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f54056dfc10>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:05:32 [INFO] backoff: Backing off send_request(...) for 1.3s (requests.exceptions.ConnectionError: HTTPSConnectionPool(host='us.i.posthog.com', port=443): Max retries exceeded with url: /batch/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f540570c310>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")))
+2026-01-02 10:05:33 [WARNING] urllib3.connectionpool: Retrying (Retry(total=1, connect=1, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f540570d1d0>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:05:33 [WARNING] urllib3.connectionpool: Retrying (Retry(total=0, connect=0, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f540570d910>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:05:33 [INFO] backoff: Backing off send_request(...) for 1.0s (requests.exceptions.ConnectionError: HTTPSConnectionPool(host='us.i.posthog.com', port=443): Max retries exceeded with url: /batch/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f540570e0d0>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")))
+2026-01-02 10:05:34 [WARNING] urllib3.connectionpool: Retrying (Retry(total=1, connect=1, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f54056df5d0>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:05:34 [WARNING] urllib3.connectionpool: Retrying (Retry(total=0, connect=0, read=2, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f5406268450>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")': /batch/
+2026-01-02 10:05:34 [ERROR] backoff: Giving up send_request(...) after 4 tries (requests.exceptions.ConnectionError: HTTPSConnectionPool(host='us.i.posthog.com', port=443): Max retries exceeded with url: /batch/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7f54057a0d50>: Failed to resolve 'us.i.posthog.com' ([Errno -2] Name or service not known)")))
+/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:441: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+  _torch_pytree._register_pytree_node(
+2026-01-02 10:07:47 [INFO] rag_rerank_sanity: Loaded policy snapshot RX-WEG-2025 (effective 2025-01-01, source_hash=01a798fae1a2f611fd7d573855461c2ee787d99ec56e2783dd7ea6838fcfff4d)
+2026-01-02 10:07:47 [INFO] rag_rerank_sanity: Using embedding model for sanity tests: kronos483/MedEmbed-large-v0.1:latest
+2026-01-02 10:07:47 [INFO] chromadb.telemetry.product.posthog: Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2026-01-02 10:07:47 [INFO] rag_rerank_sanity: === Scenario: BMI_35_OBESITY_PATHWAY ===
+2026-01-02 10:07:47 [INFO] rag_rerank_sanity: Deterministic verdict=APPROVED | BMI=35.20 | policy_path=BMI30_OBESITY
+2026-01-02 10:07:47 [INFO] rag_rerank_sanity: Query: Wegovy prior authorization policy. BMI 35.2. Verdict APPROVED. Policy path BMI30_OBESITY. Comorbidity NONE. Evidence . Conditions: Obesity due to excess calories (E66.0)
+2026-01-02 10:07:50 [INFO] httpx: HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+2026-01-02 10:07:50 [INFO] rag_rerank_sanity: [Vector] 25 docs (2491.2 ms), top sections: ['documentation:requirements', 'diagnosis:obesity_strings', 'eligibility:pathway1', 'diagnosis:overweight_strings', 'eligibility:pathway2']
+/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/huggingface_hub/file_download.py:942: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:309: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+  _torch_pytree._register_pytree_node(
+2026-01-02 10:07:54 [INFO] BCEmbedding.models.RerankerModel: Loading from `maidalun1020/bce-reranker-base_v1`.
+2026-01-02 10:07:55 [INFO] BCEmbedding.models.RerankerModel: Execute device: cuda;	 gpu num: 1;	 use fp16: False
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:02<00:00,  2.75s/it]Calculate scores: 100%|██████████| 1/1 [00:02<00:00,  2.75s/it]
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [Rerank] 25 docs (8272.1 ms), top sections: ['documentation:requirements', 'eligibility:pathway1', 'diagnosis:obesity_strings', 'eligibility:pathway2', 'diagnosis:overweight_strings']
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [Rerank] Top 10 scores: ['0.591', '0.590', '0.584', '0.560', '0.555', '0.554', '0.553', '0.552', '0.547', '0.547']
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [Filter] Kept 3 docs after score floor + policy filter; sections: ['documentation:requirements', 'eligibility:pathway1', 'diagnosis:obesity_strings']
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [LLM] Will pass 3 docs; sections: ['documentation:requirements', 'eligibility:pathway1', 'diagnosis:obesity_strings']
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: === Scenario: BMI_28_HTN_OVERWEIGHT_PATHWAY ===
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: Deterministic verdict=APPROVED | BMI=28.40 | policy_path=BMI27_COMORBIDITY
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: Query: Wegovy prior authorization policy. BMI 28.4. Verdict APPROVED. Policy path BMI27_COMORBIDITY. Comorbidity HYPERTENSION. Evidence Hypertension. Conditions: Overweight (E66.3), Hypertension
+2026-01-02 10:07:58 [INFO] httpx: HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [Vector] 25 docs (53.7 ms), top sections: ['documentation:requirements', 'diagnosis:overweight_strings', 'comorbidity:hypertension', 'eligibility:pathway2', 'comorbidity:dyslipidemia']
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.85it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.81it/s]
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [Rerank] 25 docs (174.9 ms), top sections: ['documentation:requirements', 'eligibility:pathway1', 'eligibility:pathway2', 'comorbidity:cardiovascular_disease', 'diagnosis:overweight_strings']
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [Rerank] Top 10 scores: ['0.604', '0.581', '0.580', '0.577', '0.575', '0.574', '0.566', '0.565', '0.562', '0.558']
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [Filter] Kept 8 docs after score floor + policy filter; sections: ['documentation:requirements', 'eligibility:pathway2', 'diagnosis:overweight_strings', 'comorbidity:hypertension', 'comorbidity:cardiovascular_disease', 'comorbidity:dyslipidemia', 'comorbidity:obstructive_sleep_apnea', 'comorbidity:type2_diabetes']
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [LLM] Will pass 8 docs; sections: ['documentation:requirements', 'eligibility:pathway2', 'diagnosis:overweight_strings', 'comorbidity:hypertension', 'comorbidity:cardiovascular_disease', 'comorbidity:dyslipidemia', 'comorbidity:obstructive_sleep_apnea', 'comorbidity:type2_diabetes']
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: === Scenario: SAFETY_MTC_OZEMPIC_CONTRAINDICATED ===
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: Deterministic verdict=DENIED_SAFETY | BMI=33.00 | policy_path=SAFETY_EXCLUSION
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: Query: Wegovy prior authorization policy. BMI 33.0. Verdict DENIED_SAFETY. Policy path SAFETY_EXCLUSION. Comorbidity NONE. Evidence Ozempic. Conditions: Personal or family history of Medullary Thyroid Carcinoma, Type 2 diabetes mellitus
+2026-01-02 10:07:58 [INFO] httpx: HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [Vector] 25 docs (52.4 ms), top sections: ['documentation:requirements', 'safety_exclusions:mtc_men2', 'ambiguity:diabetes_borderline', 'safety_exclusions:mtc_men2', 'ambiguity:thyroid']
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.74it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.72it/s]
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [Rerank] 25 docs (177.0 ms), top sections: ['safety_exclusions:mtc_men2', 'documentation:requirements', 'safety_exclusions:hypersensitivity', 'ambiguity:diabetes_borderline', 'comorbidity:hypertension']
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [Rerank] Top 10 scores: ['0.607', '0.603', '0.584', '0.582', '0.582', '0.581', '0.575', '0.572', '0.571', '0.565']
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [Filter] Kept 11 docs after score floor + policy filter; sections: ['safety_exclusions:mtc_men2', 'safety_exclusions:mtc_men2', 'safety_exclusions:pregnancy_nursing', 'drug_conflicts:glp1_glp1_gip', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:hypersensitivity', 'safety_exclusions:pancreatitis', 'safety_exclusions:suicidality', 'safety_exclusions:gi_motility']
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [LLM] Will pass 8 docs; sections: ['safety_exclusions:mtc_men2', 'safety_exclusions:mtc_men2', 'safety_exclusions:pregnancy_nursing', 'drug_conflicts:glp1_glp1_gip', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:hypersensitivity']
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: === Scenario: AMBIG_THYROID_NEEDS_REVIEW ===
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: Deterministic verdict=MANUAL_REVIEW | BMI=31.00 | policy_path=AMBIGUITY_MANUAL_REVIEW
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: Query: Wegovy prior authorization policy. BMI 31.0. Verdict MANUAL_REVIEW. Policy path AMBIGUITY_MANUAL_REVIEW. Comorbidity NONE. Evidence Thyroid cancer. Conditions: Thyroid cancer, Obesity due to excess calories (E66.0)
+2026-01-02 10:07:58 [INFO] httpx: HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+2026-01-02 10:07:58 [INFO] rag_rerank_sanity: [Vector] 25 docs (46.9 ms), top sections: ['documentation:requirements', 'eligibility:pathway1', 'ambiguity:diabetes_borderline', 'diagnosis:obesity_strings', 'diagnosis:overweight_strings']
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.37it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.35it/s]
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: [Rerank] 25 docs (159.3 ms), top sections: ['eligibility:pathway1', 'documentation:requirements', 'diagnosis:obesity_strings', 'comorbidity:hypertension', 'ambiguity:thyroid']
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: [Rerank] Top 10 scores: ['0.606', '0.603', '0.591', '0.579', '0.573', '0.573', '0.572', '0.570', '0.568', '0.566']
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: [Filter] Kept 9 docs after score floor + policy filter; sections: ['eligibility:pathway1', 'documentation:requirements', 'diagnosis:obesity_strings', 'ambiguity:thyroid', 'eligibility:pathway2', 'ambiguity:diabetes_borderline', 'diagnosis:overweight_strings', 'ambiguity:bp_borderline', 'ambiguity:other']
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: [LLM] Will pass 8 docs; sections: ['eligibility:pathway1', 'documentation:requirements', 'diagnosis:obesity_strings', 'ambiguity:thyroid', 'eligibility:pathway2', 'ambiguity:diabetes_borderline', 'diagnosis:overweight_strings', 'ambiguity:bp_borderline']
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: === Scenario: AMBIG_BP_BORDERLINE ===
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: Deterministic verdict=MANUAL_REVIEW | BMI=28.00 | policy_path=AMBIGUITY_MANUAL_REVIEW
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: Query: Wegovy prior authorization policy. BMI 28.0. Verdict MANUAL_REVIEW. Policy path AMBIGUITY_MANUAL_REVIEW. Comorbidity NONE. Evidence Elevated blood pressure. Conditions: Overweight (E66.3), Elevated blood pressure
+2026-01-02 10:07:59 [INFO] httpx: HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: [Vector] 25 docs (38.4 ms), top sections: ['documentation:requirements', 'eligibility:pathway2', 'ambiguity:other', 'diagnosis:overweight_strings', 'ambiguity:diabetes_borderline']
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.47it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.44it/s]
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: [Rerank] 25 docs (157.9 ms), top sections: ['documentation:requirements', 'eligibility:pathway1', 'ambiguity:bp_borderline', 'comorbidity:cardiovascular_disease', 'comorbidity:hypertension']
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: [Rerank] Top 10 scores: ['0.595', '0.589', '0.583', '0.581', '0.580', '0.578', '0.578', '0.574', '0.571', '0.566']
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: [Filter] Kept 10 docs after score floor + policy filter; sections: ['documentation:requirements', 'eligibility:pathway1', 'ambiguity:bp_borderline', 'eligibility:pathway2', 'diagnosis:obesity_strings', 'diagnosis:overweight_strings', 'ambiguity:diabetes_borderline', 'ambiguity:other', 'ambiguity:thyroid', 'ambiguity:sleep_apnea_unclear']
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: [LLM] Will pass 8 docs; sections: ['documentation:requirements', 'eligibility:pathway1', 'ambiguity:bp_borderline', 'eligibility:pathway2', 'diagnosis:obesity_strings', 'diagnosis:overweight_strings', 'ambiguity:diabetes_borderline', 'ambiguity:other']
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: === Scenario: SAFETY_PREGNANCY_EXCLUSION ===
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: Deterministic verdict=DENIED_SAFETY | BMI=32.00 | policy_path=SAFETY_EXCLUSION
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: Query: Wegovy prior authorization policy. BMI 32.0. Verdict DENIED_SAFETY. Policy path SAFETY_EXCLUSION. Comorbidity NONE. Evidence Pregnancy, unspecified. Conditions: Pregnancy, unspecified, Obesity due to excess calories (E66.0)
+2026-01-02 10:07:59 [INFO] httpx: HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: [Vector] 25 docs (49.2 ms), top sections: ['documentation:requirements', 'safety_exclusions:pregnancy_nursing', 'eligibility:pathway1', 'diagnosis:overweight_strings', 'ambiguity:diabetes_borderline']
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.44it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.41it/s]
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: [Rerank] 25 docs (157.5 ms), top sections: ['documentation:requirements', 'eligibility:pathway1', 'diagnosis:obesity_strings', 'ambiguity:diabetes_borderline', 'comorbidity:dyslipidemia']
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: [Rerank] Top 10 scores: ['0.590', '0.577', '0.572', '0.559', '0.557', '0.556', '0.555', '0.552', '0.548', '0.548']
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: [Filter] Kept 10 docs after score floor + policy filter; sections: ['safety_exclusions:pregnancy_nursing', 'drug_conflicts:glp1_glp1_gip', 'safety_exclusions:mtc_men2', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:hypersensitivity', 'safety_exclusions:suicidality', 'safety_exclusions:pancreatitis', 'safety_exclusions:gi_motility']
+2026-01-02 10:07:59 [INFO] rag_rerank_sanity: [LLM] Will pass 8 docs; sections: ['safety_exclusions:pregnancy_nursing', 'drug_conflicts:glp1_glp1_gip', 'safety_exclusions:mtc_men2', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:hypersensitivity', 'safety_exclusions:suicidality']
+
+=== RAG / RERANK SANITY SUMMARY (JSON) ===
+{
+  "config": {
+    "collection": "priorauth_policies",
+    "embed_model": "kronos483/MedEmbed-large-v0.1:latest",
+    "k_vector": 25,
+    "min_docs": 3,
+    "policy_id": "RX-WEG-2025",
+    "score_floor": 0.35,
+    "top_k_docs": 8
+  },
+  "scenarios": [
+    {
+      "bmi": 35.2,
+      "coverage_hits": {
+        "diagnosis:obesity_strings": true,
+        "eligibility:pathway1": true
+      },
+      "coverage_ok": true,
+      "expected_sections": [
+        "eligibility:pathway1",
+        "diagnosis:obesity_strings"
+      ],
+      "filtered_sections_all": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "diagnosis:obesity_strings"
+      ],
+      "hits_llm": {
+        "diagnosis:obesity_strings": true,
+        "eligibility:pathway1": true
+      },
+      "hits_vector": {
+        "diagnosis:obesity_strings": true,
+        "eligibility:pathway1": true
+      },
+      "llm_sections": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "diagnosis:obesity_strings"
+      ],
+      "name": "BMI_35_OBESITY_PATHWAY",
+      "pass_flag": true,
+      "policy_path": "BMI30_OBESITY",
+      "priority_ok": true,
+      "rerank_ms": 8272.122859954834,
+      "rerank_sections_top": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "diagnosis:obesity_strings",
+        "eligibility:pathway2",
+        "diagnosis:overweight_strings",
+        "comorbidity:hypertension",
+        "ambiguity:diabetes_borderline",
+        "comorbidity:cardiovascular_disease"
+      ],
+      "scores_all": [
+        0.5909745097160339,
+        0.5904071927070618,
+        0.5836387872695923,
+        0.5597336292266846,
+        0.5553190112113953,
+        0.5543408989906311,
+        0.552808940410614,
+        0.5518381595611572,
+        0.5471787452697754,
+        0.5471592545509338,
+        0.5421544909477234,
+        0.5311702489852905,
+        0.5264376997947693,
+        0.5206508636474609,
+        0.515589714050293,
+        0.48055991530418396,
+        0.47699812054634094,
+        0.458969384431839,
+        0.44746774435043335,
+        0.4451795518398285,
+        0.421665221452713,
+        0.40659281611442566,
+        0.404631108045578,
+        0.4027206301689148,
+        0.39939558506011963
+      ],
+      "vector_ms": 2491.238594055176,
+      "vector_sections": [
+        "documentation:requirements",
+        "diagnosis:obesity_strings",
+        "eligibility:pathway1",
+        "diagnosis:overweight_strings",
+        "eligibility:pathway2",
+        "ambiguity:diabetes_borderline",
+        "comorbidity:cardiovascular_disease",
+        "comorbidity:dyslipidemia"
+      ],
+      "verdict": "APPROVED"
+    },
+    {
+      "bmi": 28.4,
+      "coverage_hits": {
+        "comorbidity:hypertension": true,
+        "eligibility:pathway2": true
+      },
+      "coverage_ok": true,
+      "expected_sections": [
+        "eligibility:pathway2",
+        "comorbidity:hypertension"
+      ],
+      "filtered_sections_all": [
+        "documentation:requirements",
+        "eligibility:pathway2",
+        "diagnosis:overweight_strings",
+        "comorbidity:hypertension",
+        "comorbidity:cardiovascular_disease",
+        "comorbidity:dyslipidemia",
+        "comorbidity:obstructive_sleep_apnea",
+        "comorbidity:type2_diabetes"
+      ],
+      "hits_llm": {
+        "comorbidity:hypertension": true,
+        "eligibility:pathway2": true
+      },
+      "hits_vector": {
+        "comorbidity:hypertension": true,
+        "eligibility:pathway2": true
+      },
+      "llm_sections": [
+        "documentation:requirements",
+        "eligibility:pathway2",
+        "diagnosis:overweight_strings",
+        "comorbidity:hypertension",
+        "comorbidity:cardiovascular_disease",
+        "comorbidity:dyslipidemia",
+        "comorbidity:obstructive_sleep_apnea",
+        "comorbidity:type2_diabetes"
+      ],
+      "name": "BMI_28_HTN_OVERWEIGHT_PATHWAY",
+      "pass_flag": true,
+      "policy_path": "BMI27_COMORBIDITY",
+      "priority_ok": true,
+      "rerank_ms": 174.8669147491455,
+      "rerank_sections_top": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "eligibility:pathway2",
+        "comorbidity:cardiovascular_disease",
+        "diagnosis:overweight_strings",
+        "comorbidity:hypertension",
+        "comorbidity:dyslipidemia",
+        "ambiguity:diabetes_borderline"
+      ],
+      "scores_all": [
+        0.6035070419311523,
+        0.5805423259735107,
+        0.579913318157196,
+        0.577136754989624,
+        0.5747653841972351,
+        0.5744858384132385,
+        0.5656093955039978,
+        0.56514972448349,
+        0.5621324181556702,
+        0.5582484006881714,
+        0.5538493394851685,
+        0.5520350933074951,
+        0.5442908406257629,
+        0.53180330991745,
+        0.5303236246109009,
+        0.4918956756591797,
+        0.49001723527908325,
+        0.48374250531196594,
+        0.4831641912460327,
+        0.4568515717983246,
+        0.4456022083759308,
+        0.43725472688674927,
+        0.4350966513156891,
+        0.4288521111011505,
+        0.4285837411880493
+      ],
+      "vector_ms": 53.67636680603027,
+      "vector_sections": [
+        "documentation:requirements",
+        "diagnosis:overweight_strings",
+        "comorbidity:hypertension",
+        "eligibility:pathway2",
+        "comorbidity:dyslipidemia",
+        "comorbidity:cardiovascular_disease",
+        "eligibility:pathway1",
+        "diagnosis:obesity_strings"
+      ],
+      "verdict": "APPROVED"
+    },
+    {
+      "bmi": 33.0,
+      "coverage_hits": {
+        "drug_conflicts:glp1_glp1_gip": true,
+        "safety_exclusions:concurrent_glp1": true,
+        "safety_exclusions:mtc_men2": true
+      },
+      "coverage_ok": true,
+      "expected_sections": [
+        "safety_exclusions:mtc_men2",
+        "safety_exclusions:concurrent_glp1",
+        "drug_conflicts:glp1_glp1_gip"
+      ],
+      "filtered_sections_all": [
+        "safety_exclusions:mtc_men2",
+        "safety_exclusions:mtc_men2",
+        "safety_exclusions:pregnancy_nursing",
+        "drug_conflicts:glp1_glp1_gip",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:hypersensitivity",
+        "safety_exclusions:pancreatitis",
+        "safety_exclusions:suicidality",
+        "safety_exclusions:gi_motility"
+      ],
+      "hits_llm": {
+        "drug_conflicts:glp1_glp1_gip": true,
+        "safety_exclusions:concurrent_glp1": true,
+        "safety_exclusions:mtc_men2": true
+      },
+      "hits_vector": {
+        "drug_conflicts:glp1_glp1_gip": false,
+        "safety_exclusions:concurrent_glp1": false,
+        "safety_exclusions:mtc_men2": true
+      },
+      "llm_sections": [
+        "safety_exclusions:mtc_men2",
+        "safety_exclusions:mtc_men2",
+        "safety_exclusions:pregnancy_nursing",
+        "drug_conflicts:glp1_glp1_gip",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:hypersensitivity"
+      ],
+      "name": "SAFETY_MTC_OZEMPIC_CONTRAINDICATED",
+      "pass_flag": true,
+      "policy_path": "SAFETY_EXCLUSION",
+      "priority_ok": true,
+      "rerank_ms": 176.9568920135498,
+      "rerank_sections_top": [
+        "safety_exclusions:mtc_men2",
+        "documentation:requirements",
+        "safety_exclusions:hypersensitivity",
+        "ambiguity:diabetes_borderline",
+        "comorbidity:hypertension",
+        "comorbidity:type2_diabetes",
+        "comorbidity:cardiovascular_disease",
+        "comorbidity:dyslipidemia"
+      ],
+      "scores_all": [
+        0.6073800325393677,
+        0.6034260392189026,
+        0.5843082666397095,
+        0.5815911889076233,
+        0.5815345644950867,
+        0.5813043713569641,
+        0.5746606588363647,
+        0.5719072222709656,
+        0.5713394284248352,
+        0.565326452255249,
+        0.5631834268569946,
+        0.5607861280441284,
+        0.5569047927856445,
+        0.5533806085586548,
+        0.5345487594604492,
+        0.5321212410926819,
+        0.531004786491394,
+        0.514460563659668,
+        0.5012747049331665,
+        0.4891648590564728,
+        0.48215731978416443,
+        0.44761744141578674,
+        0.4474678337574005,
+        0.4443742036819458,
+        0.42112043499946594
+      ],
+      "vector_ms": 52.37221717834473,
+      "vector_sections": [
+        "documentation:requirements",
+        "safety_exclusions:mtc_men2",
+        "ambiguity:diabetes_borderline",
+        "safety_exclusions:mtc_men2",
+        "ambiguity:thyroid",
+        "eligibility:pathway1",
+        "comorbidity:type2_diabetes",
+        "diagnosis:obesity_strings"
+      ],
+      "verdict": "DENIED_SAFETY"
+    },
+    {
+      "bmi": 31.0,
+      "coverage_hits": {
+        "ambiguity:thyroid": true,
+        "diagnosis:obesity_strings": true,
+        "eligibility:pathway1": true
+      },
+      "coverage_ok": true,
+      "expected_sections": [
+        "eligibility:pathway1",
+        "diagnosis:obesity_strings",
+        "ambiguity:thyroid"
+      ],
+      "filtered_sections_all": [
+        "eligibility:pathway1",
+        "documentation:requirements",
+        "diagnosis:obesity_strings",
+        "ambiguity:thyroid",
+        "eligibility:pathway2",
+        "ambiguity:diabetes_borderline",
+        "diagnosis:overweight_strings",
+        "ambiguity:bp_borderline",
+        "ambiguity:other"
+      ],
+      "hits_llm": {
+        "ambiguity:thyroid": true,
+        "diagnosis:obesity_strings": true,
+        "eligibility:pathway1": true
+      },
+      "hits_vector": {
+        "ambiguity:thyroid": false,
+        "diagnosis:obesity_strings": true,
+        "eligibility:pathway1": true
+      },
+      "llm_sections": [
+        "eligibility:pathway1",
+        "documentation:requirements",
+        "diagnosis:obesity_strings",
+        "ambiguity:thyroid",
+        "eligibility:pathway2",
+        "ambiguity:diabetes_borderline",
+        "diagnosis:overweight_strings",
+        "ambiguity:bp_borderline"
+      ],
+      "name": "AMBIG_THYROID_NEEDS_REVIEW",
+      "pass_flag": true,
+      "policy_path": "AMBIGUITY_MANUAL_REVIEW",
+      "priority_ok": true,
+      "rerank_ms": 159.2540740966797,
+      "rerank_sections_top": [
+        "eligibility:pathway1",
+        "documentation:requirements",
+        "diagnosis:obesity_strings",
+        "comorbidity:hypertension",
+        "ambiguity:thyroid",
+        "eligibility:pathway2",
+        "ambiguity:diabetes_borderline",
+        "comorbidity:type2_diabetes"
+      ],
+      "scores_all": [
+        0.6058555245399475,
+        0.6026410460472107,
+        0.5908962488174438,
+        0.57935631275177,
+        0.573264479637146,
+        0.5731924772262573,
+        0.571970522403717,
+        0.5699540972709656,
+        0.5677084922790527,
+        0.566454291343689,
+        0.5642049908638,
+        0.5568011999130249,
+        0.5499328374862671,
+        0.5421860814094543,
+        0.5410436391830444,
+        0.5382915735244751,
+        0.5284606218338013,
+        0.5269989967346191,
+        0.48808762431144714,
+        0.47848594188690186,
+        0.4514571726322174,
+        0.43083643913269043,
+        0.39216262102127075,
+        0.39049190282821655,
+        0.36802059412002563
+      ],
+      "vector_ms": 46.857595443725586,
+      "vector_sections": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "ambiguity:diabetes_borderline",
+        "diagnosis:obesity_strings",
+        "diagnosis:overweight_strings",
+        "comorbidity:cardiovascular_disease",
+        "comorbidity:dyslipidemia",
+        "eligibility:pathway2"
+      ],
+      "verdict": "MANUAL_REVIEW"
+    },
+    {
+      "bmi": 28.0,
+      "coverage_hits": {
+        "ambiguity:bp_borderline": true,
+        "diagnosis:overweight_strings": true,
+        "eligibility:pathway2": true
+      },
+      "coverage_ok": true,
+      "expected_sections": [
+        "eligibility:pathway2",
+        "diagnosis:overweight_strings",
+        "ambiguity:bp_borderline"
+      ],
+      "filtered_sections_all": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "ambiguity:bp_borderline",
+        "eligibility:pathway2",
+        "diagnosis:obesity_strings",
+        "diagnosis:overweight_strings",
+        "ambiguity:diabetes_borderline",
+        "ambiguity:other",
+        "ambiguity:thyroid",
+        "ambiguity:sleep_apnea_unclear"
+      ],
+      "hits_llm": {
+        "ambiguity:bp_borderline": true,
+        "diagnosis:overweight_strings": true,
+        "eligibility:pathway2": true
+      },
+      "hits_vector": {
+        "ambiguity:bp_borderline": false,
+        "diagnosis:overweight_strings": true,
+        "eligibility:pathway2": true
+      },
+      "llm_sections": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "ambiguity:bp_borderline",
+        "eligibility:pathway2",
+        "diagnosis:obesity_strings",
+        "diagnosis:overweight_strings",
+        "ambiguity:diabetes_borderline",
+        "ambiguity:other"
+      ],
+      "name": "AMBIG_BP_BORDERLINE",
+      "pass_flag": true,
+      "policy_path": "AMBIGUITY_MANUAL_REVIEW",
+      "priority_ok": true,
+      "rerank_ms": 157.88936614990234,
+      "rerank_sections_top": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "ambiguity:bp_borderline",
+        "comorbidity:cardiovascular_disease",
+        "comorbidity:hypertension",
+        "eligibility:pathway2",
+        "diagnosis:obesity_strings",
+        "comorbidity:type2_diabetes"
+      ],
+      "scores_all": [
+        0.5950477123260498,
+        0.5885892510414124,
+        0.5829994678497314,
+        0.5814557671546936,
+        0.580136775970459,
+        0.5778483152389526,
+        0.5777980089187622,
+        0.5738707184791565,
+        0.5708049535751343,
+        0.5661700963973999,
+        0.5645463466644287,
+        0.5637233257293701,
+        0.5568559169769287,
+        0.5486313700675964,
+        0.5473994016647339,
+        0.5446792840957642,
+        0.5289505124092102,
+        0.5277565717697144,
+        0.4839482009410858,
+        0.47384360432624817,
+        0.4465508759021759,
+        0.4385063052177429,
+        0.41012075543403625,
+        0.3979327082633972,
+        0.3902158737182617
+      ],
+      "vector_ms": 38.39373588562012,
+      "vector_sections": [
+        "documentation:requirements",
+        "eligibility:pathway2",
+        "ambiguity:other",
+        "diagnosis:overweight_strings",
+        "ambiguity:diabetes_borderline",
+        "eligibility:pathway1",
+        "comorbidity:hypertension",
+        "comorbidity:cardiovascular_disease"
+      ],
+      "verdict": "MANUAL_REVIEW"
+    },
+    {
+      "bmi": 32.0,
+      "coverage_hits": {
+        "safety_exclusions:pregnancy_nursing": true
+      },
+      "coverage_ok": true,
+      "expected_sections": [
+        "safety_exclusions:pregnancy_nursing"
+      ],
+      "filtered_sections_all": [
+        "safety_exclusions:pregnancy_nursing",
+        "drug_conflicts:glp1_glp1_gip",
+        "safety_exclusions:mtc_men2",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:hypersensitivity",
+        "safety_exclusions:suicidality",
+        "safety_exclusions:pancreatitis",
+        "safety_exclusions:gi_motility"
+      ],
+      "hits_llm": {
+        "safety_exclusions:pregnancy_nursing": true
+      },
+      "hits_vector": {
+        "safety_exclusions:pregnancy_nursing": true
+      },
+      "llm_sections": [
+        "safety_exclusions:pregnancy_nursing",
+        "drug_conflicts:glp1_glp1_gip",
+        "safety_exclusions:mtc_men2",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:hypersensitivity",
+        "safety_exclusions:suicidality"
+      ],
+      "name": "SAFETY_PREGNANCY_EXCLUSION",
+      "pass_flag": true,
+      "policy_path": "SAFETY_EXCLUSION",
+      "priority_ok": true,
+      "rerank_ms": 157.52029418945312,
+      "rerank_sections_top": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "diagnosis:obesity_strings",
+        "ambiguity:diabetes_borderline",
+        "comorbidity:dyslipidemia",
+        "diagnosis:overweight_strings",
+        "safety_exclusions:pregnancy_nursing",
+        "comorbidity:hypertension"
+      ],
+      "scores_all": [
+        0.590072512626648,
+        0.5773196816444397,
+        0.5722124576568604,
+        0.5589658617973328,
+        0.5569674968719482,
+        0.5559394955635071,
+        0.5551341772079468,
+        0.5522944927215576,
+        0.548422634601593,
+        0.5475134253501892,
+        0.5425087213516235,
+        0.5332859754562378,
+        0.5307586789131165,
+        0.5142005681991577,
+        0.4870637357234955,
+        0.4740285873413086,
+        0.47396180033683777,
+        0.47320953011512756,
+        0.4596479535102844,
+        0.43883728981018066,
+        0.414025217294693,
+        0.4118877053260803,
+        0.40948858857154846,
+        0.38520386815071106,
+        0.3801841735839844
+      ],
+      "vector_ms": 49.17430877685547,
+      "vector_sections": [
+        "documentation:requirements",
+        "safety_exclusions:pregnancy_nursing",
+        "eligibility:pathway1",
+        "diagnosis:overweight_strings",
+        "ambiguity:diabetes_borderline",
+        "diagnosis:obesity_strings",
+        "eligibility:pathway2",
+        "comorbidity:dyslipidemia"
+      ],
+      "verdict": "DENIED_SAFETY"
+    }
+  ]
+}
+/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:441: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+  _torch_pytree._register_pytree_node(
+2026-01-02 10:18:07 [INFO] rag_rerank_sanity: Loaded policy snapshot RX-WEG-2025 (effective 2025-01-01, source_hash=01a798fae1a2f611fd7d573855461c2ee787d99ec56e2783dd7ea6838fcfff4d)
+2026-01-02 10:18:07 [INFO] rag_rerank_sanity: Using embedding model for sanity tests: kronos483/MedEmbed-large-v0.1:latest
+2026-01-02 10:18:07 [INFO] chromadb.telemetry.product.posthog: Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2026-01-02 10:18:07 [WARNING] rag_rerank_sanity: Ollama unavailable; skipping RAG/rerank sanity run: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download
+
+=== RAG / RERANK SANITY SUMMARY (JSON) ===
+{
+  "config": {
+    "collection": "priorauth_policies",
+    "embed_model": "kronos483/MedEmbed-large-v0.1:latest",
+    "k_vector": 25,
+    "min_docs": 3,
+    "policy_id": "RX-WEG-2025",
+    "score_floor": 0.35,
+    "top_k_docs": 8
+  },
+  "error": "Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download",
+  "scenarios": [],
+  "status": "OLLAMA_UNAVAILABLE"
+}
+/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:441: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+  _torch_pytree._register_pytree_node(
+2026-01-02 10:20:33 [INFO] rag_rerank_sanity: Loaded policy snapshot RX-WEG-2025 (effective 2025-01-01, source_hash=01a798fae1a2f611fd7d573855461c2ee787d99ec56e2783dd7ea6838fcfff4d)
+2026-01-02 10:20:33 [INFO] rag_rerank_sanity: Using embedding model for sanity tests: kronos483/MedEmbed-large-v0.1:latest
+2026-01-02 10:20:33 [INFO] chromadb.telemetry.product.posthog: Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2026-01-02 10:20:36 [INFO] httpx: HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+2026-01-02 10:20:36 [INFO] rag_rerank_sanity: === Scenario: BMI_35_OBESITY_PATHWAY ===
+2026-01-02 10:20:36 [INFO] rag_rerank_sanity: Deterministic verdict=APPROVED | BMI=35.20 | policy_path=BMI30_OBESITY
+2026-01-02 10:20:36 [INFO] rag_rerank_sanity: Query: Wegovy prior authorization policy. BMI 35.2. Verdict APPROVED. Policy path BMI30_OBESITY. Comorbidity NONE. Evidence . Conditions: Obesity due to excess calories (E66.0)
+2026-01-02 10:20:36 [INFO] httpx: HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+2026-01-02 10:20:36 [INFO] rag_rerank_sanity: [Vector] 25 docs (65.3 ms), top sections: ['documentation:requirements', 'diagnosis:obesity_strings', 'eligibility:pathway1', 'diagnosis:overweight_strings', 'eligibility:pathway2']
+/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/huggingface_hub/file_download.py:942: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:309: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+  _torch_pytree._register_pytree_node(
+2026-01-02 10:20:39 [INFO] BCEmbedding.models.RerankerModel: Loading from `maidalun1020/bce-reranker-base_v1`.
+2026-01-02 10:20:40 [INFO] BCEmbedding.models.RerankerModel: Execute device: cuda;	 gpu num: 1;	 use fp16: False
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:02<00:00,  2.37s/it]Calculate scores: 100%|██████████| 1/1 [00:02<00:00,  2.37s/it]
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: [Rerank] 25 docs (6502.2 ms), top sections: ['documentation:requirements', 'eligibility:pathway1', 'diagnosis:obesity_strings', 'eligibility:pathway2', 'diagnosis:overweight_strings']
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: [Rerank] Top 10 scores: ['0.591', '0.590', '0.584', '0.560', '0.555', '0.554', '0.553', '0.552', '0.547', '0.547']
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: [Filter] Kept 3 docs after score floor + policy filter; sections: ['documentation:requirements', 'eligibility:pathway1', 'diagnosis:obesity_strings']
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: [LLM] Will pass 3 docs; sections: ['documentation:requirements', 'eligibility:pathway1', 'diagnosis:obesity_strings']
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: === Scenario: BMI_28_HTN_OVERWEIGHT_PATHWAY ===
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: Deterministic verdict=APPROVED | BMI=28.40 | policy_path=BMI27_COMORBIDITY
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: Query: Wegovy prior authorization policy. BMI 28.4. Verdict APPROVED. Policy path BMI27_COMORBIDITY. Comorbidity HYPERTENSION. Evidence Hypertension. Conditions: Overweight (E66.3), Hypertension
+2026-01-02 10:20:42 [INFO] httpx: HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: [Vector] 25 docs (54.1 ms), top sections: ['documentation:requirements', 'diagnosis:overweight_strings', 'comorbidity:hypertension', 'eligibility:pathway2', 'comorbidity:dyslipidemia']
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.19it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.17it/s]
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: [Rerank] 25 docs (163.2 ms), top sections: ['documentation:requirements', 'eligibility:pathway1', 'eligibility:pathway2', 'comorbidity:cardiovascular_disease', 'diagnosis:overweight_strings']
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: [Rerank] Top 10 scores: ['0.604', '0.581', '0.580', '0.577', '0.575', '0.574', '0.566', '0.565', '0.562', '0.558']
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: [Filter] Kept 8 docs after score floor + policy filter; sections: ['documentation:requirements', 'eligibility:pathway2', 'diagnosis:overweight_strings', 'comorbidity:hypertension', 'comorbidity:cardiovascular_disease', 'comorbidity:dyslipidemia', 'comorbidity:obstructive_sleep_apnea', 'comorbidity:type2_diabetes']
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: [LLM] Will pass 8 docs; sections: ['documentation:requirements', 'eligibility:pathway2', 'diagnosis:overweight_strings', 'comorbidity:hypertension', 'comorbidity:cardiovascular_disease', 'comorbidity:dyslipidemia', 'comorbidity:obstructive_sleep_apnea', 'comorbidity:type2_diabetes']
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: === Scenario: SAFETY_MTC_OZEMPIC_CONTRAINDICATED ===
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: Deterministic verdict=DENIED_SAFETY | BMI=33.00 | policy_path=SAFETY_EXCLUSION
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: Query: Wegovy prior authorization policy. BMI 33.0. Verdict DENIED_SAFETY. Policy path SAFETY_EXCLUSION. Comorbidity NONE. Evidence Ozempic. Conditions: Personal or family history of Medullary Thyroid Carcinoma, Type 2 diabetes mellitus
+2026-01-02 10:20:42 [INFO] httpx: HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+2026-01-02 10:20:42 [INFO] rag_rerank_sanity: [Vector] 25 docs (40.5 ms), top sections: ['documentation:requirements', 'safety_exclusions:mtc_men2', 'ambiguity:diabetes_borderline', 'safety_exclusions:mtc_men2', 'ambiguity:thyroid']
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.97it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.95it/s]
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Rerank] 25 docs (169.7 ms), top sections: ['safety_exclusions:mtc_men2', 'documentation:requirements', 'safety_exclusions:hypersensitivity', 'ambiguity:diabetes_borderline', 'comorbidity:hypertension']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Rerank] Top 10 scores: ['0.607', '0.603', '0.584', '0.582', '0.582', '0.581', '0.575', '0.572', '0.571', '0.565']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Filter] Kept 11 docs after score floor + policy filter; sections: ['safety_exclusions:mtc_men2', 'safety_exclusions:mtc_men2', 'safety_exclusions:pregnancy_nursing', 'drug_conflicts:glp1_glp1_gip', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:hypersensitivity', 'safety_exclusions:pancreatitis', 'safety_exclusions:suicidality', 'safety_exclusions:gi_motility']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [LLM] Will pass 8 docs; sections: ['safety_exclusions:mtc_men2', 'safety_exclusions:mtc_men2', 'safety_exclusions:pregnancy_nursing', 'drug_conflicts:glp1_glp1_gip', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:hypersensitivity']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: === Scenario: AMBIG_THYROID_NEEDS_REVIEW ===
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: Deterministic verdict=MANUAL_REVIEW | BMI=31.00 | policy_path=AMBIGUITY_MANUAL_REVIEW
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: Query: Wegovy prior authorization policy. BMI 31.0. Verdict MANUAL_REVIEW. Policy path AMBIGUITY_MANUAL_REVIEW. Comorbidity NONE. Evidence Thyroid cancer. Conditions: Thyroid cancer, Obesity due to excess calories (E66.0)
+2026-01-02 10:20:43 [INFO] httpx: HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Vector] 25 docs (29.2 ms), top sections: ['documentation:requirements', 'eligibility:pathway1', 'ambiguity:diabetes_borderline', 'diagnosis:obesity_strings', 'diagnosis:overweight_strings']
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.68it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.67it/s]
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Rerank] 25 docs (152.4 ms), top sections: ['eligibility:pathway1', 'documentation:requirements', 'diagnosis:obesity_strings', 'comorbidity:hypertension', 'ambiguity:thyroid']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Rerank] Top 10 scores: ['0.606', '0.603', '0.591', '0.579', '0.573', '0.573', '0.572', '0.570', '0.568', '0.566']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Filter] Kept 9 docs after score floor + policy filter; sections: ['eligibility:pathway1', 'documentation:requirements', 'diagnosis:obesity_strings', 'ambiguity:thyroid', 'eligibility:pathway2', 'ambiguity:diabetes_borderline', 'diagnosis:overweight_strings', 'ambiguity:bp_borderline', 'ambiguity:other']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [LLM] Will pass 8 docs; sections: ['eligibility:pathway1', 'documentation:requirements', 'diagnosis:obesity_strings', 'ambiguity:thyroid', 'eligibility:pathway2', 'ambiguity:diabetes_borderline', 'diagnosis:overweight_strings', 'ambiguity:bp_borderline']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: === Scenario: AMBIG_BP_BORDERLINE ===
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: Deterministic verdict=MANUAL_REVIEW | BMI=28.00 | policy_path=AMBIGUITY_MANUAL_REVIEW
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: Query: Wegovy prior authorization policy. BMI 28.0. Verdict MANUAL_REVIEW. Policy path AMBIGUITY_MANUAL_REVIEW. Comorbidity NONE. Evidence Elevated blood pressure. Conditions: Overweight (E66.3), Elevated blood pressure
+2026-01-02 10:20:43 [INFO] httpx: HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Vector] 25 docs (33.9 ms), top sections: ['documentation:requirements', 'eligibility:pathway2', 'ambiguity:other', 'diagnosis:overweight_strings', 'ambiguity:diabetes_borderline']
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.64it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.60it/s]
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Rerank] 25 docs (154.1 ms), top sections: ['documentation:requirements', 'eligibility:pathway1', 'ambiguity:bp_borderline', 'comorbidity:cardiovascular_disease', 'comorbidity:hypertension']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Rerank] Top 10 scores: ['0.595', '0.589', '0.583', '0.581', '0.580', '0.578', '0.578', '0.574', '0.571', '0.566']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Filter] Kept 10 docs after score floor + policy filter; sections: ['documentation:requirements', 'eligibility:pathway1', 'ambiguity:bp_borderline', 'eligibility:pathway2', 'diagnosis:obesity_strings', 'diagnosis:overweight_strings', 'ambiguity:diabetes_borderline', 'ambiguity:other', 'ambiguity:thyroid', 'ambiguity:sleep_apnea_unclear']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [LLM] Will pass 8 docs; sections: ['documentation:requirements', 'eligibility:pathway1', 'ambiguity:bp_borderline', 'eligibility:pathway2', 'diagnosis:obesity_strings', 'diagnosis:overweight_strings', 'ambiguity:diabetes_borderline', 'ambiguity:other']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: === Scenario: SAFETY_PREGNANCY_EXCLUSION ===
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: Deterministic verdict=DENIED_SAFETY | BMI=32.00 | policy_path=SAFETY_EXCLUSION
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: Query: Wegovy prior authorization policy. BMI 32.0. Verdict DENIED_SAFETY. Policy path SAFETY_EXCLUSION. Comorbidity NONE. Evidence Pregnancy, unspecified. Conditions: Pregnancy, unspecified, Obesity due to excess calories (E66.0)
+2026-01-02 10:20:43 [INFO] httpx: HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Vector] 25 docs (33.2 ms), top sections: ['documentation:requirements', 'safety_exclusions:pregnancy_nursing', 'eligibility:pathway1', 'diagnosis:overweight_strings', 'ambiguity:diabetes_borderline']
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.67it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.65it/s]
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Rerank] 25 docs (152.1 ms), top sections: ['documentation:requirements', 'eligibility:pathway1', 'diagnosis:obesity_strings', 'ambiguity:diabetes_borderline', 'comorbidity:dyslipidemia']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Rerank] Top 10 scores: ['0.590', '0.577', '0.572', '0.559', '0.557', '0.556', '0.555', '0.552', '0.548', '0.548']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [Filter] Kept 10 docs after score floor + policy filter; sections: ['safety_exclusions:pregnancy_nursing', 'drug_conflicts:glp1_glp1_gip', 'safety_exclusions:mtc_men2', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:hypersensitivity', 'safety_exclusions:suicidality', 'safety_exclusions:pancreatitis', 'safety_exclusions:gi_motility']
+2026-01-02 10:20:43 [INFO] rag_rerank_sanity: [LLM] Will pass 8 docs; sections: ['safety_exclusions:pregnancy_nursing', 'drug_conflicts:glp1_glp1_gip', 'safety_exclusions:mtc_men2', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:concurrent_glp1', 'safety_exclusions:hypersensitivity', 'safety_exclusions:suicidality']
+
+=== RAG / RERANK SANITY SUMMARY (JSON) ===
+{
+  "config": {
+    "collection": "priorauth_policies",
+    "embed_model": "kronos483/MedEmbed-large-v0.1:latest",
+    "k_vector": 25,
+    "min_docs": 3,
+    "policy_id": "RX-WEG-2025",
+    "score_floor": 0.35,
+    "top_k_docs": 8
+  },
+  "scenarios": [
+    {
+      "bmi": 35.2,
+      "coverage_hits": {
+        "diagnosis:obesity_strings": true,
+        "eligibility:pathway1": true
+      },
+      "coverage_ok": true,
+      "expected_sections": [
+        "eligibility:pathway1",
+        "diagnosis:obesity_strings"
+      ],
+      "filtered_sections_all": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "diagnosis:obesity_strings"
+      ],
+      "hits_llm": {
+        "diagnosis:obesity_strings": true,
+        "eligibility:pathway1": true
+      },
+      "hits_vector": {
+        "diagnosis:obesity_strings": true,
+        "eligibility:pathway1": true
+      },
+      "llm_sections": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "diagnosis:obesity_strings"
+      ],
+      "name": "BMI_35_OBESITY_PATHWAY",
+      "pass_flag": true,
+      "policy_path": "BMI30_OBESITY",
+      "priority_ok": true,
+      "rerank_ms": 6502.233028411865,
+      "rerank_sections_top": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "diagnosis:obesity_strings",
+        "eligibility:pathway2",
+        "diagnosis:overweight_strings",
+        "comorbidity:hypertension",
+        "ambiguity:diabetes_borderline",
+        "comorbidity:cardiovascular_disease"
+      ],
+      "scores_all": [
+        0.5909745097160339,
+        0.5904071927070618,
+        0.5836387872695923,
+        0.5597336292266846,
+        0.5553190112113953,
+        0.5543408989906311,
+        0.552808940410614,
+        0.5518381595611572,
+        0.5471787452697754,
+        0.5471592545509338,
+        0.5421544909477234,
+        0.5311702489852905,
+        0.5264376997947693,
+        0.5206508636474609,
+        0.515589714050293,
+        0.48055991530418396,
+        0.47699812054634094,
+        0.458969384431839,
+        0.44746774435043335,
+        0.4451795518398285,
+        0.421665221452713,
+        0.40659281611442566,
+        0.404631108045578,
+        0.4027206301689148,
+        0.39939558506011963
+      ],
+      "vector_ms": 65.27280807495117,
+      "vector_sections": [
+        "documentation:requirements",
+        "diagnosis:obesity_strings",
+        "eligibility:pathway1",
+        "diagnosis:overweight_strings",
+        "eligibility:pathway2",
+        "ambiguity:diabetes_borderline",
+        "comorbidity:cardiovascular_disease",
+        "comorbidity:dyslipidemia"
+      ],
+      "verdict": "APPROVED"
+    },
+    {
+      "bmi": 28.4,
+      "coverage_hits": {
+        "comorbidity:hypertension": true,
+        "eligibility:pathway2": true
+      },
+      "coverage_ok": true,
+      "expected_sections": [
+        "eligibility:pathway2",
+        "comorbidity:hypertension"
+      ],
+      "filtered_sections_all": [
+        "documentation:requirements",
+        "eligibility:pathway2",
+        "diagnosis:overweight_strings",
+        "comorbidity:hypertension",
+        "comorbidity:cardiovascular_disease",
+        "comorbidity:dyslipidemia",
+        "comorbidity:obstructive_sleep_apnea",
+        "comorbidity:type2_diabetes"
+      ],
+      "hits_llm": {
+        "comorbidity:hypertension": true,
+        "eligibility:pathway2": true
+      },
+      "hits_vector": {
+        "comorbidity:hypertension": true,
+        "eligibility:pathway2": true
+      },
+      "llm_sections": [
+        "documentation:requirements",
+        "eligibility:pathway2",
+        "diagnosis:overweight_strings",
+        "comorbidity:hypertension",
+        "comorbidity:cardiovascular_disease",
+        "comorbidity:dyslipidemia",
+        "comorbidity:obstructive_sleep_apnea",
+        "comorbidity:type2_diabetes"
+      ],
+      "name": "BMI_28_HTN_OVERWEIGHT_PATHWAY",
+      "pass_flag": true,
+      "policy_path": "BMI27_COMORBIDITY",
+      "priority_ok": true,
+      "rerank_ms": 163.18702697753906,
+      "rerank_sections_top": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "eligibility:pathway2",
+        "comorbidity:cardiovascular_disease",
+        "diagnosis:overweight_strings",
+        "comorbidity:hypertension",
+        "comorbidity:dyslipidemia",
+        "ambiguity:diabetes_borderline"
+      ],
+      "scores_all": [
+        0.6035070419311523,
+        0.5805423259735107,
+        0.579913318157196,
+        0.577136754989624,
+        0.5747653841972351,
+        0.5744858384132385,
+        0.5656093955039978,
+        0.56514972448349,
+        0.5621324181556702,
+        0.5582484006881714,
+        0.5538493394851685,
+        0.5520350933074951,
+        0.5442908406257629,
+        0.53180330991745,
+        0.5303236246109009,
+        0.4918956756591797,
+        0.49001723527908325,
+        0.48374250531196594,
+        0.4831641912460327,
+        0.4568515717983246,
+        0.4456022083759308,
+        0.43725472688674927,
+        0.4350966513156891,
+        0.4288521111011505,
+        0.4285837411880493
+      ],
+      "vector_ms": 54.11124229431152,
+      "vector_sections": [
+        "documentation:requirements",
+        "diagnosis:overweight_strings",
+        "comorbidity:hypertension",
+        "eligibility:pathway2",
+        "comorbidity:dyslipidemia",
+        "comorbidity:cardiovascular_disease",
+        "eligibility:pathway1",
+        "diagnosis:obesity_strings"
+      ],
+      "verdict": "APPROVED"
+    },
+    {
+      "bmi": 33.0,
+      "coverage_hits": {
+        "drug_conflicts:glp1_glp1_gip": true,
+        "safety_exclusions:concurrent_glp1": true,
+        "safety_exclusions:mtc_men2": true
+      },
+      "coverage_ok": true,
+      "expected_sections": [
+        "safety_exclusions:mtc_men2",
+        "safety_exclusions:concurrent_glp1",
+        "drug_conflicts:glp1_glp1_gip"
+      ],
+      "filtered_sections_all": [
+        "safety_exclusions:mtc_men2",
+        "safety_exclusions:mtc_men2",
+        "safety_exclusions:pregnancy_nursing",
+        "drug_conflicts:glp1_glp1_gip",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:hypersensitivity",
+        "safety_exclusions:pancreatitis",
+        "safety_exclusions:suicidality",
+        "safety_exclusions:gi_motility"
+      ],
+      "hits_llm": {
+        "drug_conflicts:glp1_glp1_gip": true,
+        "safety_exclusions:concurrent_glp1": true,
+        "safety_exclusions:mtc_men2": true
+      },
+      "hits_vector": {
+        "drug_conflicts:glp1_glp1_gip": false,
+        "safety_exclusions:concurrent_glp1": false,
+        "safety_exclusions:mtc_men2": true
+      },
+      "llm_sections": [
+        "safety_exclusions:mtc_men2",
+        "safety_exclusions:mtc_men2",
+        "safety_exclusions:pregnancy_nursing",
+        "drug_conflicts:glp1_glp1_gip",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:hypersensitivity"
+      ],
+      "name": "SAFETY_MTC_OZEMPIC_CONTRAINDICATED",
+      "pass_flag": true,
+      "policy_path": "SAFETY_EXCLUSION",
+      "priority_ok": true,
+      "rerank_ms": 169.74282264709473,
+      "rerank_sections_top": [
+        "safety_exclusions:mtc_men2",
+        "documentation:requirements",
+        "safety_exclusions:hypersensitivity",
+        "ambiguity:diabetes_borderline",
+        "comorbidity:hypertension",
+        "comorbidity:type2_diabetes",
+        "comorbidity:cardiovascular_disease",
+        "comorbidity:dyslipidemia"
+      ],
+      "scores_all": [
+        0.6073800325393677,
+        0.6034260392189026,
+        0.5843082666397095,
+        0.5815911889076233,
+        0.5815345644950867,
+        0.5813043713569641,
+        0.5746606588363647,
+        0.5719072222709656,
+        0.5713394284248352,
+        0.565326452255249,
+        0.5631834268569946,
+        0.5607861280441284,
+        0.5569047927856445,
+        0.5533806085586548,
+        0.5345487594604492,
+        0.5321212410926819,
+        0.531004786491394,
+        0.514460563659668,
+        0.5012747049331665,
+        0.4891648590564728,
+        0.48215731978416443,
+        0.44761744141578674,
+        0.4474678337574005,
+        0.4443742036819458,
+        0.42112043499946594
+      ],
+      "vector_ms": 40.48871994018555,
+      "vector_sections": [
+        "documentation:requirements",
+        "safety_exclusions:mtc_men2",
+        "ambiguity:diabetes_borderline",
+        "safety_exclusions:mtc_men2",
+        "ambiguity:thyroid",
+        "eligibility:pathway1",
+        "comorbidity:type2_diabetes",
+        "diagnosis:obesity_strings"
+      ],
+      "verdict": "DENIED_SAFETY"
+    },
+    {
+      "bmi": 31.0,
+      "coverage_hits": {
+        "ambiguity:thyroid": true,
+        "diagnosis:obesity_strings": true,
+        "eligibility:pathway1": true
+      },
+      "coverage_ok": true,
+      "expected_sections": [
+        "eligibility:pathway1",
+        "diagnosis:obesity_strings",
+        "ambiguity:thyroid"
+      ],
+      "filtered_sections_all": [
+        "eligibility:pathway1",
+        "documentation:requirements",
+        "diagnosis:obesity_strings",
+        "ambiguity:thyroid",
+        "eligibility:pathway2",
+        "ambiguity:diabetes_borderline",
+        "diagnosis:overweight_strings",
+        "ambiguity:bp_borderline",
+        "ambiguity:other"
+      ],
+      "hits_llm": {
+        "ambiguity:thyroid": true,
+        "diagnosis:obesity_strings": true,
+        "eligibility:pathway1": true
+      },
+      "hits_vector": {
+        "ambiguity:thyroid": false,
+        "diagnosis:obesity_strings": true,
+        "eligibility:pathway1": true
+      },
+      "llm_sections": [
+        "eligibility:pathway1",
+        "documentation:requirements",
+        "diagnosis:obesity_strings",
+        "ambiguity:thyroid",
+        "eligibility:pathway2",
+        "ambiguity:diabetes_borderline",
+        "diagnosis:overweight_strings",
+        "ambiguity:bp_borderline"
+      ],
+      "name": "AMBIG_THYROID_NEEDS_REVIEW",
+      "pass_flag": true,
+      "policy_path": "AMBIGUITY_MANUAL_REVIEW",
+      "priority_ok": true,
+      "rerank_ms": 152.36234664916992,
+      "rerank_sections_top": [
+        "eligibility:pathway1",
+        "documentation:requirements",
+        "diagnosis:obesity_strings",
+        "comorbidity:hypertension",
+        "ambiguity:thyroid",
+        "eligibility:pathway2",
+        "ambiguity:diabetes_borderline",
+        "comorbidity:type2_diabetes"
+      ],
+      "scores_all": [
+        0.6058555245399475,
+        0.6026410460472107,
+        0.5908962488174438,
+        0.57935631275177,
+        0.573264479637146,
+        0.5731924772262573,
+        0.571970522403717,
+        0.5699540972709656,
+        0.5677084922790527,
+        0.566454291343689,
+        0.5642049908638,
+        0.5568011999130249,
+        0.5499328374862671,
+        0.5421860814094543,
+        0.5410436391830444,
+        0.5382915735244751,
+        0.5284606218338013,
+        0.5269989967346191,
+        0.48808762431144714,
+        0.47848594188690186,
+        0.4514571726322174,
+        0.43083643913269043,
+        0.39216262102127075,
+        0.39049190282821655,
+        0.36802059412002563
+      ],
+      "vector_ms": 29.244422912597656,
+      "vector_sections": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "ambiguity:diabetes_borderline",
+        "diagnosis:obesity_strings",
+        "diagnosis:overweight_strings",
+        "comorbidity:cardiovascular_disease",
+        "comorbidity:dyslipidemia",
+        "eligibility:pathway2"
+      ],
+      "verdict": "MANUAL_REVIEW"
+    },
+    {
+      "bmi": 28.0,
+      "coverage_hits": {
+        "ambiguity:bp_borderline": true,
+        "diagnosis:overweight_strings": true,
+        "eligibility:pathway2": true
+      },
+      "coverage_ok": true,
+      "expected_sections": [
+        "eligibility:pathway2",
+        "diagnosis:overweight_strings",
+        "ambiguity:bp_borderline"
+      ],
+      "filtered_sections_all": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "ambiguity:bp_borderline",
+        "eligibility:pathway2",
+        "diagnosis:obesity_strings",
+        "diagnosis:overweight_strings",
+        "ambiguity:diabetes_borderline",
+        "ambiguity:other",
+        "ambiguity:thyroid",
+        "ambiguity:sleep_apnea_unclear"
+      ],
+      "hits_llm": {
+        "ambiguity:bp_borderline": true,
+        "diagnosis:overweight_strings": true,
+        "eligibility:pathway2": true
+      },
+      "hits_vector": {
+        "ambiguity:bp_borderline": false,
+        "diagnosis:overweight_strings": true,
+        "eligibility:pathway2": true
+      },
+      "llm_sections": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "ambiguity:bp_borderline",
+        "eligibility:pathway2",
+        "diagnosis:obesity_strings",
+        "diagnosis:overweight_strings",
+        "ambiguity:diabetes_borderline",
+        "ambiguity:other"
+      ],
+      "name": "AMBIG_BP_BORDERLINE",
+      "pass_flag": true,
+      "policy_path": "AMBIGUITY_MANUAL_REVIEW",
+      "priority_ok": true,
+      "rerank_ms": 154.05035018920898,
+      "rerank_sections_top": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "ambiguity:bp_borderline",
+        "comorbidity:cardiovascular_disease",
+        "comorbidity:hypertension",
+        "eligibility:pathway2",
+        "diagnosis:obesity_strings",
+        "comorbidity:type2_diabetes"
+      ],
+      "scores_all": [
+        0.5950477123260498,
+        0.5885892510414124,
+        0.5829994678497314,
+        0.5814557671546936,
+        0.580136775970459,
+        0.5778483152389526,
+        0.5777980089187622,
+        0.5738707184791565,
+        0.5708049535751343,
+        0.5661700963973999,
+        0.5645463466644287,
+        0.5637233257293701,
+        0.5568559169769287,
+        0.5486313700675964,
+        0.5473994016647339,
+        0.5446792840957642,
+        0.5289505124092102,
+        0.5277565717697144,
+        0.4839482009410858,
+        0.47384360432624817,
+        0.4465508759021759,
+        0.4385063052177429,
+        0.41012075543403625,
+        0.3979327082633972,
+        0.3902158737182617
+      ],
+      "vector_ms": 33.90240669250488,
+      "vector_sections": [
+        "documentation:requirements",
+        "eligibility:pathway2",
+        "ambiguity:other",
+        "diagnosis:overweight_strings",
+        "ambiguity:diabetes_borderline",
+        "eligibility:pathway1",
+        "comorbidity:hypertension",
+        "comorbidity:cardiovascular_disease"
+      ],
+      "verdict": "MANUAL_REVIEW"
+    },
+    {
+      "bmi": 32.0,
+      "coverage_hits": {
+        "safety_exclusions:pregnancy_nursing": true
+      },
+      "coverage_ok": true,
+      "expected_sections": [
+        "safety_exclusions:pregnancy_nursing"
+      ],
+      "filtered_sections_all": [
+        "safety_exclusions:pregnancy_nursing",
+        "drug_conflicts:glp1_glp1_gip",
+        "safety_exclusions:mtc_men2",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:hypersensitivity",
+        "safety_exclusions:suicidality",
+        "safety_exclusions:pancreatitis",
+        "safety_exclusions:gi_motility"
+      ],
+      "hits_llm": {
+        "safety_exclusions:pregnancy_nursing": true
+      },
+      "hits_vector": {
+        "safety_exclusions:pregnancy_nursing": true
+      },
+      "llm_sections": [
+        "safety_exclusions:pregnancy_nursing",
+        "drug_conflicts:glp1_glp1_gip",
+        "safety_exclusions:mtc_men2",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:concurrent_glp1",
+        "safety_exclusions:hypersensitivity",
+        "safety_exclusions:suicidality"
+      ],
+      "name": "SAFETY_PREGNANCY_EXCLUSION",
+      "pass_flag": true,
+      "policy_path": "SAFETY_EXCLUSION",
+      "priority_ok": true,
+      "rerank_ms": 152.1298885345459,
+      "rerank_sections_top": [
+        "documentation:requirements",
+        "eligibility:pathway1",
+        "diagnosis:obesity_strings",
+        "ambiguity:diabetes_borderline",
+        "comorbidity:dyslipidemia",
+        "diagnosis:overweight_strings",
+        "safety_exclusions:pregnancy_nursing",
+        "comorbidity:hypertension"
+      ],
+      "scores_all": [
+        0.590072512626648,
+        0.5773196816444397,
+        0.5722124576568604,
+        0.5589658617973328,
+        0.5569674968719482,
+        0.5559394955635071,
+        0.5551341772079468,
+        0.5522944927215576,
+        0.548422634601593,
+        0.5475134253501892,
+        0.5425087213516235,
+        0.5332859754562378,
+        0.5307586789131165,
+        0.5142005681991577,
+        0.4870637357234955,
+        0.4740285873413086,
+        0.47396180033683777,
+        0.47320953011512756,
+        0.4596479535102844,
+        0.43883728981018066,
+        0.414025217294693,
+        0.4118877053260803,
+        0.40948858857154846,
+        0.38520386815071106,
+        0.3801841735839844
+      ],
+      "vector_ms": 33.179521560668945,
+      "vector_sections": [
+        "documentation:requirements",
+        "safety_exclusions:pregnancy_nursing",
+        "eligibility:pathway1",
+        "diagnosis:overweight_strings",
+        "ambiguity:diabetes_borderline",
+        "diagnosis:obesity_strings",
+        "eligibility:pathway2",
+        "comorbidity:dyslipidemia"
+      ],
+      "verdict": "DENIED_SAFETY"
+    }
+  ]
+}

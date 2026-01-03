@@ -1,0 +1,694 @@
+
+===== LLM Benchmark (qwen3 sample=50) 2025-12-30T12:56:18Z =====
+
+======================================================================
+  PRIORAUTH BENCHMARK: Deterministic vs LLM Engine Comparison
+======================================================================
+
+Loading data...
+Benchmarking 50 patients (total pool: 131)
+Initializing LLM agent (Flavor: qwen3)...
+
+Running benchmark...
+----------------------------------------------------------------------
+[  1/50] a18732f9-8b8... DET: APPROVED             LLM: APPROVED             ✓ (13.2ms vs 74181ms)
+[  2/50] 5870fe1f-91b... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (15.1ms vs 69618ms)
+[  3/50] a0d4203d-eb3... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (8.7ms vs 121931ms)
+[  4/50] dcac9f34-458... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (31.9ms vs 105795ms)
+[  5/50] 74896944-922... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (5.9ms vs 99488ms)
+[  6/50] b51084d0-e2b... DET: APPROVED             LLM: APPROVED             ✓ (30.5ms vs 118182ms)
+[  7/50] 97514052-1f9... DET: APPROVED             LLM: APPROVED             ✓ (30.8ms vs 132444ms)
+[  8/50] e1195c84-d63... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (21.0ms vs 111533ms)
+[  9/50] 9a894383-a95... DET: APPROVED             LLM: APPROVED             ✓ (20.7ms vs 102993ms)
+[ 10/50] 97990fd0-9ec... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (35.0ms vs 165169ms)
+
+[ABORTED] qwen3 run stopped after 10/50 due to very slow per-patient latency (~100-165s); projected >1.5h for 50. Resume if approved.
+
+===== LLM Benchmark (qwen3 sample=20) 2025-12-30T15:38:30Z =====
+
+======================================================================
+  PRIORAUTH BENCHMARK: Deterministic vs LLM Engine Comparison
+======================================================================
+
+Loading data...
+Benchmarking 20 patients (total pool: 131)
+Initializing LLM agent (Flavor: qwen3)...
+
+Running benchmark...
+----------------------------------------------------------------------
+[  1/20] a18732f9-8b8... DET: APPROVED             LLM: APPROVED             ✓ (19.3ms vs 46950ms)
+[  2/20] 5870fe1f-91b... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (15.6ms vs 45723ms)
+[  3/20] a0d4203d-eb3... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (8.7ms vs 63441ms)
+[  4/20] dcac9f34-458... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (8.3ms vs 47715ms)
+[  5/20] 3395c04d-edd... DET: APPROVED             LLM: APPROVED             ✓ (9.5ms vs 40882ms)
+[  6/20] d0b4fbc3-126... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (18.6ms vs 80804ms)
+[  7/20] 513b0fb3-0e6... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (8.7ms vs 86709ms)
+[  8/20] ad622643-415... DET: DENIED_SAFETY        LLM: DENIED               ✓ (2.8ms vs 59740ms)
+[  9/20] db3ddab1-a0c... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (9.2ms vs 55877ms)
+[ 10/20] 37d40951-059... DET: DENIED_SAFETY        LLM: DENIED               ✓ (8.9ms vs 61796ms)
+[ 11/20] b0563363-a28... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (5.7ms vs 47694ms)
+[ 12/20] 0071303b-e27... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (12.6ms vs 57698ms)
+[ 13/20] 437c130a-8ba... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (10.2ms vs 45781ms)
+[ 14/20] 0df3d3ac-f74... DET: APPROVED             LLM: APPROVED             ✓ (12.8ms vs 63129ms)
+[ 15/20] ca4fa33b-c9c... DET: DENIED_SAFETY        LLM: DENIED               ✓ (8.9ms vs 41688ms)
+[ 16/20] 632a1214-8ac... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (11.0ms vs 58979ms)
+[ 17/20] b0de3cb4-038... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (13.6ms vs 43715ms)
+[ 18/20] b2975f97-411... DET: DENIED_SAFETY        LLM: DENIED               ✓ (9.2ms vs 74409ms)
+[ 19/20] 5c5551b2-70f... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (17.1ms vs 91425ms)
+[ 20/20] 8b574d5c-852... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (13.1ms vs 110174ms)
+
+======================================================================
+  BENCHMARK RESULTS SUMMARY
+======================================================================
+
+📊 Deterministic Engine Performance:
+   • Average: 11.19 ms/patient
+   • Total:   224 ms (0.22 sec)
+   • Min:     2.81 ms
+   • Max:     19.29 ms
+
+🤖 LLM Engine Performance (Flavor: qwen3):
+   • Average: 61216 ms/patient
+   • Total:   1224329 ms (1224.3 sec)
+   • Min:     40882 ms
+   • Max:     110174 ms
+
+⚡ Speedup: Deterministic is 5470x faster than LLM
+
+🎯 Agreement Rate (bucket-level): 20/20 (100.0%)
+
+📁 Results saved to: benchmark_results_qwen3.json
+======================================================================
+
+
+===== LLM Benchmark (qwen3 sample=50) 2025-12-30T22:42:44Z =====
+
+======================================================================
+  PRIORAUTH BENCHMARK: Deterministic vs LLM Engine Comparison
+======================================================================
+
+Loading data...
+Benchmarking 50 patients (total pool: 131)
+Initializing LLM agent (Flavor: qwen3)...
+
+Running benchmark...
+----------------------------------------------------------------------
+[  1/50] a18732f9-8b8... DET: APPROVED             LLM: APPROVED             ✓ (13.1ms vs 43527ms)
+[  2/50] 5870fe1f-91b... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (23.1ms vs 43016ms)
+[  3/50] a0d4203d-eb3... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (9.0ms vs 59339ms)
+[  4/50] dcac9f34-458... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (10.1ms vs 44400ms)
+[  5/50] 74896944-922... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (6.6ms vs 41793ms)
+[  6/50] b51084d0-e2b... DET: APPROVED             LLM: APPROVED             ✓ (9.1ms vs 50876ms)
+[  7/50] 97514052-1f9... DET: APPROVED             LLM: APPROVED             ✓ (9.9ms vs 42643ms)
+[  8/50] e1195c84-d63... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (11.2ms vs 36537ms)
+[  9/50] 9a894383-a95... DET: APPROVED             LLM: APPROVED             ✓ (9.8ms vs 32999ms)
+[ 10/50] 97990fd0-9ec... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (9.9ms vs 53675ms)
+[ 11/50] 5c5551b2-70f... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (9.4ms vs 51628ms)
+[ 12/50] 7cb2abc8-27e... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (7.3ms vs 35353ms)
+[ 13/50] f763691a-41e... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (8.0ms vs 39478ms)
+[ 14/50] 235851d4-649... DET: APPROVED             LLM: APPROVED             ✓ (9.8ms vs 37047ms)
+[ 15/50] 19e442cd-534... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (8.8ms vs 48720ms)
+[ 16/50] 7b1a8a0a-9cf... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (9.7ms vs 45988ms)
+[ 17/50] db6afa1f-a8d... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (9.7ms vs 48414ms)
+[ 18/50] 75769e72-a00... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (2.8ms vs 35448ms)
+[ 19/50] 0a3b46c0-aca... DET: DENIED_SAFETY        LLM: DENIED               ✓ (10.3ms vs 57255ms)
+[ 20/50] 7beea769-688... DET: DENIED_SAFETY        LLM: DENIED               ✓ (9.5ms vs 74578ms)
+[ 21/50] 3cd3a010-48a... DET: DENIED_SAFETY        LLM: DENIED               ✓ (8.8ms vs 69137ms)
+[ 22/50] 3db45a0a-f2d... DET: DENIED_SAFETY        LLM: DENIED               ✓ (9.7ms vs 64938ms)
+[ 23/50] 206df747-24d... DET: APPROVED             LLM: APPROVED             ✓ (10.1ms vs 66295ms)
+[ 24/50] 8b574d5c-852... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (11.0ms vs 97437ms)
+[ 25/50] 27223a02-54f... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (12.1ms vs 70423ms)
+[ 26/50] 7fdff70b-699... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (16.6ms vs 88351ms)
+[ 27/50] a7a2cb02-879... DET: APPROVED             LLM: APPROVED             ✓ (13.8ms vs 61829ms)
+[ 28/50] 0dd7728b-ca4... DET: APPROVED             LLM: APPROVED             ✓ (13.5ms vs 45700ms)
+[ 29/50] 7a7fa702-9a7... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (3.9ms vs 64595ms)
+[ 30/50] 50064ae8-9ef... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (8.5ms vs 50733ms)
+[ 31/50] d431cce3-b5c... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (11.2ms vs 65224ms)
+[ 32/50] 3395c04d-edd... DET: APPROVED             LLM: APPROVED             ✓ (9.9ms vs 65990ms)
+[ 33/50] 9017d43a-237... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (10.0ms vs 86101ms)
+[ 34/50] d0b4fbc3-126... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (14.9ms vs 66882ms)
+[ 35/50] 187598d1-e69... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (12.2ms vs 69386ms)
+[ 36/50] 452d736b-16d... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (3.8ms vs 68335ms)
+[ 37/50] e21107de-818... DET: APPROVED             LLM: APPROVED             ✓ (12.2ms vs 67484ms)
+[ 38/50] 72814cbd-532... DET: APPROVED             LLM: APPROVED             ✓ (12.8ms vs 54195ms)
+[ 39/50] 41f7ddbb-dab... DET: APPROVED             LLM: APPROVED             ✓ (12.0ms vs 81635ms)
+[ 40/50] 83ed4884-6b5... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (10.1ms vs 68934ms)
+[ 41/50] 76830ce1-060... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (11.1ms vs 78711ms)
+[ 42/50] 75ffba06-475... DET: DENIED_SAFETY        LLM: DENIED               ✓ (12.6ms vs 51610ms)
+[ 43/50] 0f925be1-1a5... DET: APPROVED             LLM: APPROVED             ✓ (15.2ms vs 70857ms)
+[ 44/50] dc6ae6cb-b78... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (10.4ms vs 55139ms)
+[ 45/50] 085ac6fd-b82... DET: APPROVED             LLM: APPROVED             ✓ (9.1ms vs 92964ms)
+[ 46/50] 8f3e94a7-51e... DET: APPROVED             LLM: APPROVED             ✓ (13.3ms vs 77144ms)
+[ 47/50] a1846dbe-fbd... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (10.8ms vs 69979ms)
+[ 48/50] ef9f53c0-dda... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (14.1ms vs 54657ms)
+[ 49/50] 775da2ca-1c1... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (8.0ms vs 55353ms)
+[ 50/50] 429fd9d4-ff6... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (10.5ms vs 75074ms)
+
+======================================================================
+  BENCHMARK RESULTS SUMMARY
+======================================================================
+
+📊 Deterministic Engine Performance:
+   • Average: 10.58 ms/patient
+   • Total:   529 ms (0.53 sec)
+   • Min:     2.82 ms
+   • Max:     23.10 ms
+
+🤖 LLM Engine Performance (Flavor: qwen3):
+   • Average: 59556 ms/patient
+   • Total:   2977807 ms (2977.8 sec)
+   • Min:     32999 ms
+   • Max:     97437 ms
+
+⚡ Speedup: Deterministic is 5630x faster than LLM
+
+🎯 Agreement Rate (bucket-level): 50/50 (100.0%)
+
+📁 Results saved to: benchmark_results_qwen3.json
+======================================================================
+
+
+
+===== LLM Benchmark (qwen3 sample=50, escalated net) 2025-12-31T14:46:58Z =====
+
+
+======================================================================
+  PRIORAUTH BENCHMARK: Deterministic vs LLM Engine Comparison
+======================================================================
+
+Loading data...
+Benchmarking 50 patients (total pool: 131)
+Initializing LLM agent (Flavor: qwen3)...
+
+Running benchmark...
+----------------------------------------------------------------------
+[  1/50] a18732f9-8b8... DET: APPROVED             LLM: APPROVED             ✓ (11.7ms vs 32816ms)
+[  2/50] 5870fe1f-91b... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (14.4ms vs 51433ms)
+[  3/50] a0d4203d-eb3... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (10.2ms vs 54035ms)
+[  4/50] dcac9f34-458... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (12.9ms vs 40646ms)
+[  5/50] 74896944-922... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (6.4ms vs 40372ms)
+[  6/50] b51084d0-e2b... DET: APPROVED             LLM: APPROVED             ✓ (9.7ms vs 32131ms)
+[  7/50] 97514052-1f9... DET: APPROVED             LLM: APPROVED             ✓ (12.8ms vs 39605ms)
+[  8/50] e1195c84-d63... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (9.8ms vs 49365ms)
+[  9/50] 9a894383-a95... DET: APPROVED             LLM: APPROVED             ✓ (9.6ms vs 40291ms)
+[ 10/50] 97990fd0-9ec... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (17.6ms vs 84929ms)
+[ 11/50] 5c5551b2-70f... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (22.2ms vs 59916ms)
+[ 12/50] 7cb2abc8-27e... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (14.8ms vs 59265ms)
+[ 13/50] f763691a-41e... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (13.3ms vs 58199ms)
+[ 14/50] 235851d4-649... DET: APPROVED             LLM: APPROVED             ✓ (13.5ms vs 50160ms)
+[ 15/50] 19e442cd-534... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (10.8ms vs 78229ms)
+[ 16/50] 7b1a8a0a-9cf... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (22.3ms vs 67056ms)
+[ 17/50] db6afa1f-a8d... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (14.5ms vs 81374ms)
+[ 18/50] 75769e72-a00... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (2.9ms vs 67592ms)
+[ 19/50] 0a3b46c0-aca... DET: DENIED_SAFETY        LLM: DENIED               ✓ (15.0ms vs 95445ms)
+[ 20/50] 7beea769-688... DET: DENIED_SAFETY        LLM: DENIED               ✓ (20.4ms vs 109097ms)
+[ 21/50] 3cd3a010-48a... DET: DENIED_SAFETY        LLM: DENIED               ✓ (18.5ms vs 111786ms)
+[ 22/50] 3db45a0a-f2d... DET: DENIED_SAFETY        LLM: DENIED               ✓ (17.6ms vs 95237ms)
+[ 23/50] 206df747-24d... DET: APPROVED             LLM: APPROVED             ✓ (26.5ms vs 86861ms)
+[ 24/50] 8b574d5c-852... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (21.7ms vs 100495ms)
+[ 25/50] 27223a02-54f... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (14.5ms vs 73958ms)
+[ 26/50] 7fdff70b-699... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (18.7ms vs 90080ms)
+[ 27/50] a7a2cb02-879... DET: APPROVED             LLM: APPROVED             ✓ (18.4ms vs 54240ms)
+[ 28/50] 0dd7728b-ca4... DET: APPROVED             LLM: APPROVED             ✓ (19.6ms vs 55892ms)
+[ 29/50] 7a7fa702-9a7... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (8.4ms vs 77221ms)
+[ 30/50] 50064ae8-9ef... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (17.2ms vs 66246ms)
+[ 31/50] d431cce3-b5c... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (18.7ms vs 73795ms)
+[ 32/50] 3395c04d-edd... DET: APPROVED             LLM: APPROVED             ✓ (21.8ms vs 85467ms)
+[ 33/50] 9017d43a-237... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (18.6ms vs 94996ms)
+[ 34/50] d0b4fbc3-126... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (22.9ms vs 91876ms)
+[ 35/50] 187598d1-e69... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (19.2ms vs 69211ms)
+[ 36/50] 452d736b-16d... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (4.5ms vs 73109ms)
+[ 37/50] e21107de-818... DET: APPROVED             LLM: APPROVED             ✓ (10.7ms vs 89043ms)
+[ 38/50] 72814cbd-532... DET: APPROVED             LLM: APPROVED             ✓ (31.7ms vs 56981ms)
+[ 39/50] 41f7ddbb-dab... DET: APPROVED             LLM: APPROVED             ✓ (14.4ms vs 75324ms)
+[ 40/50] 83ed4884-6b5... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (12.1ms vs 72557ms)
+[ 41/50] 76830ce1-060... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (11.3ms vs 56914ms)
+[ 42/50] 75ffba06-475... DET: DENIED_SAFETY        LLM: DENIED               ✓ (9.8ms vs 58031ms)
+[ 43/50] 0f925be1-1a5... DET: APPROVED             LLM: APPROVED             ✓ (12.9ms vs 56261ms)
+[ 44/50] dc6ae6cb-b78... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (11.9ms vs 50480ms)
+[ 45/50] 085ac6fd-b82... DET: APPROVED             LLM: APPROVED             ✓ (11.6ms vs 78862ms)
+[ 46/50] 8f3e94a7-51e... DET: APPROVED             LLM: APPROVED             ✓ (10.9ms vs 61152ms)
+[ 47/50] a1846dbe-fbd... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (12.9ms vs 72879ms)
+[ 48/50] ef9f53c0-dda... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (10.6ms vs 57695ms)
+[ 49/50] 775da2ca-1c1... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (10.0ms vs 55084ms)
+[ 50/50] 429fd9d4-ff6... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (10.5ms vs 75709ms)
+
+======================================================================
+  BENCHMARK RESULTS SUMMARY
+======================================================================
+
+📊 Deterministic Engine Performance:
+   • Average: 14.66 ms/patient
+   • Total:   733 ms (0.73 sec)
+   • Min:     2.93 ms
+   • Max:     31.72 ms
+
+🤖 LLM Engine Performance (Flavor: qwen3):
+   • Average: 68188 ms/patient
+   • Total:   3409403 ms (3409.4 sec)
+   • Min:     32131 ms
+   • Max:     111786 ms
+
+⚡ Speedup: Deterministic is 4651x faster than LLM
+
+🎯 Agreement Rate (bucket-level): 50/50 (100.0%)
+
+📁 Results saved to: benchmark_results_qwen3.json
+======================================================================
+
+
+
+===== LLM Benchmark (qwen3 sample=50, stderr captured) 2026-01-01T12:26:59Z =====
+
+
+======================================================================
+  PRIORAUTH BENCHMARK: Deterministic vs LLM Engine Comparison
+======================================================================
+
+Loading data...
+Benchmarking 0 patients (total pool: 0)
+Initializing LLM agent (Flavor: qwen3)...
+
+Running benchmark...
+----------------------------------------------------------------------
+
+======================================================================
+  BENCHMARK RESULTS SUMMARY
+======================================================================
+
+📊 Deterministic Engine Performance:
+   • Average: 0.00 ms/patient
+   • Total:   0 ms (0.00 sec)
+   • Min:     n/a
+   • Max:     n/a
+Traceback (most recent call last):
+  File "/root/projects/PriorAuth/benchmark.py", line 453, in <module>
+    main()
+  File "/root/projects/PriorAuth/benchmark.py", line 444, in main
+    run_benchmark(
+  File "/root/projects/PriorAuth/benchmark.py", line 374, in run_benchmark
+    "agreement_rate": round(agreement_rate, 2) if not skip_llm else None,
+                            ^^^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'agreement_rate' where it is not associated with a value
+
+
+===== LLM Benchmark (qwen3 sample=50, stderr captured, ref=2025) 2026-01-01T12:45:08Z =====
+
+INFO:agent_logic:[RAG] Retrieving policy context for a18732f9-8b8c-6b74-8995-9419d4b2a97a
+/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:441: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+  _torch_pytree._register_pytree_node(
+INFO:chromadb.telemetry.product.posthog:Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/huggingface_hub/file_download.py:942: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/root/micromamba/envs/revenue_agent/lib/python3.11/site-packages/transformers/utils/generic.py:309: FutureWarning: `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+  _torch_pytree._register_pytree_node(
+INFO:BCEmbedding.models.RerankerModel:Loading from `maidalun1020/bce-reranker-base_v1`.
+INFO:BCEmbedding.models.RerankerModel:Execute device: cuda;	 gpu num: 1;	 use fp16: False
+
+======================================================================
+  PRIORAUTH BENCHMARK: Deterministic vs LLM Engine Comparison
+======================================================================
+
+Loading data...
+Benchmarking 50 patients (total pool: 131)
+Initializing LLM agent (Flavor: qwen3)...
+
+Running benchmark...
+----------------------------------------------------------------------
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:01<00:00,  1.19s/it]Calculate scores: 100%|██████████| 1/1 [00:01<00:00,  1.19s/it]
+INFO:agent_logic:[Audit] Checking Patient a18732f9-8b8c-6b74-8995-9419d4b2a97a
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 31.50. BMI 31.5 meets obesity threshold (≥30.0). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for 5870fe1f-91b6-9767-da27-2696d8ed203a
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[  1/50] a18732f9-8b8... DET: APPROVED             LLM: APPROVED             ✓ (13.7ms vs 56098ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.17it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.16it/s]
+INFO:agent_logic:[Audit] Checking Patient 5870fe1f-91b6-9767-da27-2696d8ed203a
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 27.80. Denied. BMI 27.8 (overweight) but no qualifying weight-related comorbidity documented. Does not meet criteria.)
+INFO:agent_logic:[RAG] Retrieving policy context for a0d4203d-eb33-961d-a154-2998c9107d82
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[  2/50] 5870fe1f-91b... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (28.4ms vs 63365ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.83it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.82it/s]
+INFO:agent_logic:[Audit] Checking Patient a0d4203d-eb33-961d-a154-2998c9107d82
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: CDI_REQUIRED (Reason: BMI 37.90. BMI 37.9 meets obesity threshold (≥30.0). Clinical criteria met, but missing required administrative anchor code (E66.9).)
+INFO:agent_logic:[RAG] Retrieving policy context for dcac9f34-4581-2e26-a418-bc37001fb50b
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[  3/50] a0d4203d-eb3... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (11.2ms vs 70132ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.53it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.48it/s]
+INFO:agent_logic:[Audit] Checking Patient dcac9f34-4581-2e26-a418-bc37001fb50b
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 28.90. Denied. BMI 28.9 (overweight) but no qualifying weight-related comorbidity documented. Does not meet criteria.)
+INFO:agent_logic:[RAG] Retrieving policy context for 74896944-922c-612d-a728-ef799b5f3ea0
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[  4/50] dcac9f34-458... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (10.0ms vs 42678ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.79it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.78it/s]
+INFO:agent_logic:[Audit] Checking Patient 74896944-922c-612d-a728-ef799b5f3ea0
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: PROVIDER_ACTION_REQUIRED (Reason: Provider action required. BMI is not documented and could not be calculated from recent height/weight. Please document a current BMI so this request can be processed.)
+INFO:agent_logic:[RAG] Retrieving policy context for b51084d0-e2b7-24ac-0a99-b9c34ff377e7
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[  5/50] 74896944-922... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (6.2ms vs 42928ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.66it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.66it/s]
+INFO:agent_logic:[Audit] Checking Patient b51084d0-e2b7-24ac-0a99-b9c34ff377e7
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 29.40. BMI 29.4 (overweight range) with qualifying comorbidity 'Hyperlipidemia' (LIPIDS). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for 97514052-1f92-9be9-a798-fbe5d262adf4
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[  6/50] b51084d0-e2b... DET: APPROVED             LLM: APPROVED             ✓ (36.0ms vs 47497ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.25it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.21it/s]
+INFO:agent_logic:[Audit] Checking Patient 97514052-1f92-9be9-a798-fbe5d262adf4
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+WARNING:agent_logic:[Audit] LLM advisory audit failed: Expecting value: line 1 column 1 (char 0)
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 27.00. BMI 27.0 (overweight range) with qualifying comorbidity 'Type 2 diabetes mellitus' (DIABETES). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for e1195c84-d639-b324-e544-af36137e2ffb
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[  7/50] 97514052-1f9... DET: APPROVED             LLM: APPROVED             ✓ (12.8ms vs 57969ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  7.09it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  7.08it/s]
+INFO:agent_logic:[Audit] Checking Patient e1195c84-d639-b324-e544-af36137e2ffb
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 28.70. Denied. BMI 28.7 (overweight) but no qualifying weight-related comorbidity documented. Does not meet criteria.)
+INFO:agent_logic:[RAG] Retrieving policy context for 9a894383-a95f-be23-a8c9-e3d9dae28c06
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[  8/50] e1195c84-d63... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (14.9ms vs 52019ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.49it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.48it/s]
+INFO:agent_logic:[Audit] Checking Patient 9a894383-a95f-be23-a8c9-e3d9dae28c06
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 29.60. BMI 29.6 (overweight range) with qualifying comorbidity 'OSA' (OSA). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for 97990fd0-9ec7-e53d-bac8-b94a67a5fe4f
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[  9/50] 9a894383-a95... DET: APPROVED             LLM: APPROVED             ✓ (13.6ms vs 51109ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.29it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.29it/s]
+INFO:agent_logic:[Audit] Checking Patient 97990fd0-9ec7-e53d-bac8-b94a67a5fe4f
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: FLAGGED (Reason: BMI 27.20. Ambiguous clinical term detected. (Term: 'Impaired fasting glucose') Evidence term: 'Impaired fasting glucose'.)
+INFO:agent_logic:[RAG] Retrieving policy context for 5c5551b2-70f9-6f9d-1985-bf47ff8c0895
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 10/50] 97990fd0-9ec... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (13.3ms vs 87378ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.42it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.38it/s]
+INFO:agent_logic:[Audit] Checking Patient 5c5551b2-70f9-6f9d-1985-bf47ff8c0895
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: CDI_REQUIRED (Reason: BMI 30.10. BMI 30.1 meets obesity threshold (≥30.0). Clinical criteria met, but missing required administrative anchor code (E66.9).)
+INFO:agent_logic:[RAG] Retrieving policy context for 7cb2abc8-27ee-bd0f-91cc-31d84fc78b05
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 11/50] 5c5551b2-70f... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (16.2ms vs 57367ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.70it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.66it/s]
+INFO:agent_logic:[Audit] Checking Patient 7cb2abc8-27ee-bd0f-91cc-31d84fc78b05
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 27.50. Denied. BMI 27.5 (overweight) but no qualifying weight-related comorbidity documented. Does not meet criteria.)
+INFO:agent_logic:[RAG] Retrieving policy context for f763691a-41ef-14c8-2323-b885448d5ae2
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 12/50] 7cb2abc8-27e... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (11.3ms vs 60557ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.27it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.23it/s]
+INFO:agent_logic:[Audit] Checking Patient f763691a-41ef-14c8-2323-b885448d5ae2
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+WARNING:agent_logic:[Audit] LLM advisory audit failed: Expecting value: line 1 column 1 (char 0)
+INFO:agent_logic:Decision: FLAGGED (Reason: BMI 28.40. Ambiguous clinical term detected. (Term: 'Malignant tumor of thyroid') Evidence term: 'Malignant tumor of thyroid'.)
+INFO:agent_logic:[RAG] Retrieving policy context for 235851d4-649c-0dbc-72f6-e80c7e1546d1
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 13/50] f763691a-41e... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (31.0ms vs 65687ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.55it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.54it/s]
+INFO:agent_logic:[Audit] Checking Patient 235851d4-649c-0dbc-72f6-e80c7e1546d1
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 29.70. BMI 29.7 (overweight range) with qualifying comorbidity 'Hypertension' (HYPERTENSION). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for 19e442cd-5345-78c5-614d-6fb8be7bed02
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 14/50] 235851d4-649... DET: APPROVED             LLM: APPROVED             ✓ (13.2ms vs 49130ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.69it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.68it/s]
+INFO:agent_logic:[Audit] Checking Patient 19e442cd-5345-78c5-614d-6fb8be7bed02
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 27.30. Denied. BMI 27.3 (overweight) but no qualifying weight-related comorbidity documented. Does not meet criteria.)
+INFO:agent_logic:[RAG] Retrieving policy context for 7b1a8a0a-9cf0-c8d6-c4a4-a7da04c93827
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 15/50] 19e442cd-534... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (12.3ms vs 71832ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.33it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.32it/s]
+INFO:agent_logic:[Audit] Checking Patient 7b1a8a0a-9cf0-c8d6-c4a4-a7da04c93827
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: FLAGGED (Reason: BMI 29.10. Ambiguous clinical term detected. (Term: 'Prediabetes') Evidence term: 'Prediabetes'.)
+INFO:agent_logic:[RAG] Retrieving policy context for db6afa1f-a8d3-b7f1-60a6-3d36e2b79870
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 16/50] 7b1a8a0a-9cf... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (15.6ms vs 72112ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.27it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.26it/s]
+INFO:agent_logic:[Audit] Checking Patient db6afa1f-a8d3-b7f1-60a6-3d36e2b79870
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: CDI_REQUIRED (Reason: BMI 33.00. BMI 33.0 meets obesity threshold (≥30.0). Clinical criteria met, but missing required administrative anchor code (E66.9).)
+INFO:agent_logic:[RAG] Retrieving policy context for 75769e72-a006-310d-b12a-c88001c9c0d4
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 17/50] db6afa1f-a8d... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (9.0ms vs 64474ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.92it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.91it/s]
+INFO:agent_logic:[Audit] Checking Patient 75769e72-a006-310d-b12a-c88001c9c0d4
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: PROVIDER_ACTION_REQUIRED (Reason: Provider action required. BMI is not documented and could not be calculated from recent height/weight. Please document a current BMI so this request can be processed.)
+INFO:agent_logic:[RAG] Retrieving policy context for 0a3b46c0-acaf-8598-382e-8fb960589f98
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 18/50] 75769e72-a00... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (3.0ms vs 45137ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.59it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.57it/s]
+INFO:agent_logic:[Audit] Checking Patient 0a3b46c0-acaf-8598-382e-8fb960589f98
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 35.00. HARD STOP: Safety exclusion. Safety exclusion detected: 'Medullary Thyroid Carcinoma (MTC)'. Wegovy is contraindicated.)
+INFO:agent_logic:[RAG] Retrieving policy context for 7beea769-6883-21c7-a43e-84acd69224b2
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 19/50] 0a3b46c0-aca... DET: DENIED_SAFETY        LLM: DENIED               ✓ (7.0ms vs 66526ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.22it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.22it/s]
+INFO:agent_logic:[Audit] Checking Patient 7beea769-6883-21c7-a43e-84acd69224b2
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 36.70. HARD STOP: Safety exclusion. Safety exclusion detected: 'Ozempic (semaglutide) injection'. Wegovy is contraindicated.)
+INFO:agent_logic:[RAG] Retrieving policy context for 3cd3a010-48a2-97b1-d7cc-832deb321389
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 20/50] 7beea769-688... DET: DENIED_SAFETY        LLM: DENIED               ✓ (8.4ms vs 71226ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.23it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.22it/s]
+INFO:agent_logic:[Audit] Checking Patient 3cd3a010-48a2-97b1-d7cc-832deb321389
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 36.80. HARD STOP: Safety exclusion. Safety exclusion detected: 'MEN2'. Wegovy is contraindicated.)
+INFO:agent_logic:[RAG] Retrieving policy context for 3db45a0a-f2d0-9cec-06b0-7f7d8d4b2937
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 21/50] 3cd3a010-48a... DET: DENIED_SAFETY        LLM: DENIED               ✓ (9.7ms vs 72869ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.79it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.78it/s]
+INFO:agent_logic:[Audit] Checking Patient 3db45a0a-f2d0-9cec-06b0-7f7d8d4b2937
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 31.10. HARD STOP: Safety exclusion. Safety exclusion detected: 'Ozempic (semaglutide) injection'. Wegovy is contraindicated.)
+INFO:agent_logic:[RAG] Retrieving policy context for 206df747-24d1-b407-37c2-fb3c4dfc79c5
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 22/50] 3db45a0a-f2d... DET: DENIED_SAFETY        LLM: DENIED               ✓ (8.1ms vs 69720ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.33it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.32it/s]
+INFO:agent_logic:[Audit] Checking Patient 206df747-24d1-b407-37c2-fb3c4dfc79c5
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 29.80. BMI 29.8 (overweight range) with qualifying comorbidity 'Coronary Artery Disease' (CVD). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for 8b574d5c-8526-01d2-3593-e8d593f771cc
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 23/50] 206df747-24d... DET: APPROVED             LLM: APPROVED             ✓ (13.3ms vs 51726ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.95it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.94it/s]
+INFO:agent_logic:[Audit] Checking Patient 8b574d5c-8526-01d2-3593-e8d593f771cc
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: CDI_REQUIRED (Reason: BMI 30.80. BMI 30.8 meets obesity threshold (≥30.0). Clinical criteria met, but missing required administrative anchor code (E66.9).)
+INFO:agent_logic:[RAG] Retrieving policy context for 27223a02-54f4-2dc2-4822-eb7ee813f467
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 24/50] 8b574d5c-852... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (10.9ms vs 78103ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.78it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.77it/s]
+INFO:agent_logic:[Audit] Checking Patient 27223a02-54f4-2dc2-4822-eb7ee813f467
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: FLAGGED (Reason: BMI 27.10. Ambiguous clinical term detected. (Term: 'Borderline hypertension') Evidence term: 'Borderline hypertension'.)
+INFO:agent_logic:[RAG] Retrieving policy context for 7fdff70b-6996-a73a-0735-869b44c15068
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 25/50] 27223a02-54f... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (9.0ms vs 60909ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.69it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.69it/s]
+INFO:agent_logic:[Audit] Checking Patient 7fdff70b-6996-a73a-0735-869b44c15068
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 29.90. Denied. BMI 29.9 (overweight) but no qualifying weight-related comorbidity documented. Does not meet criteria.)
+INFO:agent_logic:[RAG] Retrieving policy context for a7a2cb02-8791-c6d7-e568-6e7db7cd2e1d
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 26/50] 7fdff70b-699... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (11.4ms vs 80776ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.18it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.17it/s]
+INFO:agent_logic:[Audit] Checking Patient a7a2cb02-8791-c6d7-e568-6e7db7cd2e1d
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 28.90. BMI 28.9 (overweight range) with qualifying comorbidity 'OSA' (OSA). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for 0dd7728b-ca40-a6f2-74bd-97664e825e24
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 27/50] a7a2cb02-879... DET: APPROVED             LLM: APPROVED             ✓ (12.8ms vs 47732ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.99it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.98it/s]
+INFO:agent_logic:[Audit] Checking Patient 0dd7728b-ca40-a6f2-74bd-97664e825e24
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 27.00. BMI 27.0 (overweight range) with qualifying comorbidity 'Dyslipidemia' (LIPIDS). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for 7a7fa702-9a71-fda4-f7c7-3810a4e15e80
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 28/50] 0dd7728b-ca4... DET: APPROVED             LLM: APPROVED             ✓ (9.9ms vs 48290ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.94it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.93it/s]
+INFO:agent_logic:[Audit] Checking Patient 7a7fa702-9a71-fda4-f7c7-3810a4e15e80
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: PROVIDER_ACTION_REQUIRED (Reason: Provider action required. BMI is not documented and could not be calculated from recent height/weight. Please document a current BMI so this request can be processed.)
+INFO:agent_logic:[RAG] Retrieving policy context for 50064ae8-9ef4-c35d-5633-943896f70f38
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 29/50] 7a7fa702-9a7... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (3.3ms vs 68676ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.51it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.50it/s]
+INFO:agent_logic:[Audit] Checking Patient 50064ae8-9ef4-c35d-5633-943896f70f38
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 25.50. Denied. BMI 25.5 is below minimum threshold (27.0). Does not meet coverage criteria.)
+INFO:agent_logic:[RAG] Retrieving policy context for d431cce3-b5cd-f665-ae29-77127b9229fd
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 30/50] 50064ae8-9ef... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (10.8ms vs 51534ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  7.02it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  7.01it/s]
+INFO:agent_logic:[Audit] Checking Patient d431cce3-b5cd-f665-ae29-77127b9229fd
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: FLAGGED (Reason: BMI 27.10. Ambiguous clinical term detected. (Term: 'Prediabetes') Evidence term: 'Prediabetes'.)
+INFO:agent_logic:[RAG] Retrieving policy context for 3395c04d-eddc-83f5-4557-2fd6d5a821f1
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 31/50] d431cce3-b5c... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (10.2ms vs 57438ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.81it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.80it/s]
+INFO:agent_logic:[Audit] Checking Patient 3395c04d-eddc-83f5-4557-2fd6d5a821f1
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+WARNING:agent_logic:[Audit] LLM advisory audit failed: Expecting value: line 1 column 1 (char 0)
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 27.00. BMI 27.0 (overweight range) with qualifying comorbidity 'Hypertension' (HYPERTENSION). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for 9017d43a-237c-c20e-5531-be1a49e5cdb2
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 32/50] 3395c04d-edd... DET: APPROVED             LLM: APPROVED             ✓ (10.2ms vs 91176ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.31it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.30it/s]
+INFO:agent_logic:[Audit] Checking Patient 9017d43a-237c-c20e-5531-be1a49e5cdb2
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 29.10. Denied. BMI 29.1 (overweight) but no qualifying weight-related comorbidity documented. Does not meet criteria.)
+INFO:agent_logic:[RAG] Retrieving policy context for d0b4fbc3-126a-2167-9eb4-d0d40927eb97
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 33/50] 9017d43a-237... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (15.5ms vs 84237ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.74it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  5.73it/s]
+INFO:agent_logic:[Audit] Checking Patient d0b4fbc3-126a-2167-9eb4-d0d40927eb97
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+WARNING:agent_logic:[Audit] LLM advisory audit failed: Expecting value: line 1 column 1 (char 0)
+INFO:agent_logic:Decision: PROVIDER_ACTION_REQUIRED (Reason: Provider action required. BMI is not documented and could not be calculated from recent height/weight. Please document a current BMI so this request can be processed.)
+INFO:agent_logic:[RAG] Retrieving policy context for 187598d1-e699-3149-b217-96584215071e
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 34/50] d0b4fbc3-126... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (15.6ms vs 72645ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:01<00:00,  1.21s/it]Calculate scores: 100%|██████████| 1/1 [00:01<00:00,  1.21s/it]
+INFO:agent_logic:[Audit] Checking Patient 187598d1-e699-3149-b217-96584215071e
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: FLAGGED (Reason: BMI 29.80. Ambiguous clinical term detected. (Term: 'Elevated BP') Evidence term: 'Elevated BP'.)
+INFO:agent_logic:[RAG] Retrieving policy context for 452d736b-16d0-3ae6-1c2d-14a304f7f721
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 35/50] 187598d1-e69... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (14.2ms vs 80970ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.84it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.83it/s]
+INFO:agent_logic:[Audit] Checking Patient 452d736b-16d0-3ae6-1c2d-14a304f7f721
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: PROVIDER_ACTION_REQUIRED (Reason: Provider action required. BMI is not documented and could not be calculated from recent height/weight. Please document a current BMI so this request can be processed.)
+INFO:agent_logic:[RAG] Retrieving policy context for e21107de-8186-20e8-59e1-8b88c42813b6
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 36/50] 452d736b-16d... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (4.4ms vs 81395ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.63it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.62it/s]
+INFO:agent_logic:[Audit] Checking Patient e21107de-8186-20e8-59e1-8b88c42813b6
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 31.30. BMI 31.3 meets obesity threshold (≥30.0). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for 72814cbd-532d-ffeb-c3d6-421d5aca75e5
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 37/50] e21107de-818... DET: APPROVED             LLM: APPROVED             ✓ (12.1ms vs 86613ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.07it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.06it/s]
+INFO:agent_logic:[Audit] Checking Patient 72814cbd-532d-ffeb-c3d6-421d5aca75e5
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 41.40. BMI 41.4 meets obesity threshold (≥30.0). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for 41f7ddbb-dab7-5e44-415d-544de80e260a
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 38/50] 72814cbd-532... DET: APPROVED             LLM: APPROVED             ✓ (12.6ms vs 69930ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.44it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.43it/s]
+INFO:agent_logic:[Audit] Checking Patient 41f7ddbb-dab7-5e44-415d-544de80e260a
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 27.20. BMI 27.2 (overweight range) with qualifying comorbidity 'Hypertension' (HYPERTENSION). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for 83ed4884-6b58-6b0f-c09d-9baf116a61c1
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 39/50] 41f7ddbb-dab... DET: APPROVED             LLM: APPROVED             ✓ (20.0ms vs 82068ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.94it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.93it/s]
+INFO:agent_logic:[Audit] Checking Patient 83ed4884-6b58-6b0f-c09d-9baf116a61c1
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 24.70. Denied. BMI 24.7 is below minimum threshold (27.0). Does not meet coverage criteria.)
+INFO:agent_logic:[RAG] Retrieving policy context for 76830ce1-0605-1e39-2460-d912658bdacf
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 40/50] 83ed4884-6b5... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (11.6ms vs 93029ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  7.04it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  7.03it/s]
+INFO:agent_logic:[Audit] Checking Patient 76830ce1-0605-1e39-2460-d912658bdacf
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: CDI_REQUIRED (Reason: BMI 32.20. BMI 32.2 meets obesity threshold (≥30.0). Clinical criteria met, but missing required administrative anchor code (E66.9).)
+INFO:agent_logic:[RAG] Retrieving policy context for 75ffba06-4753-6b6b-a423-8eee6ad3c371
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 41/50] 76830ce1-060... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (9.9ms vs 71251ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.51it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.50it/s]
+INFO:agent_logic:[Audit] Checking Patient 75ffba06-4753-6b6b-a423-8eee6ad3c371
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 39.40. HARD STOP: Safety exclusion. Safety exclusion detected: 'MTC'. Wegovy is contraindicated.)
+INFO:agent_logic:[RAG] Retrieving policy context for 0f925be1-1a5b-a450-db15-49ddbc2dec20
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 42/50] 75ffba06-475... DET: DENIED_SAFETY        LLM: DENIED               ✓ (9.5ms vs 64160ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.59it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.56it/s]
+INFO:agent_logic:[Audit] Checking Patient 0f925be1-1a5b-a450-db15-49ddbc2dec20
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 27.90. BMI 27.9 (overweight range) with qualifying comorbidity 'Type 2 diabetes mellitus' (DIABETES). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for dc6ae6cb-b781-4ded-b259-2d00c77c5738
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 43/50] 0f925be1-1a5... DET: APPROVED             LLM: APPROVED             ✓ (12.7ms vs 81962ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.24it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.23it/s]
+INFO:agent_logic:[Audit] Checking Patient dc6ae6cb-b781-4ded-b259-2d00c77c5738
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 24.00. Denied. BMI 24.0 is below minimum threshold (27.0). Does not meet coverage criteria.)
+INFO:agent_logic:[RAG] Retrieving policy context for 085ac6fd-b822-e0e0-be39-00c30f4ee37c
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 44/50] dc6ae6cb-b78... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (32.1ms vs 60844ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.56it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.53it/s]
+INFO:agent_logic:[Audit] Checking Patient 085ac6fd-b822-e0e0-be39-00c30f4ee37c
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 34.60. BMI 34.6 meets obesity threshold (≥30.0). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for 8f3e94a7-51e5-6141-406e-4d48669bda29
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 45/50] 085ac6fd-b82... DET: APPROVED             LLM: APPROVED             ✓ (11.7ms vs 100584ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.65it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.61it/s]
+INFO:agent_logic:[Audit] Checking Patient 8f3e94a7-51e5-6141-406e-4d48669bda29
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: APPROVED (Reason: BMI 39.00. BMI 39.0 meets obesity threshold (≥30.0). Approved.)
+INFO:agent_logic:[RAG] Retrieving policy context for a1846dbe-fbd1-8586-247f-4b844d60cf39
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 46/50] 8f3e94a7-51e... DET: APPROVED             LLM: APPROVED             ✓ (11.7ms vs 68242ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.61it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.60it/s]
+INFO:agent_logic:[Audit] Checking Patient a1846dbe-fbd1-8586-247f-4b844d60cf39
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: FLAGGED (Reason: BMI 27.10. Ambiguous clinical term detected. (Term: 'Sleep apnea') Evidence term: 'Sleep apnea'.)
+INFO:agent_logic:[RAG] Retrieving policy context for ef9f53c0-dda7-d667-2863-61405b3ef47f
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 47/50] a1846dbe-fbd... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (10.5ms vs 76483ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.70it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.69it/s]
+INFO:agent_logic:[Audit] Checking Patient ef9f53c0-dda7-d667-2863-61405b3ef47f
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: CDI_REQUIRED (Reason: BMI 31.40. BMI 31.4 meets obesity threshold (≥30.0). Clinical criteria met, but missing required administrative anchor code (E66.9).)
+INFO:agent_logic:[RAG] Retrieving policy context for 775da2ca-1c15-544f-45a7-280ff14d23d9
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 48/50] ef9f53c0-dda... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (13.2ms vs 57658ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.96it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.95it/s]
+INFO:agent_logic:[Audit] Checking Patient 775da2ca-1c15-544f-45a7-280ff14d23d9
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: DENIED (Reason: BMI 29.70. Denied. BMI 29.7 (overweight) but no qualifying weight-related comorbidity documented. Does not meet criteria.)
+INFO:agent_logic:[RAG] Retrieving policy context for 429fd9d4-ff62-f874-debf-d560a7027c02
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/embed "HTTP/1.1 200 OK"
+[ 49/50] 775da2ca-1c1... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (9.0ms vs 58429ms)
+Calculate scores:   0%|          | 0/1 [00:00<?, ?it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.57it/s]Calculate scores: 100%|██████████| 1/1 [00:00<00:00,  6.56it/s]
+INFO:agent_logic:[Audit] Checking Patient 429fd9d4-ff62-f874-debf-d560a7027c02
+INFO:httpx:HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+INFO:agent_logic:Decision: FLAGGED (Reason: BMI 28.00. Ambiguous clinical term detected. (Term: 'Sleep apnea') Evidence term: 'Sleep apnea'.)
+[ 50/50] 429fd9d4-ff6... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (12.2ms vs 80524ms)
+
+======================================================================
+  BENCHMARK RESULTS SUMMARY
+======================================================================
+
+📊 Deterministic Engine Performance:
+   • Average: 12.91 ms/patient
+   • Total:   646 ms (0.65 sec)
+   • Min:     2.97 ms
+   • Max:     35.99 ms
+
+🤖 LLM Engine Performance (Flavor: qwen3):
+   • Average: 66904 ms/patient
+   • Total:   3345195 ms (3345.2 sec)
+   • Min:     42678 ms
+   • Max:     100584 ms
+
+⚡ Speedup: Deterministic is 5182x faster than LLM
+
+🎯 Agreement Rate (bucket-level): 50/50 (100.0%)
+
+📁 Results saved to: benchmark_results_qwen3.json
+======================================================================
+

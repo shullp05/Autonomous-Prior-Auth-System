@@ -34,8 +34,8 @@ The architecture explicitly divides responsibility:
 
 #### 2. Retrieval Engine (`setup_rag.py`, `chroma_db/`)
 *   **Responsibility**: Semantic search.
-*   **Component**: **Hybrid RAG**. Uses standard vector similarity (Cosine) followed by a Cross-Encoder Reranker (`BCEmbedding`) to refine results.
-*   **Why**: standard embeddings fail to distinguish subtle medical negation (e.g., "History of depression vs. No history of depression"). Reranking fixes this.
+*   **Component**: **Hybrid RAG**. Uses MedEmbed vector similarity (k=25 by default) with optional BCE reranking (`BCEmbedding`) before selecting the top-k policy atoms (k=8 by default).
+*   **Why**: standard embeddings can miss nuanced medical negation (e.g., "History of depression" vs. "No history of depression"). Reranking reduces distractors when enabled.
 
 #### 3. The Agentic Core (`agent_logic.py`)
 *   **Responsibility**: Orchestration.
@@ -61,12 +61,12 @@ The architecture explicitly divides responsibility:
     *   *Pro*: Mathematically guaranteed safety for known exclusions.
     *   *Con*: Code duplication. Logic for "Pregnancy" exists in both the Policy text (for LLM) and Python constants (for Engine). mitigated via `policy_utils.py` centralization.
 
-### ADR-002: Two-Stage RAG (Retrieval + Reranking)
+### ADR-002: Two-Stage RAG (Retrieval + Optional Reranking)
 *   **Context**: Medical policies are dense. A simple top-k vector search often retrieves irrelevant sections that share keywords but not semantic relevance.
-*   **Decision**: Use `MedEmbed` for initial retrieval (k=25), then apply a Cross-Encoder (`BCEmbedding`) to score and filter down to top-k (k=5) context windows.
+*   **Decision**: Use `MedEmbed` for initial retrieval (k=25), then (optionally) apply a BCE cross-encoder (`BCEmbedding`) to rerank and filter down to top-k (k=8) with a score floor and minimum-doc guardrail.
 *   **Trade-off**:
-    *   *Pro*: High precision. Reduces "distractor" context passed to the LLM.
-    *   *Con*: Higher latency per request (~200ms overhead) and increased memory footprint (requires loading the Reranker model).
+    *   *Pro*: Higher precision; fewer distractors passed to the LLM.
+    *   *Con*: Added latency and memory footprint when the reranker is enabled.
 
 ### ADR-003: Dynamic Policy Parsing vs. Static Configuration
 *   **Context**: Insurance guidelines change frequently (quarterly/annually). Hardcoding rules into Python classes makes updates slow and requires developer intervention.
@@ -105,7 +105,7 @@ class AgentState(TypedDict):
 
 ### Security (Safety & Compliance)
 *   **Input Sanitization**: All terms are normalized via `policy_utils.normalize` (lower-case, strip, strict word boundary regex) before matching.
-*   **Model Isolation**: The "Safety Layer" operates without network access, ensuring decision logic cannot be influenced by external prompt injections.
+*   **Model Isolation**: The safety layer can run with offline enforcement enabled, blocking outbound network access at the process level.
 *   **Type Safety**: Use of `Pydantic` models (`AuditResult`) ensures LLM outputs strictly conform to required schemas (BMI as float, Enums for verdicts).
 
 ### Performance

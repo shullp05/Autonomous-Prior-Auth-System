@@ -14,8 +14,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+ARG REQUIREMENTS_FILE=requirements-docker-cpu.txt
+COPY requirements.txt requirements.lock requirements-ci.txt requirements-docker-cpu.txt /tmp/
+RUN pip install --no-cache-dir -r /tmp/${REQUIREMENTS_FILE}
 
 # Copy application code
 COPY . .

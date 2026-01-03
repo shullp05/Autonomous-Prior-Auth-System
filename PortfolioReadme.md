@@ -1,20 +1,20 @@
 # Peter Shull, PharmD
 ## Clinical AI Engineer | Healthcare Systems Architect | Data Scientist
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/petershull/) 
-[![Email](https://img.shields.io/badge/Email-Contact_Me-teal?style=for-the-badge&logo=gmail)](mailto:peter@example.com)
-[![Portfolio](https://img.shields.io/badge/Portfolio-Live_Demo-orange?style=for-the-badge)](https://github.com/petershull)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin)](https://linkedin.com/in/peter-shull)
+[![Email](https://img.shields.io/badge/Email-Contact_Me-teal?style=for-the-badge&logo=gmail)](mailto:shullp05@gmail.com)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Live_Demo-orange?style=for-the-badge)](https://github.com/shullp05)
 
 ---
 
 ## 🎯 Executive Summary: Bridging Medicine & Machine Learning
 
-I am a **PharmD with 10+ years of clinical experience** and **6+ years in Data/AI Engineering**, specializing in building **safe, compliant, and scalable clinical AI systems**.
+I am a **PharmD with clinical and data/AI engineering experience**, focused on building **safe, auditable clinical AI systems**.
 
-This repository serves as a **technical masterwork** demonstrating my ability to solve one of healthcare's most expensive problems—**Prior Authorization (PA)**—using a production-grade **Neuro-Symbolic AI architecture**. unlike standard "AI demos," this system is engineered for **HIPAA compliance**, **auditability**, and **patient safety**.
+This repository demonstrates a **deterministic-first prior authorization system** where the policy engine is the source of truth and LLMs are constrained to narrative and extraction. The repo ships synthetic data only, includes tamper-evident audit logs, and supports offline enforcement for data sovereignty.
 
 **My Value Proposition:**
-> I don't just "write code" or "prompt LLMs." I design **clinical governance architectures** that allow healthcare organizations to deploy AI safely. I translate complex medical guidelines into deterministic logic and leverage LLMs for reasoning, ensuring technology serves patient care without compromising safety.
+> I design governance-first clinical AI systems that separate deterministic eligibility from probabilistic narration, so high-stakes decisions remain auditable and reproducible.
 
 ---
 
@@ -31,8 +31,8 @@ This repository serves as a **technical masterwork** demonstrating my ability to
 
 ## 🏥 Project Showcase: Autonomous Prior Authorization System
 
-**The Challenge:** Prior Authorization costs the US healthcare system **$31B annually** and causes **34% of physicians** to report patient harm due to delays.
-**The Solution:** An autonomous, human-in-the-loop agent that processes claims in milliseconds with **94%+ accuracy** compared to manual review.
+**The Challenge:** Prior authorization is costly and delays access to care.
+**The Solution:** A deterministic-first, human-in-the-loop agent that processes synthetic claims quickly and produces evidence-backed decisions (see `reports/benchmark.txt` for local timing evidence).
 
 ### 🚀 Key Technical & Strategic Features
 
@@ -40,7 +40,7 @@ This repository serves as a **technical masterwork** demonstrating my ability to
 *Demonstrates: Architectural Design, Safety Engineering, Strategic Planning*
 
 I explicitly rejected a "pure LLM" approach due to hallucination risks. Instead, I architected a **Hybrid Engine**:
-*   **Deterministic Policy Engine (`policy_engine.py`)**: Hard-coded Python logic handles binary clinical rules (e.g., *BMI > 30*, *Contraindication = MTC*). This ensures **100% reproducibility** for regulatory audits.
+*   **Deterministic Policy Engine (`policy_engine.py`)**: Hard-coded policy logic handles binary clinical rules (e.g., *BMI > 30*, *Contraindication = MTC*). This ensures reproducible outcomes for audit and governance.
 *   **LLM Agent (`agent_logic.py`)**: Handles nuance (e.g., *Is "elevated A1c" equivalent to T2DM diagnosis?*) using **LangGraph** for state management and **RAG** for policy grounding.
 
 #### 2. Healthcare-Specific Guardrails & Risk Mitigation
@@ -48,14 +48,14 @@ I explicitly rejected a "pure LLM" approach due to hallucination risks. Instead,
 
 I implemented a multi-layer safety net to prevent AI errors from harming patients:
 *   **Python Guardrails**: Post-processing logic that *overrules* the LLM if it hallucinates an approval despite a safety contraindication (e.g., Pregnancy, Thyroid Cancer).
-*   **Adversarial Testing (`tests/test_adversarial.py`)**: A "Chaos Monkey" suite that injects 148+ edge cases (borderline vitals, ambiguous terms, malicious inputs) to stress-test system integrity.
+*   **Adversarial Testing (`tests/test_adversarial.py`)**: Parameterized cases covering BMI boundaries, safety exclusions, ambiguous terms, and GLP-1 contraindications to stress-test system integrity.
 
 #### 3. Production-Ready RAG (Retrieval Augmented Generation)
 *Demonstrates: NLP, Vector Search, Information Retrieval*
 
-*   **Medical Embeddings**: Utilized `MedEmbed-large` for domain-specific semantic understanding, outperforming generic OpenAI embeddings on clinical text.
+*   **Medical Embeddings**: Default embedding model `kronos483/MedEmbed-large-v0.1:latest` (configurable via `PA_EMBED_MODEL`).
 *   **Re-ranking**: Integrated `bce-reranker` to optimize context precision, reducing token costs and improving answer quality.
-*   **Citation Tracking**: The system doesn't just decide; it **cites evidence** (e.g., *"Page 12, Section 4.1"*) for every decision, enabling human verification.
+*   **Evidence Support**: Outputs can include policy excerpts and context identifiers; see `reports/rag_rerank_sanity.txt` for retrieval checks.
 
 #### 4. Algorithmic Fairness & Ethical AI
 *Demonstrates: Ethics, Statistics, Governance*
@@ -63,10 +63,10 @@ I implemented a multi-layer safety net to prevent AI errors from harming patient
 *   **Bias Auditing (`governance_audit.py`)**: Automated statistical tests (Wilson Score Interval, Z-tests) run on every batch to detect **False Negative Rate (FNR) Disparity** across demographics.
 *   **Compliance**: The system proactively flags potential bias *before* deployment, aligning with emerging FDA and NIST AI frameworks.
 
-#### 5. "Credibility Hardening" (Phases 10-14)
+#### 5. Credibility Hardening
 *Demonstrates: Advanced Verification, Clinical UX, Offline Security*
 
-*   **Offline Enforcement**: Implemented a **"Dead-Man Switch"** (`offline_mode.py`) that strictly forbids network access at runtime, ensuring data sovereignty.
+*   **Offline Enforcement**: Implemented a strict outbound-blocking mode (`offline_mode.py`) that forbids external network access at runtime while allowing localhost when enabled.
 *   **Tamper-Evident Audit**: Architected a cryptographic log (`audit_logger.py`) using **SHA-256 hash chaining** to ensure decision history is immutable and verifiable.
 *   **Coding Integrity Overlay**: Differentiates between "Clinically Eligible" and "Administratively Ready," automating the generation of precise **Physician Queries** for missing codes (e.g., E66.9) rather than issuing flat denials.
 
@@ -76,9 +76,9 @@ I implemented a multi-layer safety net to prevent AI errors from harming patient
 ## 🛠 Tech Stack & Implementation Details
 
 *   **Languages:** Python 3.11 (Strict Typing), JavaScript (React)
-*   **AI Frameworks:** LangChain, LangGraph, Ollama (Local LLMs: Qwen2.5:14b, Llama 3)
+*   **AI Frameworks:** LangChain, LangGraph, Ollama (local LLMs; see `MODELING.md` for supported flavors)
 *   **Vector Database:** ChromaDB (Local, Zero-Trust)
-*   **Testing:** Pytest (148+ tests), Chaos Engineering principles
+*   **Testing:** Pytest suite (latest local run: 265 passed, 1 skipped; see `reports/pytest.txt`)
 *   **Infrastructure:** Docker, GitHub Actions (CI/CD), Makefiles
 *   **Frontend:** React + Vite + D3.js (Interactive Decision Dashboard)
 

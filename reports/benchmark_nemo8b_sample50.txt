@@ -1,0 +1,85 @@
+
+======================================================================
+  PRIORAUTH BENCHMARK: Deterministic vs LLM Engine Comparison
+======================================================================
+
+Loading data...
+Benchmarking 50 patients (total pool: 131)
+Initializing LLM agent (Flavor: nemo8b)...
+
+Running benchmark...
+----------------------------------------------------------------------
+[  1/50] a18732f9-8b8... DET: APPROVED             LLM: APPROVED             ✓ (15.2ms vs 15025ms)
+[  2/50] 5870fe1f-91b... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (22.0ms vs 1394ms)
+[  3/50] a0d4203d-eb3... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (11.1ms vs 1457ms)
+[  4/50] dcac9f34-458... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (9.8ms vs 1212ms)
+[  5/50] 74896944-922... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (6.7ms vs 1970ms)
+[  6/50] b51084d0-e2b... DET: APPROVED             LLM: APPROVED             ✓ (12.2ms vs 4888ms)
+[  7/50] 97514052-1f9... DET: APPROVED             LLM: APPROVED             ✓ (11.1ms vs 4859ms)
+[  8/50] e1195c84-d63... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (12.1ms vs 1226ms)
+[  9/50] 9a894383-a95... DET: APPROVED             LLM: APPROVED             ✓ (9.6ms vs 4728ms)
+[ 10/50] 97990fd0-9ec... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (18.7ms vs 1488ms)
+[ 11/50] 5c5551b2-70f... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (10.6ms vs 1429ms)
+[ 12/50] 7cb2abc8-27e... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (8.0ms vs 1073ms)
+[ 13/50] f763691a-41e... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (6.1ms vs 1284ms)
+[ 14/50] 235851d4-649... DET: APPROVED             LLM: APPROVED             ✓ (9.1ms vs 4653ms)
+[ 15/50] 19e442cd-534... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (6.2ms vs 1159ms)
+[ 16/50] 7b1a8a0a-9cf... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (7.9ms vs 1114ms)
+[ 17/50] db6afa1f-a8d... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (9.0ms vs 1460ms)
+[ 18/50] 75769e72-a00... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (3.0ms vs 1680ms)
+[ 19/50] 0a3b46c0-aca... DET: DENIED_SAFETY        LLM: DENIED               ✓ (5.0ms vs 1174ms)
+[ 20/50] 7beea769-688... DET: DENIED_SAFETY        LLM: DENIED               ✓ (5.2ms vs 835ms)
+[ 21/50] 3cd3a010-48a... DET: DENIED_SAFETY        LLM: DENIED               ✓ (5.3ms vs 865ms)
+[ 22/50] 3db45a0a-f2d... DET: DENIED_SAFETY        LLM: DENIED               ✓ (4.8ms vs 895ms)
+[ 23/50] 206df747-24d... DET: APPROVED             LLM: APPROVED             ✓ (7.9ms vs 4632ms)
+[ 24/50] 8b574d5c-852... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (7.4ms vs 1450ms)
+[ 25/50] 27223a02-54f... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (7.1ms vs 1221ms)
+[ 26/50] 7fdff70b-699... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (8.4ms vs 1100ms)
+[ 27/50] a7a2cb02-879... DET: APPROVED             LLM: APPROVED             ✓ (8.5ms vs 4462ms)
+[ 28/50] 0dd7728b-ca4... DET: APPROVED             LLM: APPROVED             ✓ (6.6ms vs 4832ms)
+[ 29/50] 7a7fa702-9a7... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (2.3ms vs 1968ms)
+[ 30/50] 50064ae8-9ef... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (8.6ms vs 1387ms)
+[ 31/50] d431cce3-b5c... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (8.7ms vs 1254ms)
+[ 32/50] 3395c04d-edd... DET: APPROVED             LLM: APPROVED             ✓ (10.3ms vs 4725ms)
+[ 33/50] 9017d43a-237... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (11.7ms vs 1339ms)
+[ 34/50] d0b4fbc3-126... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (10.9ms vs 3094ms)
+[ 35/50] 187598d1-e69... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (7.1ms vs 1247ms)
+[ 36/50] 452d736b-16d... DET: DENIED_MISSING_INFO  LLM: PROVIDER_ACTION_REQUIRED ✓ (1.9ms vs 2086ms)
+[ 37/50] e21107de-818... DET: APPROVED             LLM: APPROVED             ✓ (6.7ms vs 4962ms)
+[ 38/50] 72814cbd-532... DET: APPROVED             LLM: APPROVED             ✓ (8.4ms vs 4976ms)
+[ 39/50] 41f7ddbb-dab... DET: APPROVED             LLM: APPROVED             ✓ (7.7ms vs 4890ms)
+[ 40/50] 83ed4884-6b5... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (7.4ms vs 1349ms)
+[ 41/50] 76830ce1-060... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (7.2ms vs 1339ms)
+[ 42/50] 75ffba06-475... DET: DENIED_SAFETY        LLM: DENIED               ✓ (8.6ms vs 1042ms)
+[ 43/50] 0f925be1-1a5... DET: APPROVED             LLM: APPROVED             ✓ (9.8ms vs 4919ms)
+[ 44/50] dc6ae6cb-b78... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (10.2ms vs 1469ms)
+[ 45/50] 085ac6fd-b82... DET: APPROVED             LLM: APPROVED             ✓ (7.0ms vs 4955ms)
+[ 46/50] 8f3e94a7-51e... DET: APPROVED             LLM: APPROVED             ✓ (7.1ms vs 5165ms)
+[ 47/50] a1846dbe-fbd... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (8.0ms vs 1356ms)
+[ 48/50] ef9f53c0-dda... DET: CDI_REQUIRED         LLM: CDI_REQUIRED         ✓ (6.9ms vs 1451ms)
+[ 49/50] 775da2ca-1c1... DET: DENIED_CLINICAL      LLM: DENIED               ✓ (6.7ms vs 1166ms)
+[ 50/50] 429fd9d4-ff6... DET: MANUAL_REVIEW        LLM: FLAGGED              ✓ (6.6ms vs 1351ms)
+
+======================================================================
+  BENCHMARK RESULTS SUMMARY
+======================================================================
+
+📊 Deterministic Engine Performance:
+   • Average: 8.50 ms/patient
+   • Total:   425 ms (0.42 sec)
+   • Min:     1.90 ms
+   • Max:     22.02 ms
+
+🤖 LLM Engine Performance (Flavor: nemo8b):
+   • Average: 2621 ms/patient
+   • Total:   131055 ms (131.1 sec)
+   • Min:     835 ms
+   • Max:     15025 ms
+
+⚡ Speedup: Deterministic is 309x faster than LLM
+
+🎯 Agreement Rate (bucket-level): 50/50 (100.0%)
+
+📁 Results saved to: benchmark_results_nemo8b_sample50.json
+======================================================================
+

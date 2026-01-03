@@ -1,0 +1,32 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0
+rootdir: /app
+configfile: pyproject.toml
+testpaths: tests
+plugins: cov-7.0.0, langsmith-0.5.1, anyio-4.12.0
+collected 259 items / 1 skipped
+
+tests/test_adversarial.py .............................................. [ 17%]
+........................................................................ [ 45%]
+....                                                                     [ 47%]
+tests/test_audit_bug.py ..                                               [ 47%]
+tests/test_audit_fix.py .                                                [ 48%]
+tests/test_batch_runner_paths.py .                                       [ 48%]
+tests/test_clinical_logic.py .......                                     [ 51%]
+tests/test_coding_integrity_rules.py ......                              [ 53%]
+tests/test_config_constants.py ..                                        [ 54%]
+tests/test_context_rules.py .........................................    [ 70%]
+tests/test_gold_regression.py .............                              [ 75%]
+tests/test_json_extraction.py ...................                        [ 82%]
+tests/test_offline_mode.py ......                                        [ 84%]
+tests/test_policy_cdi.py ....                                            [ 86%]
+tests/test_policy_engine_structured.py ..                                [ 87%]
+tests/test_policy_integration.py ............                            [ 91%]
+tests/test_policy_safety_signal.py .....                                 [ 93%]
+tests/test_policy_snapshot.py .....                                      [ 95%]
+tests/test_policy_utils.py .....                                         [ 97%]
+tests/test_rag_sections.py .                                             [ 98%]
+tests/test_repo_audit.py ....                                            [ 99%]
+tests/test_schema_validation.py .                                        [100%]
+
+======================== 259 passed, 1 skipped in 5.26s ========================

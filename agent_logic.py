@@ -38,17 +38,19 @@ import json
 import logging
 import os
 import time
-from typing import List, Dict, Any, Optional, Literal, Union
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Literal, TypedDict
+from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, TypedDict, Union
 
 import pandas as pd
 import psutil
 from dotenv import load_dotenv
 from langchain_core.documents import Document
-from langchain_ollama import ChatOllama
 from langgraph.graph import END, StateGraph
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
+
+if TYPE_CHECKING:
+    from langchain_ollama import ChatOllama
 
 # IMPORTANT: load .env BEFORE importing config (config may read env at import time)
 load_dotenv()
@@ -57,6 +59,7 @@ logger = logging.getLogger(__name__)
 
 # ---- Policy snapshot / deterministic engine (single source of truth) ----
 from policy_utils import normalize, format_criteria_list
+from letter_service import LetterResult, generate_approved_letter, generate_appeal_letter
 from audit_logger import get_audit_logger  # noqa: E402
 
 # ---- Optional reranker (safe-to-import wrapper) ----
@@ -112,11 +115,17 @@ RAG_MIN_DOCS = int(os.getenv("PA_RAG_MIN_DOCS", str(PA_RAG_MIN_DOCS)))
 SNAPSHOT = load_policy_snapshot(SNAPSHOT_PATH, ACTIVE_POLICY_ID)
 validate_policy_snapshot(SNAPSHOT)
 
+# --- RAG CONFIG ---
+PERSIST_DIR = "./chroma_db"
+COLLECTION_NAME = "priorauth_policies"
+_STATIC_POLICY_FALLBACK = json.dumps(SNAPSHOT, indent=2, ensure_ascii=True)
+
 # --- DATA LOADING (lazy) ---
 df_patients: pd.DataFrame | None = None
 df_meds: pd.DataFrame | None = None
 df_conditions: pd.DataFrame | None = None
 df_obs: pd.DataFrame | None = None
+_REFERENCE_YEAR: int | None = None
 
 _DATA_DIR = Path(os.getenv("ETL_OUTPUT_DIR", "output"))
 _PAT_PATH = _DATA_DIR / "data_patients.csv"
@@ -143,9 +152,106 @@ def _clean_str_list(values: Any) -> list[str]:
     return out
 
 
+def _env_reference_year() -> int | None:
+    ref_date = os.getenv("PA_REFERENCE_DATE", "").strip()
+    if ref_date:
+        try:
+            return int(pd.to_datetime(ref_date, errors="raise").year)
+        except Exception:
+            logger.warning("Invalid PA_REFERENCE_DATE=%s; ignoring.", ref_date)
+    ref_year = os.getenv("PA_REFERENCE_YEAR", "").strip()
+    if ref_year:
+        try:
+            return int(ref_year)
+        except Exception:
+            logger.warning("Invalid PA_REFERENCE_YEAR=%s; ignoring.", ref_year)
+    return None
+
+
+def _resolve_reference_year(candidates: list[tuple[pd.DataFrame | None, str]] | None = None) -> int:
+    env_year = _env_reference_year()
+    if env_year is not None:
+        return env_year
+    years: list[int] = []
+    if candidates:
+        for df, col in candidates:
+            if df is None or getattr(df, "empty", True) or col not in df.columns:
+                continue
+            dates = pd.to_datetime(df[col], errors="coerce")
+            if dates.empty:
+                continue
+            max_year = dates.dt.year.max()
+            if pd.notna(max_year):
+                years.append(int(max_year))
+    if years:
+        return max(years)
+    return datetime.now(UTC).year
+
+
+def _current_year() -> int:
+    return _REFERENCE_YEAR or _resolve_reference_year()
+
+
+def _filter_current_year_rows(
+    df: pd.DataFrame | None,
+    date_col: str,
+    reference_year: int | None = None,
+) -> pd.DataFrame | None:
+    if df is None or getattr(df, "empty", True) or date_col not in df.columns:
+        return df
+    if reference_year is None:
+        reference_year = _REFERENCE_YEAR or _resolve_reference_year([(df, date_col)])
+    dates = pd.to_datetime(df[date_col], errors="coerce")
+    return df.loc[dates.dt.year == reference_year].copy()
+
+
+def _latest_bmi_observation(p_obs: pd.DataFrame) -> tuple[pd.Timestamp | None, float | None]:
+    if p_obs.empty or "date" not in p_obs.columns:
+        return None, None
+    bmi_rows = p_obs[p_obs["type"] == "BMI"].copy()
+    if bmi_rows.empty:
+        return None, None
+    bmi_rows["date_parsed"] = pd.to_datetime(bmi_rows["date"], errors="coerce")
+    bmi_rows = bmi_rows.dropna(subset=["date_parsed"]).sort_values("date_parsed", ascending=False)
+    if bmi_rows.empty:
+        return None, None
+    try:
+        return bmi_rows.iloc[0]["date_parsed"], float(bmi_rows.iloc[0]["value"])
+    except Exception:
+        return None, None
+
+
+def _latest_height_weight_pair(p_obs: pd.DataFrame) -> tuple[pd.Timestamp | None, float | None, float | None]:
+    if p_obs.empty or "date" not in p_obs.columns:
+        return None, None, None
+    obs = p_obs[p_obs["type"].isin(["Height", "Weight"])].copy()
+    if obs.empty:
+        return None, None, None
+    obs["date_parsed"] = pd.to_datetime(obs["date"], errors="coerce")
+    obs = obs.dropna(subset=["date_parsed"])
+    if obs.empty:
+        return None, None, None
+    height_rows = obs[obs["type"] == "Height"]
+    weight_rows = obs[obs["type"] == "Weight"]
+    if height_rows.empty or weight_rows.empty:
+        return None, None, None
+    height_by_date = height_rows.sort_values("date_parsed").groupby("date_parsed").tail(1)
+    weight_by_date = weight_rows.sort_values("date_parsed").groupby("date_parsed").tail(1)
+    common_dates = set(height_by_date["date_parsed"]) & set(weight_by_date["date_parsed"])
+    if not common_dates:
+        return None, None, None
+    latest_date = max(common_dates)
+    try:
+        height_cm = float(height_by_date[height_by_date["date_parsed"] == latest_date].iloc[0]["value"])
+        weight_kg = float(weight_by_date[weight_by_date["date_parsed"] == latest_date].iloc[0]["value"])
+    except Exception:
+        return None, None, None
+    return latest_date, height_cm, weight_kg
+
+
 def _ensure_data_loaded() -> None:
     """Lazy load data to allow module import without files present."""
-    global df_patients, df_meds, df_conditions, df_obs
+    global df_patients, df_meds, df_conditions, df_obs, _REFERENCE_YEAR
     if df_patients is not None:
         return
 
@@ -163,6 +269,17 @@ def _ensure_data_loaded() -> None:
         df_meds = pd.read_csv(_MED_PATH)
         df_conditions = pd.read_csv(_COND_PATH)
         df_obs = pd.read_csv(_OBS_PATH)
+
+        _REFERENCE_YEAR = _resolve_reference_year(
+            [
+                (df_meds, "date"),
+                (df_conditions, "onset_date"),
+                (df_obs, "date"),
+            ]
+        )
+        df_meds = _filter_current_year_rows(df_meds, "date", _REFERENCE_YEAR)
+        df_conditions = _filter_current_year_rows(df_conditions, "onset_date", _REFERENCE_YEAR)
+        df_obs = _filter_current_year_rows(df_obs, "date", _REFERENCE_YEAR)
 
         # CRITICAL: normalize patient_id to string across all frames for consistent joins/filters
         for df in (df_patients, df_meds, df_conditions, df_obs):
@@ -197,14 +314,21 @@ def _make_llm(
     temperature: float = 0.0,
     prefer_json: bool = False,
     options: dict | None = None,
+    format_schema: dict | None = None,
 ) -> ChatOllama:
     """
     Create ChatOllama instance with optional format and low-level tuning.
     """
+    try:
+        from langchain_ollama import ChatOllama
+    except Exception as e:
+        raise RuntimeError(f"ChatOllama import failed: {e}") from e
     if options is None:
         options = {}
     kwargs = {"model": model, "temperature": temperature, **options}
-    if prefer_json:
+    if format_schema is not None:
+        kwargs["format"] = format_schema
+    elif prefer_json:
         kwargs["format"] = "json"
     try:
         return ChatOllama(**kwargs)
@@ -229,33 +353,24 @@ def calculate_bmi_if_missing(patient_id: str, df_obs_in: pd.DataFrame | None) ->
 
     pid = _coerce_pid(patient_id)
     p_obs = df_obs_in[df_obs_in["patient_id"].astype(str) == pid].copy()
+    p_obs = _filter_current_year_rows(p_obs, "date")
     if p_obs.empty:
         return "MISSING_DATA"
 
-    if "date" in p_obs.columns:
-        p_obs["date_parsed"] = pd.to_datetime(p_obs["date"], errors="coerce")
-    else:
-        p_obs["date_parsed"] = pd.NaT
+    # 1) Choose the most recent visit data (BMI row or height/weight pair)
+    bmi_date, bmi_val = _latest_bmi_observation(p_obs)
+    hw_date, height_cm, weight_kg = _latest_height_weight_pair(p_obs)
 
-    # 1) Explicit BMI
-    bmi_rows = p_obs[p_obs["type"] == "BMI"].sort_values("date_parsed", ascending=False)
-    if not bmi_rows.empty:
-        try:
-            v = float(bmi_rows.iloc[0]["value"])
-            return f"{round(v, 1)} (Source: EMR)"
-        except Exception:
-            return "MISSING_DATA"
+    if bmi_val is None and height_cm is None:
+        return "MISSING_DATA"
+
+    if bmi_date is not None and bmi_val is not None and (hw_date is None or bmi_date >= hw_date):
+        return f"{round(bmi_val, 1)} (Source: EMR)"
 
     # 2) Calculate from height/weight
     try:
-        wt = p_obs[p_obs["type"] == "Weight"].sort_values("date_parsed", ascending=False)
-        ht = p_obs[p_obs["type"] == "Height"].sort_values("date_parsed", ascending=False)
-
-        if wt.empty or ht.empty:
+        if height_cm is None or weight_kg is None:
             return "MISSING_DATA"
-
-        weight_kg = float(wt.iloc[0]["value"])
-        height_cm = float(ht.iloc[0]["value"])
 
         height_m = height_cm / 100.0
         if height_m <= 0:
@@ -294,14 +409,8 @@ def look_up_patient_data(patient_id: str) -> dict | None:
     conds: list[dict] = []
     if df_conditions is not None and not getattr(df_conditions, "empty", True):
         c_rows = df_conditions[df_conditions["patient_id"].astype(str) == pid]
-        # Extract full objects for Coding Integrity
-        cols = ["condition_name"]
-        if "icd10_dx" in c_rows.columns:
-            cols.append("icd10_dx")
-        if "icd10_bmi" in c_rows.columns:
-            cols.append("icd10_bmi")
-
-        conds = c_rows[cols].to_dict(orient="records")
+        # Pass full condition dicts so code-level checks can see ICD anchors.
+        conds = c_rows.to_dict(orient="records")
 
     latest_bmi = calculate_bmi_if_missing(pid, df_obs)
 
@@ -335,900 +444,6 @@ class AgentState(TypedDict, total=False):
     ambiguity_code: str
 
 
-class ProviderContext(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    provider_name: str
-    provider_credentials: str = ""
-    practice_name: str
-    npi: str
-    phone: str
-    fax: str
-    address: str = ""
-
-
-class PARequestLetterInput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    patient_name: str
-    patient_dob: str
-    patient_id: str
-    drug_name: str = "Wegovy (semaglutide)"
-    strength: str = "2.4 mg"
-    route: str = "subcutaneous"
-    frequency: str = "weekly"
-    indication: str = "Chronic weight management"
-
-    bmi_value: float
-    bmi_date: str = ""
-    qualifying_pathway: Literal["BMI_30_PLUS", "BMI_27_29_WITH_COMORBIDITY"]
-    qualifying_comorbidity: str = ""
-
-    # Triple-Key / Code-level requirements
-    adult_obesity_diags: list[str] = Field(default_factory=list)
-    adult_overweight_diags: list[str] = Field(default_factory=list)
-    qualifying_obesity_icd10_codes: list[str] = Field(default_factory=list)
-    qualifying_obesity_icd_z_codes: list[str] = Field(default_factory=list)
-    qualifying_overweight_icd10_codes: list[str] = Field(default_factory=list)
-    qualifying_overweight_icd_z_codes: list[str] = Field(default_factory=list)
-
-    # Specific Found Evidence (for letter specificity)
-    found_diagnosis_string: Optional[str] = None
-    found_e66_code: Optional[str] = None
-    found_z68_code: Optional[str] = None
-    found_comorbidity_evidence: Optional[str] = None
-    found_e66_code: Optional[str] = None
-    found_z68_code: Optional[str] = None
-    found_comorbidity_evidence: Optional[str] = None
-
-    contraindications_checked: list[str] = Field(default_factory=list)
-    contraindications_found: list[str] = Field(default_factory=list)
-
-    requested_action: str = "Request prior authorization coverage for Wegovy as prescribed"
-
-    attachments: list[str] = Field(default_factory=list)
-
-
-class PARequestLetterDraft(BaseModel):
-    """What the LLM must return (JSON only)."""
-    model_config = ConfigDict(extra="forbid")
-
-    recipient_org: str
-    recipient_department: str
-    attention_line: str
-
-    subject_line: str
-
-    opening_paragraph: str
-    clinical_summary_bullets: list[str]
-    criteria_bullets: list[str]
-    safety_paragraph: str
-    requested_action_paragraph: str
-    attachments_bullets: list[str]
-
-
-def _require_provider_context() -> ProviderContext:
-    """
-    Hard fail if provider/practice identifiers are missing.
-    No placeholders, no guessing.
-    """
-    ctx = ProviderContext(
-        provider_name=os.getenv("PA_PROVIDER_NAME", "").strip(),
-        provider_credentials=os.getenv("PA_PROVIDER_CREDENTIALS", "").strip(),
-        practice_name=os.getenv("PA_PRACTICE_NAME", "").strip(),
-        npi=os.getenv("PA_PROVIDER_NPI", "").strip(),
-        phone=os.getenv("PA_PRACTICE_PHONE", "").strip(),
-        fax=os.getenv("PA_PRACTICE_FAX", "").strip(),
-        address=os.getenv("PA_PRACTICE_ADDRESS", "").strip(),
-    )
-    missing = [
-        k
-        for k, v in ctx.model_dump().items()
-        if k in ("provider_name", "practice_name", "npi", "phone", "fax") and not v
-    ]
-    if missing:
-        raise RuntimeError(f"Provider context missing required fields: {missing}. Set PA_PROVIDER_* env vars.")
-    return ctx
-
-
-def _guard_letter_text(text: str) -> None:
-    """
-    Reject dangerous/incorrect language in provider/payer-facing letters.
-    """
-    bad_phrases = [
-        "Dr. AI",
-    ]
-    lowered = (text or "").lower()
-    if "needappeal" in lowered:
-        raise ValueError("Letter contains 'needappeal' language; incorrect for PA request.")
-    for p in bad_phrases:
-        if p.lower() in lowered:
-            raise ValueError(f"Letter contains prohibited phrase: {p!r}")
-
-
-# --- AMBIGUITY CLARIFICATION HELPER ---
-def _get_ambiguity_clarification(evidence: str) -> str:
-    """Generate specific clarification guidance based on the ambiguous term."""
-    ev_lower = (evidence or "").lower()
-
-    if "prediabetes" in ev_lower or "pre-diabetes" in ev_lower or "borderline diabetes" in ev_lower or "impaired fasting" in ev_lower:
-        return """CLARIFICATION NEEDED:
-The term "prediabetes" (or similar) does NOT qualify as a weight-related comorbidity for Wegovy coverage.
-
-To support approval, document ONE of the following (if present):
-- Type 2 Diabetes Mellitus
-- Hypertension / High Blood Pressure
-- Dyslipidemia / Hyperlipidemia
-- Obstructive Sleep Apnea (OSA)
-- Cardiovascular Disease (ASCVD)
-
-If the patient has any of these, update the chart to clearly document it."""
-
-    if "sleep apnea" in ev_lower and "obstructive" not in ev_lower:
-        return """CLARIFICATION NEEDED:
-Generic "sleep apnea" does not qualify—documentation must specify "Obstructive Sleep Apnea (OSA)".
-
-To support approval:
-- Confirm diagnosis is obstructive (not central/mixed)
-- Update chart to clearly state "Obstructive Sleep Apnea" or "OSA"
-
-Alternatively, document another qualifying comorbidity (HTN, T2DM, dyslipidemia, CVD)."""
-
-    if "thyroid" in ev_lower:
-        return """CLARIFICATION NEEDED:
-Thyroid terminology requires clarification for safety determination.
-
-- Medullary Thyroid Carcinoma (MTC) is a contraindication for Wegovy
-- Other thyroid cancers (papillary/follicular) are not contraindications per policy
-
-Please clarify the specific thyroid diagnosis/history to determine Wegovy safety."""
-
-    if "blood pressure" in ev_lower or "borderline hypertension" in ev_lower:
-        return """CLARIFICATION NEEDED:
-"Elevated blood pressure" or "borderline hypertension" may not meet criteria for a qualifying comorbidity.
-
-To support approval:
-- Confirm documented Hypertension / HTN requiring treatment
-- Update the problem list to clearly state "Hypertension" or "HTN"
-
-Alternatively, document another qualifying comorbidity (T2DM, dyslipidemia, OSA, CVD)."""
-
-    return f"""CLARIFICATION NEEDED:
-The term "{evidence}" requires clarification before this PA can be processed.
-
-Please provide documentation of a qualifying weight-related comorbidity:
-- Hypertension
-- Type 2 Diabetes Mellitus
-- Dyslipidemia
-- Obstructive Sleep Apnea (OSA)
-- Cardiovascular Disease"""
-
-
-# --- APPEAL / CLARIFICATION GENERATOR ---
-def generate_appeal_letter(patient_data: dict, denial_reason: str, findings: dict) -> str | None:
-    """
-    Generate a provider-facing clarification / documentation letter for DENIED/FLAGGED cases.
-    Returns None for safety denials or if generation fails (caller may fall back to templates).
-    """
-    if not isinstance(patient_data, dict):
-        return None
-
-    # Don't generate for safety hard-stops
-    verdict = str((findings or {}).get("verdict", "")).upper()
-    if verdict == "DENIED_SAFETY":
-        return None
-
-    patient_name = str(patient_data.get("name", "")).strip()
-    patient_dob = str(patient_data.get("dob", "")).strip()
-    if not patient_name or not patient_dob:
-        return None  # no placeholders for provider-facing drafting
-
-    bmi_value = (findings or {}).get("bmi_numeric")
-    evidence = str((findings or {}).get("evidence_quoted", "")).strip()
-
-    is_flagged_case = verdict == "MANUAL_REVIEW" or "ambiguous" in (denial_reason or "").lower() or "flagged" in (denial_reason or "").lower()
-
-    llm = _make_llm(model=APPEAL_MODEL, temperature=0.2, prefer_json=False)
-
-    try:
-        if is_flagged_case and evidence:
-            clarification_guidance = _get_ambiguity_clarification(evidence)
-            prompt = f"""You are a board-certified Clinical Pharmacist drafting a prior authorization clarification request.
-
-PATIENT: {patient_name}, DOB: {patient_dob}
-CURRENT BMI: {bmi_value if bmi_value is not None else "REQUIRES VERIFICATION"} kg/m²
-
-ISSUE: This prior authorization was flagged for manual review due to ambiguous terminology.
-AMBIGUOUS TERM FOUND: "{evidence}"
-
-{clarification_guidance}
-
-INSTRUCTIONS:
-Write a brief, focused letter that:
-1. States the medication (Wegovy/semaglutide) and indication (chronic weight management)
-2. Notes the patient's BMI (or requests a current BMI if not documented)
-3. Explains ONLY why the specific term "{evidence}" requires clarification
-4. States exactly what documentation or clarification is needed
-5. Does NOT list unrelated medical conditions
-
-Do NOT include markdown. Do NOT include placeholders in brackets.
-Use direct language appropriate for a clinical document."""
-        else:
-            prompt = f"""You are a board-certified Clinical Pharmacist drafting a prior authorization documentation guidance letter.
-
-PATIENT: {patient_name}, DOB: {patient_dob}
-BMI: {bmi_value if bmi_value is not None else "REQUIRES VERIFICATION"} kg/m²
-
-CURRENT STATUS:
-{denial_reason}
-
-INSTRUCTIONS:
-Write a professional letter that:
-1. States the medication being requested (Wegovy/semaglutide) and indication
-2. Summarizes only clinically relevant information
-3. Identifies what specific documentation is needed to meet criteria
-4. Closes professionally
-
-Do NOT include markdown. Do NOT include placeholders in brackets."""
-
-        resp = llm.invoke(prompt)
-
-        write_model_trace(
-            model_name=APPEAL_MODEL,
-            role="appeal_generator",
-            params={"temperature": 0.2},
-            required_ram_gb=AUDIT_MODEL_RAM,
-        )
-
-        text = str(resp.content or "").strip()
-
-        # Handle accidental JSON wrapper
-        if text.startswith("{") and "letter" in text[:80].lower():
-            try:
-                parsed = json.loads(text)
-                if isinstance(parsed, dict) and isinstance(parsed.get("letter"), str):
-                    text = parsed["letter"].strip()
-            except Exception as e:
-                logger.warning("Failed to parse JSON wrapper in appeal letter: %s", e)
-
-        if "\\n" in text:
-            text = text.replace("\\n", "\n")
-
-        if not text or len(text) < 120:
-            return None
-
-        # Must not contain "appeal"
-        if "appeal" in text.lower():
-            return None
-
-        return text
-
-    except Exception as e:
-        logger.error("Error generating appeal/clarification letter: %s", e)
-        return None
-
-
-def _generate_fallback_pa_template(patient_data: dict, reason: str, findings: dict) -> str:
-    """Generate a clinically-focused PA template when the LLM cannot produce one."""
-    name = str((patient_data or {}).get("name", "")).strip() or "Patient"
-    dob = str((patient_data or {}).get("dob", "")).strip() or ""
-    bmi = (findings or {}).get("bmi_numeric")
-    evidence = str((findings or {}).get("evidence_quoted", "")).strip()
-    verdict = str((findings or {}).get("verdict", "")).upper()
-
-    is_ambiguity_case = verdict == "MANUAL_REVIEW" or "ambiguous" in (reason or "").lower() or "flagged" in (reason or "").lower()
-
-    bmi_text = "Current BMI: REQUIRES VERIFICATION"
-    bmi_analysis = "BMI could not be reliably extracted. Please verify from chart."
-    if bmi is not None:
-        try:
-            bmi_val = float(bmi)
-            bmi_text = f"Current BMI: {bmi_val:.1f} kg/m²"
-            if bmi_val >= 30:
-                bmi_analysis = "Patient meets BMI threshold (≥30) for obesity pathway."
-            elif bmi_val >= 27:
-                bmi_analysis = "Patient meets BMI threshold (≥27) but requires documented qualifying comorbidity."
-            else:
-                bmi_analysis = "Patient BMI is below coverage threshold (<27). Coverage unlikely without exceptional circumstances."
-        except Exception as e:
-            logger.warning("Failed to parse BMI in fallback template: %s", e)
-
-    if is_ambiguity_case and evidence:
-        cond_text = f'FLAGGED TERM REQUIRING CLARIFICATION: "{evidence}"'
-    else:
-        cond_text = "Review chart for qualifying comorbidity (HTN, T2DM, dyslipidemia, OSA, ASCVD) if BMI is 27–29.9."
-
-    template = f"""PRIOR AUTHORIZATION DOCUMENTATION TEMPLATE — WEGOVY (SEMAGLUTIDE)
-Indication: Chronic weight management
-
-Patient: {name}
-Date of Birth: {dob}
-
-CLINICAL PROFILE:
-{bmi_text}
-Assessment: {bmi_analysis}
-
-{cond_text}
-
-CASE STATUS:
-{reason}
-
-NEXT STEPS:
-1) Ensure BMI is current and documented
-2) If BMI 27–29.9, document a clearly qualifying comorbidity (HTN, T2DM, dyslipidemia, OSA, ASCVD)
-3) Review for safety exclusions (MTC/MEN2 history, pregnancy/lactation, concurrent GLP-1/GLP-1-GIP)
-
-_____________________________________________
-Provider Signature / Date
-"""
-    return template
-
-
-# --- APPROVED LETTER GENERATOR ---
-def generate_approved_letter(patient_data: dict, approval_reasoning: str, findings: dict) -> str | None:
-    """
-    Generate a payer-ready Prior Authorization Request / Letter of Medical Necessity
-    for cases that meet criteria.
-
-    Output must be suitable for provider review/signature. No AI identity. No "appeal".
-    """
-    if not isinstance(patient_data, dict):
-        return None
-
-    try:
-        provider_ctx = _require_provider_context()
-    except Exception as e:
-        logger.error("Provider context not configured: %s", e)
-        return _generate_fallback_approved_letter(patient_data, approval_reasoning, findings)
-
-    patient_name = str(patient_data.get("name", "")).strip()
-    patient_dob = str(patient_data.get("dob", "")).strip()
-    patient_id = str(patient_data.get("patient_id", "")).strip()
-
-    if not patient_name or not patient_dob or not patient_id:
-        return None
-
-    bmi_value = (findings or {}).get("bmi_numeric")
-    if bmi_value is None:
-        return None
-
-    try:
-        bmi_value_f = float(bmi_value)
-    except Exception:
-        return None
-
-    comorbidity = str((findings or {}).get("comorbidity_category", "NONE") or "NONE").upper()
-
-    adult_obesity_diags = []
-    adult_overweight_diags = []
-    qualifying_obesity_icd10_codes = []
-    qualifying_obesity_icd_z_codes = []
-    qualifying_overweight_icd10_codes = []
-    qualifying_overweight_icd_z_codes = []
-
-    if bmi_value_f >= 30.0:
-        pathway = "BMI_30_PLUS"
-        adult_obesity_diags = ["obesity", "obes"]
-        qualifying_obesity_icd10_codes = ["E66.01", "E66.9", "E66.09", "E66.0", "E66.x"]
-        qualifying_obesity_icd_z_codes = ["Z68.27", "Z68.28", "Z68.29", "Z68.41", "Z68.42", "Z68.43", "Z68.44", "Z68.45", "Z68.x"]
-        qualifying_comorbidity = ""
-    else:
-        pathway = "BMI_27_29_WITH_COMORBIDITY"
-        adult_overweight_diags = ["overweight", "overwt"]
-        qualifying_overweight_icd10_codes = ["E66.3", "E66.x"]
-        qualifying_overweight_icd_z_codes = ["Z68.27", "Z68.28", "Z68.29", "Z68.x"]
-        qualifying_comorbidity = (
-            "Hypertension" if comorbidity == "HYPERTENSION" else ("Type 2 Diabetes Mellitus" if comorbidity == "DIABETES" else comorbidity.title())
-        )
-
-    letter_input = PARequestLetterInput(
-        patient_name=patient_name,
-        patient_dob=patient_dob,
-        patient_id=patient_id,
-        bmi_value=bmi_value_f,
-        qualifying_pathway=pathway,
-        adult_obesity_diags=adult_obesity_diags,
-        adult_overweight_diags=adult_overweight_diags,
-        qualifying_obesity_icd10_codes=qualifying_obesity_icd10_codes,
-        qualifying_obesity_icd_z_codes=qualifying_obesity_icd_z_codes,
-        qualifying_overweight_icd_z_codes=qualifying_overweight_icd_z_codes,
-        qualifying_overweight_icd10_codes=qualifying_overweight_icd10_codes,
-        qualifying_comorbidity=qualifying_comorbidity,
-        contraindications_checked=[
-            "pregnancy/lactation",
-            "MTC/MEN2 (personal/family history)",
-            "concurrent GLP-1/GLP-1-GIP therapy",
-            "pancreatitis history (if documented)",
-        ],
-        contraindications_found=[],
-        attachments=[
-            "Most recent vitals or BMI documentation",
-            "Problem list reflecting qualifying comorbidity (if applicable)",
-            "Medication list",
-        ],
-        found_diagnosis_string=(findings or {}).get("found_diagnosis_string"),
-        found_e66_code=(findings or {}).get("found_e66_code"),
-        found_z68_code=(findings or {}).get("found_z68_code"),
-        found_comorbidity_evidence=(findings or {}).get("found_comorbidity_evidence") or (findings or {}).get("evidence_quoted"),
-    )
-
-    llm = _make_llm(model=APPEAL_MODEL, temperature=0.0, prefer_json=True)
-
-    system = """You draft a payer-ready Prior Authorization Request / Letter of Medical Necessity for a PCP office.
-HARD RULES:
-- Draft for provider review and signature. Do not mention AI, automation, models, or internal systems.
-- Do NOT use the word "appeal". This is an initial PA request.
-- Do NOT say "approved" or "we approved". The provider is requesting authorization.
-- Do NOT invent facts, labs, diagnoses, prior therapies, dates, or contraindications. Use only the provided JSON.
-- Safety language must be non-absolute. Use: "No contraindications were identified in the reviewed record" if none found.
-- Output MUST be a single valid JSON object matching the schema. No markdown. No extra text.
-- IMPORTANT: You MUST explicitly list the following specific criteria values found in the patient record:
-  1. Documented BMI Value
-  2. Diagnosis String used (found_diagnosis_string)
-  3. ICD-10 E66 Code found (found_e66_code)
-  4. ICD-10 Z68 Code found (found_z68_code)
-  5. Qualifying Documented Comorbidity (found_comorbidity_evidence) - NOTE: If BMI >= 30, write "Not Applicable (BMI >= 30)". If found_comorbidity_evidence is missing/empty but BMI < 30, state "None Documented".
-  Include these in the 'criteria_bullets' section.
-
-STYLE:
-- Professional, concise, clinical-administrative tone.
-- One-page structure. Bullets where appropriate.
-
-OUTPUT JSON SCHEMA (exact keys):
-{
-  "recipient_org": "...",
-  "recipient_department": "...",
-  "attention_line": "...",
-  "subject_line": "...",
-  "opening_paragraph": "...",
-  "clinical_summary_bullets": ["..."],
-  "criteria_bullets": ["..."],
-  "safety_paragraph": "...",
-  "requested_action_paragraph": "...",
-  "attachments_bullets": ["..."]
-}
-"""
-
-    user = {
-        "provider_context": provider_ctx.model_dump(),
-        "letter_input": letter_input.model_dump(),
-        "approval_reasoning": approval_reasoning,
-    }
-
-    try:
-        resp = llm.invoke(
-            [
-                {"role": "system", "content": system},
-                {"role": "user", "content": json.dumps(user, ensure_ascii=True)},
-            ]
-        )
-
-        write_model_trace(
-            model_name=APPEAL_MODEL,
-            role="approved_letter_generator",
-            params={"temperature": 0.0, "format": "json"},
-            required_ram_gb=AUDIT_MODEL_RAM,
-        )
-
-        raw = str(resp.content or "").strip()
-        obj = _extract_json_object(raw)
-        draft = PARequestLetterDraft(**obj)
-
-        date_line = time.strftime("%Y-%m-%d")
-        provider_line = provider_ctx.provider_name + (f", {provider_ctx.provider_credentials}" if provider_ctx.provider_credentials else "")
-        practice_block = "\n".join(
-            [provider_line, provider_ctx.practice_name, f"NPI: {provider_ctx.npi}", f"Phone: {provider_ctx.phone}  Fax: {provider_ctx.fax}"]
-            + ([provider_ctx.address] if provider_ctx.address else [])
-        )
-
-        recipient_block = "\n".join([draft.recipient_department, f"Attn: {draft.attention_line}", draft.recipient_org])
-
-        def bullets(items: list[str]) -> str:
-            return "\n".join([f"- {str(i).strip()}" for i in items if str(i).strip()])
-
-        letter_text = f"""{practice_block}
-
-{date_line}
-
-{recipient_block}
-
-Subject: {draft.subject_line}
-
-Re: {letter_input.patient_name} (DOB: {letter_input.patient_dob}) | Patient ID: {letter_input.patient_id}
-
-Dear Medical Director,
-
-{draft.opening_paragraph}
-
-Clinical Summary:
-{bullets(draft.clinical_summary_bullets)}
-
-Medical Necessity & Coverage Criteria:
-{bullets(draft.criteria_bullets)}
-
-Safety Review:
-{draft.safety_paragraph}
-
-Requested Action:
-{draft.requested_action_paragraph}
-
-Attachments:
-{bullets(draft.attachments_bullets)}
-
-Sincerely,
-
-______________________________
-{provider_line}
-{provider_ctx.practice_name}
-"""
-
-        _guard_letter_text(letter_text)
-        return letter_text
-
-    except Exception as e:
-        logger.error("Error generating approved letter (structured): %s", e)
-        return _generate_fallback_approved_letter(patient_data, approval_reasoning, findings)
-
-
-def _generate_fallback_approved_letter(patient_data: dict, approval_reasoning: str, findings: dict) -> str:
-    """Generate a simple approval-request letter template when LLM fails or provider context missing."""
-    name = str((patient_data or {}).get("name", "")).strip() or "Patient"
-    dob = str((patient_data or {}).get("dob", "")).strip() or ""
-    patient_id = str((patient_data or {}).get("patient_id", "")).strip()
-    bmi = (findings or {}).get("bmi_numeric")
-    comorbidity = str((findings or {}).get("comorbidity_category", "NONE") or "NONE")
-
-    bmi_text = "[See chart]"
-    try:
-        if bmi is not None:
-            bmi_text = f"{float(bmi):.1f} kg/m²"
-    except Exception as e:
-        logger.warning("Failed to format BMI in fallback approved letter: %s", e)
-
-    template = f"""LETTER OF MEDICAL NECESSITY
-Prior Authorization Request — Wegovy (Semaglutide)
-
-To: Medical Director, Utilization Management
-
-RE: {name}
-DOB: {dob}
-Patient ID: {patient_id}
-
-Dear Medical Director,
-
-I am submitting this request for prior authorization coverage of Wegovy (semaglutide) for chronic weight management for the above-referenced patient.
-
-CLINICAL JUSTIFICATION:
-{approval_reasoning}
-
-Current BMI: {bmi_text}
-{f"Qualifying Comorbidity: {comorbidity}" if comorbidity and comorbidity.upper() != "NONE" else ""}
-
-SPECIFIC CRITERIA:
-- Diagnosis String: {findings.get('found_diagnosis_string', 'N/A')}
-- ICD-10 Code (E66): {findings.get('found_e66_code', 'N/A')}
-- BMI Z-Code (Z68): {findings.get('found_z68_code', 'N/A')}
-- Qualifying Comorbidity: {findings.get('found_comorbidity_evidence') if findings.get('bmi_numeric', 30) < 30 else "Not Applicable (BMI >= 30)"}
-
-I respectfully request authorization coverage consistent with the applicable policy criteria.
-
-Sincerely,
-
-_______________________________
-Prescriber Signature / Date
-"""
-    return template
-
-
-def _build_policy_summary(snapshot: dict) -> str:
-    lines = [
-        f"{snapshot['title']} (Policy ID: {snapshot['policy_id']}, Effective {snapshot['effective_date']})",
-        f"Scope: {snapshot['scope']} (excluded: {', '.join(snapshot['excluded_scopes'])})",
-        "Eligibility:",
-    ]
-    for pathway in snapshot["eligibility"]["pathways"]:
-        bmi_min = pathway["bmi_min"]
-        bmi_max = pathway.get("bmi_max")
-        bmi_clause = f"BMI ≥ {bmi_min}" if bmi_max is None else f"BMI ≥ {bmi_min} and < {bmi_max}"
-        diag_note = "requires documented diagnosis strings"
-        line = f"- {pathway['name']}: {bmi_clause}; {diag_note}"
-        if pathway.get("required_comorbidity_categories"):
-            labels = [
-                snapshot["comorbidities"][key]["label"]
-                for key in pathway["required_comorbidity_categories"]
-                if key in snapshot["comorbidities"]
-            ]
-            if labels:
-                line = f"{line}; comorbidity: {', '.join(labels)}"
-        lines.append(line)
-    lines.append("Safety exclusions:")
-    for exclusion in snapshot["safety_exclusions"]:
-        lines.append(f"- {exclusion['category']}")
-    lines.append("No concurrent GLP-1 / GLP-1-GIP agents: " + ", ".join(snapshot["drug_conflicts"]["glp1_or_glp1_gip_agents"]))
-    return "\n".join(lines)
-
-
-# --- STATIC POLICY FALLBACK (used when RAG unavailable) ---
-POLICY_SUMMARY_TEXT = _build_policy_summary(SNAPSHOT)
-_STATIC_POLICY_FALLBACK = POLICY_SUMMARY_TEXT
-
-
-def _apply_score_floor(
-    scored_docs: list[tuple[Document, float]],
-    floor: float,
-    min_docs: int,
-) -> tuple[list[Document], list[float]]:
-    """
-    Filter by BCE score floor while enforcing a minimum number of documents.
-
-    Returns (filtered_docs, filtered_scores) in the same order.
-    """
-    if not scored_docs:
-        return [], []
-
-    docs, scores = zip(*scored_docs)
-    docs = list(docs)
-    scores = [float(s) for s in scores]
-
-    filtered_docs: list[Document] = []
-    filtered_scores: list[float] = []
-    for d, s in zip(docs, scores):
-        if s >= floor:
-            filtered_docs.append(d)
-            filtered_scores.append(s)
-
-    if len(filtered_docs) < min_docs:
-        filtered_docs = docs[:min_docs]
-        filtered_scores = scores[:min_docs]
-
-    return filtered_docs, filtered_scores
-
-
-def _policy_bucket(section: str, policy_path: str | None) -> int:
-    """
-    Assign a coarse priority bucket to a policy section.
-    Lower number = higher priority for LLM evidence.
-    """
-    sec = (section or "").lower()
-    path = (policy_path or "").upper() if policy_path else ""
-
-    if path == "SAFETY_EXCLUSION":
-        if sec.startswith("drug_conflicts:"):
-            return 0
-        if sec.startswith("safety_exclusions:"):
-            return 1
-        if sec.startswith("documentation:"):
-            return 3
-        return 2
-
-    if path == "BMI30_OBESITY":
-        if sec.startswith("documentation:"):
-            return 0
-        if sec == "eligibility:pathway1":
-            return 1
-        if sec == "diagnosis:obesity_strings":
-            return 2
-        if sec.startswith("comorbidity:"):
-            return 3
-        if sec.startswith("safety_exclusions:") or sec.startswith("drug_conflicts:"):
-            return 4
-        return 5
-
-    if path == "BMI27_COMORBIDITY":
-        if sec.startswith("documentation:"):
-            return 0
-        if sec == "eligibility:pathway2":
-            return 1
-        if sec.startswith("comorbidity:"):
-            return 2
-        if sec == "diagnosis:overweight_strings":
-            return 3
-        if sec.startswith("safety_exclusions:") or sec.startswith("drug_conflicts:"):
-            return 4
-        return 5
-
-    if sec.startswith("documentation:"):
-        return 0
-    if sec.startswith("eligibility:"):
-        return 1
-    if sec.startswith("comorbidity:") or sec.startswith("diagnosis:"):
-        return 2
-    if sec.startswith("safety_exclusions:") or sec.startswith("drug_conflicts:"):
-        return 3
-    if sec.startswith("ambiguity:"):
-        return 4
-    return 5
-
-
-def _policy_aware_sort_docs(docs: list[Document], scores: list[float], policy_path: str | None) -> list[Document]:
-    """
-    Reorder documents so the most policy-relevant sections for the current
-    deterministic policy path appear first, while respecting BCE scores
-    within each bucket.
-    """
-    if not docs:
-        return []
-
-    indexed: list[tuple[int, float, int, Document]] = []
-    for idx, (d, s) in enumerate(zip(docs, scores)):
-        section = (d.metadata or {}).get("section") or ""
-        bucket = _policy_bucket(str(section), policy_path)
-        indexed.append((bucket, -float(s), idx, d))
-
-    indexed.sort(key=lambda t: (t[0], t[1], t[2]))
-    return [t[3] for t in indexed]
-
-
-# --- RETRIEVAL NODE HELPERS ---
-def _build_policy_query(det_result: Any, patient_data: dict | None, drug: str) -> str:
-    drug = drug or "Wegovy"
-    if det_result:
-        bmi = getattr(det_result, "bmi_numeric", None)
-        path = getattr(det_result, "policy_path", "UNKNOWN")
-        verdict = getattr(det_result, "verdict", "UNKNOWN")
-        category = getattr(det_result, "comorbidity_category", "NONE")
-        safety = getattr(det_result, "safety_flag", "CLEAR")
-        return (
-            f"{drug} prior authorization policy evidence for {path} with verdict {verdict}; "
-            f"BMI {bmi}; comorbidity {category}; safety {safety}. "
-            "Return diagnosis strings (including ICD-10/Z-codes), comorbidity rules, safety exclusions, and documentation requirements."
-        )
-    bmi_hint = (patient_data or {}).get("latest_bmi") if patient_data else "unknown"
-    return (
-        f"{drug} prior authorization eligibility criteria and safety exclusions. "
-        f"Patient BMI hint: {bmi_hint}. Include ambiguity handling and documentation requirements."
-    )
-
-
-def _format_policy_evidence(docs: list[Document]) -> str:
-    if not docs:
-        return _STATIC_POLICY_FALLBACK
-    blocks: list[str] = []
-    for idx, doc in enumerate(docs, start=1):
-        section = (doc.metadata or {}).get("section", "unknown")
-        blocks.append(f"=== POLICY EVIDENCE {idx} ===\n[section: {section}]\n{doc.page_content.strip()}")
-    return "\n\n".join(blocks)
-
-
-def retrieve_policy(state: AgentState) -> dict:
-    """
-    Retrieve the active Wegovy policy from ChromaDB vector store if available,
-    otherwise fall back to static policy text.
-    """
-    drug = state.get("drug_requested", "Wegovy")
-    logger.info("[RAG] Retrieving policy for %s", drug)
-
-    patient_id = state.get("patient_id")
-    patient_data = state.get("patient_data") or (look_up_patient_data(patient_id) if patient_id else None)
-
-    det_result = evaluate_eligibility(patient_data) if patient_data else None
-
-    policy_text: str | None = None
-    policy_docs: list[Document] = []
-
-    if os.path.exists("./chroma_db"):
-        try:
-            from langchain_chroma import Chroma
-            from langchain_ollama import OllamaEmbeddings
-
-            embedding_fn = OllamaEmbeddings(model=EMBED_MODEL)
-            vectordb = Chroma(
-                persist_directory="./chroma_db",
-                embedding_function=embedding_fn,
-                collection_name="priorauth_policies",
-            )
-
-            query = _build_policy_query(det_result, patient_data, drug)
-
-            t0 = time.perf_counter()
-            vector_docs: list[Document] = vectordb.similarity_search(
-                query,
-                k=PA_RAG_K_VECTOR,
-                filter={"policy_id": str(ACTIVE_POLICY_ID)},
-            )
-            vector_ms = (time.perf_counter() - t0) * 1000.0
-            logger.info("[RAG] Vector search returned %d docs (%.1f ms)", len(vector_docs), vector_ms)
-
-            if vector_docs:
-                if ENABLE_RERANK and len(vector_docs) > 1:
-                    try:
-                        t1 = time.perf_counter()
-                        scored = rerank_bce(query, vector_docs)
-                        rerank_ms = (time.perf_counter() - t1) * 1000.0
-                        logger.info(
-                            "[RAG] BCE reranked %d docs (%.1f ms). Top 5 scores: %s",
-                            len(scored),
-                            rerank_ms,
-                            [f"{s:.3f}" for _, s in scored[:5]],
-                        )
-
-                        filtered_docs, filtered_scores = _apply_score_floor(
-                            scored_docs=scored,
-                            floor=RAG_SCORE_FLOOR,
-                            min_docs=RAG_MIN_DOCS,
-                        )
-
-                        policy_path = getattr(det_result, "policy_path", None) if det_result else None
-                        filtered_docs = _policy_aware_sort_docs(filtered_docs, filtered_scores, policy_path=policy_path)
-
-                        policy_docs = filtered_docs[:PA_RAG_TOP_K_DOCS]
-                    except Exception as e:
-                        logger.warning("[RAG] Rerank failed; falling back to vector order: %s", e)
-                        policy_docs = vector_docs[:PA_RAG_TOP_K_DOCS]
-                else:
-                    policy_docs = vector_docs[:PA_RAG_TOP_K_DOCS]
-
-                policy_text = _format_policy_evidence(policy_docs)
-                logger.info("[RAG] Using %d policy atoms for LLM (%d chars)", len(policy_docs), len(policy_text))
-            else:
-                logger.warning("[RAG] ChromaDB returned no results, using fallback")
-
-        except ImportError as e:
-            logger.warning("[RAG] ChromaDB/embeddings not available: %s", e)
-        except Exception as e:
-            logger.warning("[RAG] Vector retrieval failed: %s", e)
-
-    if not policy_text:
-        policy_text = _STATIC_POLICY_FALLBACK
-        logger.info("[RAG] Using static policy fallback")
-
-    write_model_trace(
-        model_name=EMBED_MODEL,
-        role="policy_retrieval_embed",
-        params={
-            "pa_enable_rerank": ENABLE_RERANK,
-            "pa_rerank_model": RERANK_MODEL if ENABLE_RERANK else None,
-            "pa_rerank_device": os.getenv("PA_RERANK_DEVICE", RERANK_DEVICE_DEFAULT),
-            "k_vector": PA_RAG_K_VECTOR,
-            "top_k_docs": PA_RAG_TOP_K_DOCS,
-            "score_floor": RAG_SCORE_FLOOR,
-            "min_docs": RAG_MIN_DOCS,
-        },
-        required_ram_gb=4,
-    )
-
-    return {
-        "policy_text": policy_text,
-        "policy_docs": policy_docs,
-        "patient_data": patient_data,
-        "deterministic_decision": det_result.to_dict() if det_result else None,
-    }
-
-
-# --- SMALL HELPER: ROBUST JSON EXTRACTION FROM LLM OUTPUT ---
-def _extract_json_object(text: str) -> dict:
-    """Try very hard to extract a single JSON object from a model response."""
-    raw = str(text or "").strip()
-
-    if "```json" in raw:
-        raw = raw.split("```json", 1)[1]
-        if "```" in raw:
-            raw = raw.split("```", 1)[0]
-        raw = raw.strip()
-    elif "```" in raw:
-        raw = raw.split("```", 1)[1]
-        if "```" in raw:
-            raw = raw.split("```", 1)[0]
-        raw = raw.strip()
-
-    try:
-        obj = json.loads(raw)
-        if isinstance(obj, dict):
-            return obj
-    except Exception:
-        # Fallthrough to robust extraction
-        pass
-
-    first_brace = raw.find("{")
-    last_brace = raw.rfind("}")
-    candidate = raw[first_brace : last_brace + 1].strip() if (first_brace != -1 and last_brace != -1 and last_brace > first_brace) else raw
-
-    obj = json.loads(candidate)
-    if not isinstance(obj, dict):
-        raise json.JSONDecodeError("Parsed JSON is not an object.", candidate, 0)
-    return obj
-
-
 # --- PYDANTIC SCHEMA FOR LLM OUTPUT VALIDATION ---
 class AuditResult(BaseModel):
     """Strict-ish schema for LLM audit output validation (LLM output is advisory only)."""
@@ -1259,6 +474,16 @@ class AuditResult(BaseModel):
         return v
 
 
+def _audit_result_schema() -> dict:
+    schema = AuditResult.model_json_schema()
+    schema["required"] = list(AuditResult.model_fields.keys())
+    schema["additionalProperties"] = False
+    return schema
+
+
+AUDIT_RESULT_SCHEMA = _audit_result_schema()
+
+
 def _merge_deterministic_over_llm(det: dict, llm_obj: Optional[dict]) -> dict:
     """
     Deterministic engine is the source of truth for:
@@ -1284,6 +509,223 @@ def _merge_deterministic_over_llm(det: dict, llm_obj: Optional[dict]) -> dict:
     out.setdefault("safety_exclusion_code", None)
     out.setdefault("ambiguity_code", None)
     return out
+
+
+def _build_policy_query(det_result: Any, patient_data: dict, drug_requested: str) -> str:
+    bmi = getattr(det_result, "bmi_numeric", None)
+    verdict = getattr(det_result, "verdict", "UNKNOWN")
+    policy_path = getattr(det_result, "policy_path", "UNKNOWN")
+    comorbidity = getattr(det_result, "comorbidity_category", "NONE")
+    evidence = getattr(det_result, "evidence_quoted", "")
+
+    conds = patient_data.get("conditions", []) or []
+    if conds and isinstance(conds[0], dict):
+        cond_names = [str(c.get("condition_name", "")).strip() for c in conds if str(c.get("condition_name", "")).strip()]
+    else:
+        cond_names = [str(c).strip() for c in conds if str(c).strip()]
+
+    cond_snippet = ", ".join(cond_names[:8])
+    bmi_str = f"{bmi:.1f}" if isinstance(bmi, (int, float)) else "unknown"
+
+    return (
+        f"{drug_requested} prior authorization policy. "
+        f"BMI {bmi_str}. Verdict {verdict}. Policy path {policy_path}. "
+        f"Comorbidity {comorbidity}. Evidence {evidence}. "
+        f"Conditions: {cond_snippet}"
+    ).strip()
+
+
+def _format_policy_evidence(docs: list[Document]) -> str:
+    if not docs:
+        return _STATIC_POLICY_FALLBACK
+
+    chunks: list[str] = []
+    for idx, doc in enumerate(docs, start=1):
+        meta = doc.metadata or {}
+        section = meta.get("section", "unknown")
+        policy_id = meta.get("policy_id", "")
+        header = f"[{idx}] section={section}"
+        if policy_id:
+            header += f" policy_id={policy_id}"
+        content = str(doc.page_content or "").strip()
+        chunks.append(f"{header}\n{content}".strip())
+    return "\n\n".join(chunks).strip()
+
+
+def _extract_json_object(raw: str) -> dict:
+    raw = (raw or "").strip()
+    if raw.startswith("```"):
+        raw = raw.split("```", 1)[1]
+        if "```" in raw:
+            raw = raw.split("```", 1)[0]
+        raw = raw.strip()
+
+    try:
+        obj = json.loads(raw)
+        if isinstance(obj, dict):
+            return obj
+    except Exception:
+        pass
+
+    first_brace = raw.find("{")
+    last_brace = raw.rfind("}")
+    candidate = (
+        raw[first_brace : last_brace + 1].strip()
+        if (first_brace != -1 and last_brace != -1 and last_brace > first_brace)
+        else raw
+    )
+
+    obj = json.loads(candidate)
+    if not isinstance(obj, dict):
+        raise json.JSONDecodeError("Parsed JSON is not an object.", candidate, 0)
+    return obj
+
+
+def _apply_score_floor(scored_docs: list[tuple[Document, float]], floor: float, min_docs: int) -> list[Document]:
+    if not scored_docs:
+        return []
+    docs, scores = zip(*scored_docs)
+    docs = list(docs)
+    scores = list(scores)
+
+    filtered: list[Document] = []
+    for d, s in zip(docs, scores):
+        if float(s) >= floor:
+            filtered.append(d)
+    if len(filtered) < min_docs:
+        filtered = docs[:min_docs]
+    return filtered
+
+
+def _filter_docs_for_policy_path(docs: list[Document], policy_path: str | None) -> list[Document]:
+    if not docs or not policy_path:
+        return docs
+
+    def section(d: Document) -> str:
+        return str((d.metadata or {}).get("section") or "")
+
+    if policy_path == "BMI30_OBESITY":
+        allowed_prefixes = (
+            "documentation:requirements",
+            "eligibility:pathway1",
+            "diagnosis:obesity_strings",
+        )
+        priority_order = [
+            "eligibility:pathway1",
+            "diagnosis:obesity_strings",
+            "documentation:requirements",
+        ]
+    elif policy_path == "BMI27_COMORBIDITY":
+        allowed_prefixes = (
+            "documentation:requirements",
+            "eligibility:pathway2",
+            "diagnosis:overweight_strings",
+            "comorbidity:",
+        )
+        priority_order = [
+            "eligibility:pathway2",
+            "comorbidity:hypertension",
+            "diagnosis:overweight_strings",
+            "documentation:requirements",
+        ]
+    elif policy_path == "SAFETY_EXCLUSION":
+        allowed_prefixes = (
+            "safety_exclusions:",
+            "drug_conflicts:glp1_glp1_gip",
+        )
+        priority_order = [
+            "safety_exclusions:mtc_men2",
+            "safety_exclusions:pregnancy_nursing",
+            "safety_exclusions:concurrent_glp1",
+            "drug_conflicts:glp1_glp1_gip",
+        ]
+    elif policy_path == "AMBIGUITY_MANUAL_REVIEW":
+        allowed_prefixes = (
+            "ambiguity:",
+            "eligibility:",
+            "diagnosis:obesity_strings",
+            "diagnosis:overweight_strings",
+            "documentation:requirements",
+        )
+        priority_order = [
+            "ambiguity:",
+            "eligibility:pathway1",
+            "eligibility:pathway2",
+            "diagnosis:obesity_strings",
+            "diagnosis:overweight_strings",
+            "documentation:requirements",
+        ]
+    else:
+        return docs
+
+    filtered = [d for d in docs if section(d).startswith(allowed_prefixes)]
+    if not filtered:
+        return docs
+
+    def priority_key(doc: Document) -> int:
+        sec = section(doc)
+        for idx, prefix in enumerate(priority_order):
+            if sec.startswith(prefix):
+                return idx
+        return len(priority_order)
+
+    return sorted(filtered, key=priority_key)
+
+
+def _ensure_vectorstore():
+    if not os.path.isdir(PERSIST_DIR):
+        raise RuntimeError(
+            f"ChromaDB directory '{PERSIST_DIR}' not found. Run setup_rag.py to build the policy index."
+        )
+    from langchain_chroma import Chroma
+    from langchain_ollama import OllamaEmbeddings
+
+    embeddings = OllamaEmbeddings(model=EMBED_MODEL)
+    return Chroma(
+        persist_directory=PERSIST_DIR,
+        collection_name=COLLECTION_NAME,
+        embedding_function=embeddings,
+    )
+
+
+def retrieve_policy(state: AgentState) -> dict:
+    logger.info("[RAG] Retrieving policy context for %s", state.get("patient_id", "unknown"))
+
+    patient_id = state.get("patient_id")
+    p_data = state.get("patient_data") or (look_up_patient_data(patient_id) if patient_id else None)
+    if not p_data:
+        return {"patient_data": None, "policy_text": _STATIC_POLICY_FALLBACK, "policy_docs": []}
+
+    det_result = evaluate_eligibility(p_data)
+    drug_requested = str(state.get("drug_requested") or "Wegovy")
+    query = _build_policy_query(det_result, p_data, drug_requested)
+
+    docs: list[Document] = []
+    try:
+        vectordb = _ensure_vectorstore()
+        docs = vectordb.similarity_search(
+            query,
+            k=PA_RAG_K_VECTOR,
+            filter={"policy_id": ACTIVE_POLICY_ID},
+        )
+        if ENABLE_RERANK and docs:
+            scored = rerank_bce(query, docs)
+            if not scored:
+                scored = [(d, 0.0) for d in docs]
+            filtered_docs = _apply_score_floor(scored, RAG_SCORE_FLOOR, RAG_MIN_DOCS)
+            docs = _filter_docs_for_policy_path(filtered_docs, getattr(det_result, "policy_path", None))
+    except Exception as e:
+        logger.warning("Policy retrieval failed; using static fallback: %s", e)
+        docs = []
+
+    docs = docs[:PA_RAG_TOP_K_DOCS] if docs else []
+    policy_text = _format_policy_evidence(docs)
+
+    return {
+        "patient_data": p_data,
+        "policy_docs": docs,
+        "policy_text": policy_text,
+    }
 
 
 # --- CLINICAL AUDIT NODE ---
@@ -1320,7 +762,13 @@ def clinical_audit(state: AgentState) -> dict:
         det_bmi = _parse_bmi(p_data.get("latest_bmi"))
         det_bmi_str = str(det_bmi) if det_bmi is not None else "null"
 
-        llm = _make_llm(model=AUDIT_MODEL, temperature=0, prefer_json=True, options=AUDIT_MODEL_OPTS)
+        llm = _make_llm(
+            model=AUDIT_MODEL,
+            temperature=0,
+            prefer_json=True,
+            options=AUDIT_MODEL_OPTS,
+            format_schema=AUDIT_RESULT_SCHEMA,
+        )
 
         system_prompt = """
 You are a Senior Utilization Review Medical Director. Your job is to summarize the eligibility logic and evidence.
@@ -1425,6 +873,16 @@ def make_decision(state: AgentState) -> dict:
             return f"BMI {bmi:.2f}. {text}".strip()
         return text
 
+    def _apply_letter_result(letter_res: Any) -> None:
+        nonlocal appeal_letter, appeal_note
+        if isinstance(letter_res, LetterResult):
+            if letter_res.letter:
+                appeal_letter = letter_res.letter
+            if letter_res.note:
+                appeal_note = letter_res.note
+        elif isinstance(letter_res, str) and letter_res.strip():
+            appeal_letter = letter_res
+
     if verdict == "APPROVED":
         final_status = "APPROVED"
         reason = with_bmi_prefix(reasoning_src or "Meets coverage criteria under policy.")
@@ -1432,8 +890,7 @@ def make_decision(state: AgentState) -> dict:
         # Generate a payer-ready PA request letter for approvals
         approval_reasoning = reasoning_src or reason
         approved_letter = generate_approved_letter(p_data, approval_reasoning, f)
-        if approved_letter:
-            appeal_letter = approved_letter  # keep key name for backward compatibility
+        _apply_letter_result(approved_letter)
 
     elif verdict == "DENIED_SAFETY":
         final_status = "DENIED"
@@ -1450,7 +907,8 @@ def make_decision(state: AgentState) -> dict:
         else:
             reason = with_bmi_prefix(f"Provider action required. {reasoning_src}".strip())
 
-        appeal_letter = generate_appeal_letter(p_data, reason, f) or _generate_fallback_pa_template(p_data, reason, f)
+        appeal_result = generate_appeal_letter(p_data, reason, f)
+        _apply_letter_result(appeal_result)
 
     elif verdict == "DENIED_CLINICAL":
         final_status = "DENIED"

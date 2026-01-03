@@ -28,20 +28,29 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements.lock
 
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --no-cache-dir -r requirements-ci.txt
+          python -m pip install -r requirements.lock
 
-      - name: Run Tests with Coverage
-        # Skips slow LLM tests and tests requiring Ollama (not available in CI)
-        # Uses pytest markers to exclude: slow, requires_ollama, requires_chromadb
+      - name: Verify Dependencies
         run: |
-          pytest tests/ -v --cov=. --cov-report=xml \
-            --ignore=tests/test_rag_rerank_sanity.py \
-            --ignore=tests/test_rag_sections.py \
-            -m "not slow"
+          python -m pip check
+
+      - name: Byte-compile
+        run: |
+          python -m compileall -q .
+
+      - name: Run Tests
+        run: |
+          pytest -q
+
+      - name: Run Coverage
+        run: |
+          pytest -q --cov=. --cov-report=xml
 
       - name: Verify Policy Snapshot Syntax
         # Ensures policy snapshot is valid JSON
