@@ -13,7 +13,7 @@ The deterministic policy engine is the system of record for eligibility decision
 - Reranker: BCE reranker (`PA_ENABLE_RERANK=true` by default) with model `PA_RERANK_MODEL` (default `maidalun1020/bce-reranker-base_v1`) and device `PA_RERANK_DEVICE` (default `cuda`).
 
 ## LLM model inventory (custom Modelfiles)
-Defaults come from `config.py` and the Modelfiles in `models/`.
+Defaults come from `src/priorauth/config.py` and the Modelfiles in `models/`.
 
 - `mistral` → `pa-audit-mistral`
   - Base: `mistral-nemo:latest`
@@ -31,7 +31,7 @@ Defaults come from `config.py` and the Modelfiles in `models/`.
   - Base: `hf.co/bartowski/nvidia_Nemotron-Cascade-8B-GGUF:Q4_K_M`
   - Params: `num_ctx=4096`, `num_predict=768`, `temperature=0.2`, `top_p=0.9`, `top_k=20`, `repeat_penalty=1.1`, `repeat_last_n=256`, `seed=42`
 
-If `PA_USE_RAW_MODELS=true`, the raw upstream models in `config.py` are used instead of the custom Modelfiles.
+If `PA_USE_RAW_MODELS=true`, the raw upstream models in `src/priorauth/config.py` are used instead of the custom Modelfiles.
 
 ## Scenario manifest fields
 `output/scenario_manifest.json` (also `tests/fixtures/baselines/v0_8/scenario_manifest.json`) includes:
@@ -41,15 +41,15 @@ If `PA_USE_RAW_MODELS=true`, the raw upstream models in `config.py` are used ins
   `obs_date`, `med_date`, `onset_date`, `injected_bmi`, `injected_height_cm`, `injected_weight_kg`,
   `injected_condition`, `injected_med`, `wegovy_injected`, `bmi_deleted`, `height_deleted`, `weight_deleted`, `seed`
 
-## Benchmark summary (local run)
-The benchmark harness is implemented in `src/priorauth/apps/agent/benchmark.py`. The most recent runs used local Ollama with reference-year filtering enabled in the benchmark data loader; sample sizes reflect the requested coverage (nemo8b 200, qwen25 100, qwen3/mistral 50).
+## Benchmark evidence
+The benchmark harness is implemented in `src/priorauth/apps/agent/benchmark.py`. For the latest recorded run, see `reports/benchmark.txt`. RAG/rerank sanity evidence is tracked in `reports/rag_rerank_sanity.txt`, and JSON parse notes live in `reports/llm_audit_json_debug.md`.
 
-RAG/rerank sanity checks ran against the Wegovy policy index and passed 6/6 scenarios with coverage_ok and priority_ok (see `reports/rag_rerank_sanity.txt`).
+Use this template to document benchmark evidence after a run:
 
 | Run | Sample size | Avg latency | JSON validity | Citation correctness | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Deterministic (nemo8b run) | 200 | 11.46 ms | n/a | n/a | Synthetic Wegovy cohort; bucket agreement 100% |
-| LLM (nemo8b) | 200 | 2335 ms | n/a | n/a | Agreement 100% |
-| LLM (qwen25) | 100 | 37240 ms | n/a | n/a | Agreement 100% |
-| LLM (mistral) | 50 | 2917 ms | n/a | n/a | Agreement 100% |
-| LLM (qwen3) | 50 | 66904 ms | n/a | n/a | Agreement 100%; audit JSON parse warnings observed (see reports/llm_audit_json_debug.md) |
+| Deterministic | TBD | TBD | n/a | n/a | Update from `reports/benchmark.txt` |
+| LLM (nemo8b) | TBD | TBD | TBD | TBD | Update from `reports/benchmark.txt` |
+| LLM (qwen25) | TBD | TBD | TBD | TBD | Update from `reports/benchmark.txt` |
+| LLM (mistral) | TBD | TBD | TBD | TBD | Update from `reports/benchmark.txt` |
+| LLM (qwen3) | TBD | TBD | TBD | TBD | Update from `reports/benchmark.txt` |

@@ -13,9 +13,9 @@ The system is designed as a **pipeline-driven processing graph**, utilizing `Lan
 ### Design Pattern: The "Split-Brain" Controller
 The architecture explicitly divides responsibility:
 1.  **System 1 (Deterministic):** Fast, rule-based execution. Parses structured text, regex matches medical codes (ICD-10/LOINC), and enforces "Hard Stop" safety exclusions.
-    *   *Implemented in:* `policy_engine.py`
+    *   *Implemented in:* `src/priorauth/policy_engine.py`
 2.  **System 2 (Probabilistic):** Slow, deliberative reasoning. Synthesizes unstructured clinical notes, extracts intent, and maps complex patient histories to policy criteria.
-    *   *Implemented in:* `agent_logic.py` (Audit/Reasoning Nodes)
+    *   *Implemented in:* `src/priorauth/agent_logic.py` (Audit/Reasoning Nodes)
 
 ---
 
@@ -37,7 +37,7 @@ The architecture explicitly divides responsibility:
 *   **Component**: **Hybrid RAG**. Uses MedEmbed vector similarity (k=25 by default) with optional BCE reranking (`BCEmbedding`) before selecting the top-k policy atoms (k=8 by default).
 *   **Why**: standard embeddings can miss nuanced medical negation (e.g., "History of depression" vs. "No history of depression"). Reranking reduces distractors when enabled.
 
-#### 3. The Agentic Core (`agent_logic.py`)
+#### 3. The Agentic Core (`src/priorauth/agent_logic.py`)
 *   **Responsibility**: Orchestration.
 *   **Pattern**: State Machine (`LangGraph`).
 *   **Nodes**:
@@ -56,10 +56,10 @@ The architecture explicitly divides responsibility:
 
 ### ADR-001: Hybrid Neuro-Symbolic Verification ("Split-Brain")
 *   **Context**: Clinical policies typically contain hard exclusions (e.g., "Contraindicated in Pregnancy"). LLMs are non-deterministic and can miss these or be "convinced" to overlook them via prompt injection.
-*   **Decision**: Implement a parallel, deterministic verification layer (`policy_engine.py`) that runs *after* the LLM reasoning to validate the verdict.
+*   **Decision**: Implement a parallel, deterministic verification layer (`src/priorauth/policy_engine.py`) that runs *after* the LLM reasoning to validate the verdict.
 *   **Trade-off**:
     *   *Pro*: Mathematically guaranteed safety for known exclusions.
-    *   *Con*: Code duplication. Logic for "Pregnancy" exists in both the Policy text (for LLM) and Python constants (for Engine). mitigated via `policy_utils.py` centralization.
+    *   *Con*: Code duplication. Logic for "Pregnancy" exists in both the Policy text (for LLM) and Python constants (for Engine). mitigated via `src/priorauth/policy_utils.py` centralization.
 
 ### ADR-002: Two-Stage RAG (Retrieval + Optional Reranking)
 *   **Context**: Medical policies are dense. A simple top-k vector search often retrieves irrelevant sections that share keywords but not semantic relevance.
@@ -126,4 +126,4 @@ To scale this system 100x (from Batch CSV to Real-time API):
     *   Decouple ingestion from processing. Use `Celery` + `Redis` to handle Authorizations asynchronously. The `src/priorauth/apps/agent/batch_runner.py` loop becomes a Producer; the Agent becomes a Consumer.
 3.  **Model Serving**:
     *   Move local `Ollama` inference to a dedicated Inference Server (e.g., vLLM or TGI) to handle concurrent LLM requests with higher throughput.
-    *   The `agent_logic.py` would call an HTTP endpoint for generation rather than invoking a local library.
+    *   The `src/priorauth/agent_logic.py` would call an HTTP endpoint for generation rather than invoking a local library.

@@ -1219,7 +1219,7 @@ tests/fixtures/baselines/v0_8/fhir/Hilma831_Jacquelyne425_Flatley871_718d8dbe-4b
 ## CI workflows
 
 ## Docker
-Dockerfile
+docker/Dockerfile
 
 ## Shell scripts
 models/build_models.sh
@@ -1235,7 +1235,7 @@ SECURITY.md
 README.md
 REPRODUCIBILITY.md
 ARCHITECTURE.md
-dashboard/README.md
+apps/ui/README.md
 
 ## Schemas
 schemas/dashboard_data.schema.json

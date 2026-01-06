@@ -1,6 +1,6 @@
 # PriorAuth Dashboard (React + Vite)
 
-This React/Vite app renders the outputs produced by `batch_runner.py`. After each batch run, the backend automatically mirrors `dashboard_data.json`, `governance_report.json`, and `.last_model_trace.json` into this folder’s `public/` directory so the UI always reflects the latest snapshot—no manual `cp` required.
+This React/Vite app renders the outputs produced by `src/priorauth/apps/agent/batch_runner.py`. After each batch run, the backend automatically mirrors `dashboard_data.json`, `governance_report.json`, and `.last_model_trace.json` into this folder’s `public/` directory so the UI always reflects the latest snapshot—no manual `cp` required.
 
 ## Metric Definitions
 
