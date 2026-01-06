@@ -1,7 +1,7 @@
 # Repo Readiness Report
 
 ## Summary
-Phase 3 checks were re-run after the refactor (compileall, pytest, and verification scripts). Docker/socket/offline and benchmark evidence remains in `reports/` from prior runs and was not re-run in this update.
+Phase 3 checks were re-run after the refactor (compileall, pytest, and verification scripts). Docker CPU/CUDA builds and tests were re-run; socket/offline and benchmark evidence remains in `reports/` from prior runs and was not re-run in this update.
 
 ## Evidence (commands + outputs)
 - Baseline toolchain: `reports/baseline.md`
@@ -49,12 +49,12 @@ Phase 3 checks were re-run after the refactor (compileall, pytest, and verificat
 - `tests/verify_code_enforcement.py` ran successfully (see `reports/verify_code_enforcement.txt`).
 - `python debug_check.py` ran (see `reports/debug_check.txt`).
 - `python repo_audit.py` ran (see `reports/repo_audit.txt`).
+- Docker CPU pytest: 265 passed, 1 skipped (see `reports/docker_test_cpu.txt`).
+- Docker CUDA pytest: 265 passed, 1 skipped, 2 warnings (see `reports/docker_test_cuda.txt`).
 - Docker socket/offline tests were not re-run in this update (see `reports/offline_socket_tests_docker.txt`).
 
 ## Prior evidence (not re-run in this update)
 - Offline-mode standalone test run (see `reports/offline_mode_tests.txt`).
-- Dockerized pytest CPU/CUDA runs (see `reports/docker_test_cpu.txt`, `reports/docker_test_cuda.txt`).
-- Docker CPU/CUDA builds (see `reports/docker_build_cpu.txt`, `reports/docker_build_cuda.txt`).
 - Docker socket/offline tests (see `reports/offline_socket_tests_docker.txt`).
 - Batch runner + governance audit (see `reports/batch_runner.txt`).
 - Benchmarks + LLM benchmarks (see `reports/benchmark.txt`, `reports/benchmark_*.txt`).
@@ -64,7 +64,7 @@ Phase 3 checks were re-run after the refactor (compileall, pytest, and verificat
 - `conda info` failed in this environment due to a permission error (see `reports/baseline.md`).
 - Default Docker image is CPU-only; CUDA build is larger (see `reports/docker_image_cpu.txt`, `reports/docker_image_cuda.txt`).
 - CUDA image was validated via CPU-only tests; GPU runtime validation requires NVIDIA Container Toolkit and a `--gpus all` run.
-- CUDA Docker build/test evidence is from a prior run (see `reports/docker_build_cuda.txt`, `reports/docker_test_cuda.txt`).
+- Docker socket/offline evidence is from a prior run (see `reports/offline_socket_tests_docker.txt`).
 - Benchmark + governance evidence uses synthetic Wegovy claims generated locally (see `reports/chaos_monkey.txt`).
 - LLM advisory audit JSON parse warnings were observed during qwen3 runs (see `reports/llm_audit_json_debug.md`).
 - qwen3 benchmark latency evidence lives in `reports/benchmark_qwen3.txt`.
