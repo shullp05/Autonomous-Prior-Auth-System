@@ -2,8 +2,8 @@ import socket
 
 import pytest
 
-from letter_service import LetterResult, generate_approved_letter
-from offline_mode import OfflineModeError, disable_offline, enforce_offline
+from priorauth.letter_service import LetterResult, generate_approved_letter
+from priorauth.offline_mode import OfflineModeError, disable_offline, enforce_offline
 
 
 def _sample_payload():
@@ -17,6 +17,15 @@ def _sample_payload():
         "comorbidity_category": "NONE",
     }
     return patient_data, findings
+
+
+def _skip_if_socket_denied() -> None:
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    except PermissionError:
+        pytest.skip("Socket creation blocked in this environment; cannot validate offline sockets.")
+    else:
+        s.close()
 
 
 @pytest.fixture(autouse=True)
@@ -33,6 +42,7 @@ def _reset_offline(monkeypatch: pytest.MonkeyPatch):
 
 
 def test_deterministic_letter_mode_blocks_all_sockets(monkeypatch):
+    _skip_if_socket_denied()
     monkeypatch.setenv("PA_LETTER_MODE", "deterministic")
     monkeypatch.setenv("PA_OFFLINE_MODE", "true")
     monkeypatch.setenv("PA_OFFLINE_ALLOW_LOCALHOST", "false")
@@ -57,6 +67,7 @@ def test_deterministic_letter_mode_blocks_all_sockets(monkeypatch):
 
 
 def test_ollama_letter_mode_allows_loopback_only(monkeypatch):
+    _skip_if_socket_denied()
     monkeypatch.setenv("PA_LETTER_MODE", "ollama")
     monkeypatch.setenv("PA_ALLOW_LETTER_FALLBACK", "false")
     monkeypatch.setenv("PA_OFFLINE_MODE", "true")

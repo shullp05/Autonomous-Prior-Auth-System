@@ -1,5 +1,5 @@
 
-from policy_engine import evaluate_eligibility
+from priorauth.policy_engine import evaluate_eligibility
 
 
 def test_cdi_required_bmi30_no_anchor():

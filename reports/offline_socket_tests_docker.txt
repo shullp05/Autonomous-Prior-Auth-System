@@ -1,0 +1,11 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0
+rootdir: /app
+configfile: pyproject.toml
+plugins: cov-7.0.0, langsmith-0.5.1, anyio-4.12.0
+collected 8 items
+
+tests/test_letter_mode_offline.py ..                                     [ 25%]
+tests/test_offline_mode.py ......                                        [100%]
+
+============================== 8 passed in 1.97s ===============================

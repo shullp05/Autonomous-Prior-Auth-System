@@ -9,11 +9,7 @@ Tests the robust JSON extraction function that handles:
 """
 
 import json
-import os
-import sys
-
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from pathlib import Path
 
 import pytest
 
@@ -23,27 +19,34 @@ def extract_func():
     """Import _extract_json_object after mocking data dependencies."""
     import pandas as pd
 
-    test_data_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    from priorauth import paths
+
+    test_data_dir = Path(paths.DATA_DIR)
 
     # Create minimal test data if not present
-    if not os.path.exists(os.path.join(test_data_dir, "data_patients.csv")):
+    patients_path = test_data_dir / "data_patients.csv"
+    meds_path = test_data_dir / "data_medications.csv"
+    conds_path = test_data_dir / "data_conditions.csv"
+    obs_path = test_data_dir / "data_observations.csv"
+
+    if not patients_path.exists():
         pd.DataFrame({"patient_id": ["TEST001"], "name": ["Test"], "dob": ["2000-01-01"]}).to_csv(
-            os.path.join(test_data_dir, "data_patients.csv"), index=False
+            patients_path, index=False
         )
-    if not os.path.exists(os.path.join(test_data_dir, "data_medications.csv")):
+    if not meds_path.exists():
         pd.DataFrame({"patient_id": ["TEST001"], "medication_name": ["Metformin"]}).to_csv(
-            os.path.join(test_data_dir, "data_medications.csv"), index=False
+            meds_path, index=False
         )
-    if not os.path.exists(os.path.join(test_data_dir, "data_conditions.csv")):
+    if not conds_path.exists():
         pd.DataFrame({"patient_id": ["TEST001"], "condition_name": ["Hypertension"]}).to_csv(
-            os.path.join(test_data_dir, "data_conditions.csv"), index=False
+            conds_path, index=False
         )
-    if not os.path.exists(os.path.join(test_data_dir, "data_observations.csv")):
+    if not obs_path.exists():
         pd.DataFrame({"patient_id": ["TEST001"], "type": ["BMI"], "value": [30.0], "date": ["2024-01-01"]}).to_csv(
-            os.path.join(test_data_dir, "data_observations.csv"), index=False
+            obs_path, index=False
         )
 
-    from agent_logic import _extract_json_object
+    from priorauth.agent_logic import _extract_json_object
     return _extract_json_object
 
 

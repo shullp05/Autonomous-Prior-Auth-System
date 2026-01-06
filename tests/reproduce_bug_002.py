@@ -2,13 +2,13 @@
 import unittest
 from unittest.mock import patch
 
-from agent_logic import make_decision
+from priorauth.agent_logic import make_decision
 
 
 class TestAuditLoggingGap(unittest.TestCase):
-    @patch("agent_logic.generate_approved_letter")
-    @patch("agent_logic.generate_appeal_letter")
-    @patch("agent_logic.get_audit_logger")  # We will need to Mock this after we import it in the file.
+    @patch("priorauth.agent_logic.generate_approved_letter")
+    @patch("priorauth.agent_logic.generate_appeal_letter")
+    @patch("priorauth.agent_logic.get_audit_logger")  # We will need to Mock this after we import it in the file.
     # Since it's not imported yet, we can't easily patch it inside agent_logic.
     # However, for reproduction, we can just assert that it ISN'T patched or called.
     # Actually, the simplest way is to check if the code calls it.

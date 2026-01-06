@@ -12,7 +12,7 @@ if os.getenv("PA_RUN_RAG_RERANK_SANITY", "").lower() not in {"1", "true", "yes"}
 
 pytest.importorskip("langchain_chroma")
 
-from rag_rerank_sanity import (
+from priorauth.rag_rerank_sanity import (
     _ensure_vectorstore,
     build_scenarios,
     run_scenario,

@@ -87,11 +87,11 @@ Thumbs.db
 desktop.ini
 
 # Dashboard/Node
-dashboard/node_modules/
-dashboard/dist/
-dashboard/.next/
-dashboard/out/
-dashboard/package-lock.json
+apps/ui/node_modules/
+apps/ui/dist/
+apps/ui/.next/
+apps/ui/out/
+apps/ui/package-lock.json
 
 # Logs
 *.log

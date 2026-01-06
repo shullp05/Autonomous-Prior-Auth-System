@@ -1,7 +1,7 @@
 # Repo Readiness Report
 
 ## Summary
-Completed repo hardening, offline-mode fixes, CI alignment, documentation updates, and container validation. Evidence is captured under `reports/`.
+Phase 3 checks were re-run after the refactor (compileall, pytest, and verification scripts). Socket-based offline checks were skipped locally due to blocked socket creation, then re-run in a Docker environment where sockets are allowed. CPU and CUDA Docker builds + tests were re-run. Prior evidence from earlier phases remains in `reports/` but was not re-run in this update.
 
 ## Evidence (commands + outputs)
 - Baseline toolchain: `reports/baseline.md`
@@ -14,6 +14,7 @@ Completed repo hardening, offline-mode fixes, CI alignment, documentation update
 - Byte-compile: `reports/compileall.txt`
 - Tests: `reports/pytest.txt`
 - Offline-mode tests: `reports/offline_mode_tests.txt`
+- Offline socket tests in Docker: `reports/offline_socket_tests_docker.txt`
 - Debug check: `reports/debug_check.txt`
 - Verify code enforcement: `reports/verify_code_enforcement.txt`
 - Bash syntax checks: `reports/bash_n.txt`
@@ -39,27 +40,33 @@ Completed repo hardening, offline-mode fixes, CI alignment, documentation update
 - Updated `scripts/freeze_dependencies.sh` to prepend the PyTorch CPU extra index for lockfile generation.
 - Hardened shell scripts (`scripts/freeze_dependencies.sh`, `models/build_models.sh`) with `#!/usr/bin/env bash` and `set -euo pipefail`.
 - Added a CPU-only Docker requirements file and build arg to avoid CUDA wheels (`requirements-docker-cpu.txt`, `Dockerfile`).
-- Added repo-grade docs: `SECURITY.md`, `GOVERNANCE.md`, `MODELING.md`, `RUNBOOK.md`, `REPRODUCIBILITY.md`.
+- Added repo-grade docs: `docs/SECURITY.md`, `docs/GOVERNANCE.md`, `docs/MODELING.md`, `docs/RUNBOOK.md`, `docs/REPRODUCIBILITY.md`.
 - Updated README/ARCHITECTURE for accuracy (defaults, RAG settings, offline mode behavior).
 
-## Test results
-- `pytest -q` passed: 265 passed, 1 skipped (see `reports/pytest.txt`).
-- Offline-mode specific tests passed (see `reports/offline_mode_tests.txt`).
-- `python -m compileall -q .` produced no errors.
+## Test results (latest rerun)
+- `pytest -q`: 262 passed, 4 skipped, 2 warnings (see `reports/pytest.txt`).
+- Offline socket checks skipped locally because socket creation is blocked in this environment (see `reports/pytest.txt`).
+- Socket-based offline tests passed in Docker (8 passed) (see `reports/offline_socket_tests_docker.txt`).
+- `python -m compileall -q .` produced no errors (see `reports/compileall.txt`).
 - `tests/verify_code_enforcement.py` ran successfully (see `reports/verify_code_enforcement.txt`).
-- Repo audit completed (see `reports/repo_audit.txt`).
-- Dockerized pytest (CPU default) passed: 265 passed, 1 skipped (see `reports/docker_test_cpu.txt`).
-- Dockerized pytest (CUDA build) passed: 265 passed, 1 skipped, 2 warnings (see `reports/docker_test_cuda.txt`).
-- Batch runner (deterministic) processed 200 Wegovy claims, generated governance output, and produced deterministic approval letters without LLM errors (see `reports/batch_runner.txt`).
-- Benchmark evidence captured in `reports/benchmark.txt` (latest run: nemo8b sample=200; deterministic avg 11.46 ms).
-- LLM benchmarks ran with Ollama reachable: nemo8b sample 200 avg 2335 ms; qwen25 sample 100 avg 37240 ms; mistral sample 50 avg 2917 ms; qwen3 sample 50 avg 66904 ms; bucket agreement 100% per run (see `reports/benchmark.txt`).
-- RAG/rerank sanity run passed 6/6 scenarios (coverage_ok and priority_ok) (see `reports/rag_rerank_sanity.txt`).
-- RAG/rerank sanity run short-circuited cleanly when Ollama was unavailable (status `OLLAMA_UNAVAILABLE`) (see `reports/rag_rerank_sanity.txt`).
+- `python debug_check.py` ran (see `reports/debug_check.txt`).
+- `python repo_audit.py` ran (see `reports/repo_audit.txt`).
+- CPU Docker build + test run completed (see `reports/docker_build_cpu.txt`, `reports/docker_test_cpu.txt`).
+- CUDA Docker build + test run completed (see `reports/docker_build_cuda.txt`, `reports/docker_test_cuda.txt`).
+
+## Prior evidence (not re-run in this update)
+- Offline-mode standalone test run (see `reports/offline_mode_tests.txt`).
+- Dockerized pytest CPU/CUDA runs (see `reports/docker_test_cpu.txt`, `reports/docker_test_cuda.txt`).
+- Batch runner + governance audit (see `reports/batch_runner.txt`).
+- Benchmarks + LLM benchmarks (see `reports/benchmark.txt`, `reports/benchmark_*.txt`).
+- RAG/rerank sanity runs (see `reports/rag_rerank_sanity.txt`).
 
 ## Limitations / notes
 - `conda info` failed in this environment due to a permission error (see `reports/baseline.md`).
+- Socket creation is blocked in this environment, so loopback socket tests were skipped in the local pytest run; Docker-based socket tests provide the live evidence.
 - Default Docker image is CPU-only (3.64GB disk usage); CUDA build is larger (13.8GB) (`reports/docker_image_cpu.txt`, `reports/docker_image_cuda.txt`).
 - CUDA image was validated via CPU-only tests; GPU runtime validation requires NVIDIA Container Toolkit and a `--gpus all` run.
+- CUDA Docker build/test completed after Docker restart (see `reports/docker_build_cuda.txt`, `reports/docker_test_cuda.txt`).
 - Benchmark + governance evidence uses synthetic Wegovy claims generated locally (see `reports/chaos_monkey.txt`).
 - LLM advisory audit JSON parse warnings were observed during qwen3 runs (see `reports/llm_audit_json_debug.md`).
 - qwen3 benchmark completed with high per-patient latency (see `reports/benchmark_qwen3.txt`).

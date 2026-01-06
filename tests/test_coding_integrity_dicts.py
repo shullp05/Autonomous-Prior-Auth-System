@@ -1,4 +1,4 @@
-from policy_engine import evaluate_eligibility
+from priorauth.policy_engine import evaluate_eligibility
 
 
 def test_dict_conditions_capture_anchor_codes_obesity():

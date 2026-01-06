@@ -22,13 +22,13 @@ test-all:
 	$(PYTEST) tests/ -v
 
 benchmark:
-	$(PYTHON) benchmark.py
+	$(PYTHON) -m priorauth.apps.agent.benchmark
 
 batch-run:
-	$(PYTHON) batch_runner.py
+	$(PYTHON) -m priorauth.apps.agent.batch_runner
 
 batch-fast:
-	PA_USE_DETERMINISTIC=true $(PYTHON) batch_runner.py
+	PA_USE_DETERMINISTIC=true $(PYTHON) -m priorauth.apps.agent.batch_runner
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
@@ -36,5 +36,5 @@ clean:
 	rm -f .coverage
 
 list-files:
-	@python -c 'import os; from config import MAX_SEARCH_DEPTH; print(f"Listing files (depth={MAX_SEARCH_DEPTH}, exclude hidden)...")'
+	@python -c 'import os; from priorauth.config import MAX_SEARCH_DEPTH; print(f"Listing files (depth={MAX_SEARCH_DEPTH}, exclude hidden)...")'
 	@find . -maxdepth 5 -not -path '*/.*'

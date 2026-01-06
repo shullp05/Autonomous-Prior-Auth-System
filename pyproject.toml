@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "priorauth"
 version = "1.0.0"
@@ -25,7 +29,7 @@ exclude = [
     ".venv",
     "__pycache__",
     "node_modules",
-    "dashboard",
+    "apps/ui",
 ]
 
 [tool.ruff.lint]
@@ -45,10 +49,10 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["policy_engine", "policy_constants", "agent_logic"]
+known-first-party = ["priorauth"]
 
 [tool.bandit]
-exclude_dirs = ["tests", "dashboard"]
+exclude_dirs = ["tests", "apps/ui"]
 skips = ["B101"]  # assert_used - fine in tests
 
 [tool.pytest.ini_options]
@@ -62,8 +66,8 @@ filterwarnings = [
 ]
 
 [tool.coverage.run]
-source = ["policy_engine", "policy_constants", "agent_logic"]
-omit = ["tests/*", "dashboard/*"]
+source = ["priorauth"]
+omit = ["tests/*", "apps/ui/*"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -71,3 +75,10 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "raise NotImplementedError",
 ]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["priorauth*"]

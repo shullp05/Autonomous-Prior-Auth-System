@@ -2,7 +2,7 @@
 test_policy_safety_signal.py - Integration tests for Phase 9 Safety Signals
 """
 
-from policy_engine import evaluate_eligibility
+from priorauth.policy_engine import evaluate_eligibility
 
 
 class TestPolicySafetySignals:

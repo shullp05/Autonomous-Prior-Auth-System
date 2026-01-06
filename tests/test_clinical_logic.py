@@ -1,5 +1,5 @@
 
-from policy_engine import evaluate_eligibility
+from priorauth.policy_engine import evaluate_eligibility
 
 
 # T01_Strict_Neg: BMI 32.0, Missing codes -> FLAG/CDI_REQUIRED

@@ -4,7 +4,7 @@ test_context_rules.py - Verify 9.2 context classification logic
 
 import pytest
 
-from context_rules import classify_context
+from priorauth.context_rules import classify_context
 
 
 class TestContextRules:

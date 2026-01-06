@@ -1,5 +1,5 @@
 
-from governance_audit import _detect_safety_exclusion, _is_cvd, _is_t2_diabetes, two_proportion_z_pvalue, wilson_ci
+from priorauth.governance_audit import _detect_safety_exclusion, _is_cvd, _is_t2_diabetes, two_proportion_z_pvalue, wilson_ci
 
 
 def test_governance_safety_exclusion_mtc():

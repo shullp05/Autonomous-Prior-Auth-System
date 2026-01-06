@@ -1,10 +1,5 @@
-import os
-import sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from policy_snapshot import parse_guidelines
-from setup_rag import _section_documents
+from priorauth.policy_snapshot import parse_guidelines
+from priorauth.apps.agent.setup_rag import _section_documents
 
 
 def test_rag_sections_minimum_atoms():
@@ -37,4 +32,3 @@ def test_rag_sections_minimum_atoms():
     assert "documentation:requirements" in sections
     assert "drug_conflicts:glp1_glp1_gip" in sections
     assert any(s.startswith("ambiguity:") for s in sections)
-

@@ -17,4 +17,7 @@ export LANGSMITH_TRACING="false"
 export LANGSMITH_DISABLED="true"
 export ANONYMIZED_TELEMETRY="false"
 
-python batch_runner.py "$@"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export PYTHONPATH="${REPO_ROOT}/src${PYTHONPATH:+:$PYTHONPATH}"
+
+python -m priorauth.apps.agent.batch_runner "$@"

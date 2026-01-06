@@ -76,7 +76,7 @@ I implemented a multi-layer safety net to prevent AI errors from harming patient
 ## 🛠 Tech Stack & Implementation Details
 
 *   **Languages:** Python 3.11 (Strict Typing), JavaScript (React)
-*   **AI Frameworks:** LangChain, LangGraph, Ollama (local LLMs; see `MODELING.md` for supported flavors)
+*   **AI Frameworks:** LangChain, LangGraph, Ollama (local LLMs; see `docs/MODELING.md` for supported flavors)
 *   **Vector Database:** ChromaDB (Local, Zero-Trust)
 *   **Testing:** Pytest suite (latest local run: 265 passed, 1 skipped; see `reports/pytest.txt`)
 *   **Infrastructure:** Docker, GitHub Actions (CI/CD), Makefiles

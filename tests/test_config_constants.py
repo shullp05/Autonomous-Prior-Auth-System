@@ -1,7 +1,7 @@
 
 import pytest
 
-from policy_constants import _OBESITY_PATHWAY, _OVERWEIGHT_PATHWAY, ELIGIBILITY_PATHWAYS
+from priorauth.policy_constants import _OBESITY_PATHWAY, _OVERWEIGHT_PATHWAY, ELIGIBILITY_PATHWAYS
 
 # We want to verify that if pathways are missing, it raises ImportError,
 # but since the module is already imported, we'd need to reload it with a mocked SNAPSHOT.

@@ -1,30 +1,16 @@
+#!/usr/bin/env python3
+"""Compatibility wrapper for priorauth.tools.reproduce_coercion."""
 
-from pydantic import ValidationError
+from __future__ import annotations
 
-from agent_logic import AuditResult
+import runpy
+import sys
+from pathlib import Path
 
-
-def test_audit_coercion():
-    print("Testing 'CARDIOVASCULAR_DISEASE' coercion to 'CVD'...")
-    try:
-        # This currently fails. We want it to succeed and convert to CVD.
-        res = AuditResult(comorbidity_category="CARDIOVASCULAR_DISEASE")
-
-        if res.comorbidity_category == "CVD":
-            print("Success: Coerced to CVD")
-        else:
-            print(f"Failed: Accepted but not coerced? Value: {res.comorbidity_category}")
-
-    except ValidationError:
-        print("Failed: Validation Error (No coercion implemented yet)")
-
-    print("\nTesting 'CVD' input...")
-    try:
-        res = AuditResult(comorbidity_category="CVD")
-        if res.comorbidity_category == "CVD":
-            print("Success: CVD preserved")
-    except ValidationError as e:
-        print(f"Failed: {e}")
+ROOT = Path(__file__).resolve().parent
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
 if __name__ == "__main__":
-    test_audit_coercion()
+    runpy.run_module("priorauth.tools.reproduce_coercion", run_name="__main__")

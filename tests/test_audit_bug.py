@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-import policy_engine
+from priorauth import policy_engine
 
 
 def test_audit_logging_gap():
@@ -12,7 +12,7 @@ def test_audit_logging_gap():
     """
     # Mock the module-level _audit_logger
     mock_logger = MagicMock()
-    with patch('policy_engine._audit_logger', mock_logger):
+    with patch('priorauth.policy_engine._audit_logger', mock_logger):
 
         # Case 1: Clear Approval (BMI 35)
         # Should return APPROVED and LOG the event
@@ -41,7 +41,7 @@ def test_audit_logging_gap():
 def test_audit_logging_safety_denial():
     """Verify safety denial also logs."""
     mock_logger = MagicMock()
-    with patch('policy_engine._audit_logger', mock_logger):
+    with patch('priorauth.policy_engine._audit_logger', mock_logger):
          # Case 2: Safety Denial (Pregnancy)
         patient_data = {
             "latest_bmi": "35.0",

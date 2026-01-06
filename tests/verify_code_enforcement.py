@@ -1,13 +1,15 @@
-
 import sys
+from pathlib import Path
 
 import pytest
 
-# Add project root to path
-sys.path.append("/root/projects/PriorAuth")
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
-from policy_engine import evaluate_eligibility
-from policy_snapshot import parse_guidelines, write_policy_snapshot
+from priorauth.policy_engine import evaluate_eligibility
+from priorauth.policy_snapshot import parse_guidelines, write_policy_snapshot
 
 # from etl_pipeline import PatientData # Not needed if passing dict
 

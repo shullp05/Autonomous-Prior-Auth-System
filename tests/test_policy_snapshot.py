@@ -2,9 +2,9 @@ import hashlib
 import json
 from pathlib import Path
 
-from policy_engine import evaluate_eligibility
-from policy_snapshot import GUIDELINE_PATH, SNAPSHOT_PATH, canonical_dumps, parse_guidelines
-from schema_validation import validate_policy_snapshot
+from priorauth.policy_engine import evaluate_eligibility
+from priorauth.policy_snapshot import GUIDELINE_PATH, SNAPSHOT_PATH, canonical_dumps, parse_guidelines
+from priorauth.schema_validation import validate_policy_snapshot
 
 GOLDEN_PATH = Path("tests/golden/policies/RX-WEG-2025.json")
 

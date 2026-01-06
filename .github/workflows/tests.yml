@@ -31,7 +31,7 @@ jobs:
 
       - name: Byte-compile
         run: |
-          python -m compileall -q .
+          python -m compileall -q src
 
       - name: Run tests
         run: |
