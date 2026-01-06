@@ -19,8 +19,8 @@ tests/test_config_constants.py ..                                        [ 54%]
 tests/test_context_rules.py .........................................    [ 70%]
 tests/test_gold_regression.py .............                              [ 75%]
 tests/test_json_extraction.py ...................                        [ 82%]
-tests/test_letter_mode_offline.py ss                                     [ 83%]
-tests/test_offline_mode.py .....s                                        [ 85%]
+tests/test_letter_mode_offline.py ..                                     [ 83%]
+tests/test_offline_mode.py ......                                        [ 85%]
 tests/test_policy_cdi.py ....                                            [ 86%]
 tests/test_policy_engine_structured.py ..                                [ 87%]
 tests/test_policy_integration.py ............                            [ 92%]
@@ -41,4 +41,4 @@ tests/test_schema_validation.py .                                        [100%]
     _torch_pytree._register_pytree_node(
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-================== 262 passed, 4 skipped, 2 warnings in 3.64s ==================
+================= 265 passed, 1 skipped, 2 warnings in 14.84s ==================

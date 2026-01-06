@@ -6,7 +6,7 @@ Governance evaluates whether the system treats protected groups consistently for
 ## Methodology (current implementation)
 Implemented in `src/priorauth/governance_audit.py` and run against `output/dashboard_data.json` plus the supporting CSVs in `output/`.
 
-- **Ground truth**: Deterministic policy logic (BMI + qualifying comorbidity + safety exclusions) derived from `policy_constants.py`.
+- **Ground truth**: Deterministic policy logic (BMI + qualifying comorbidity + safety exclusions) derived from `src/priorauth/policy_constants.py`.
 - **Metric**: FNR parity among *truly eligible* patients.
   - `fn_access`: eligible patients not marked APPROVED (includes DENIED/FLAGGED/etc.).
   - `fn_denied_only`: eligible patients whose outcome starts with DENIED.

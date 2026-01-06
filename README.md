@@ -9,6 +9,7 @@
 [![Model Licenses: Upstream](https://img.shields.io/badge/Model_Licenses-Upstream_See_Modelfiles-0a9396?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
 [![Offline Mode](https://img.shields.io/badge/Offline_Mode-Localhost_Safe-1b4965?style=for-the-badge)](docs/SECURITY.md)
 [![Deterministic Engine](https://img.shields.io/badge/Deterministic_Engine-Source_of_Truth-5fa8d3?style=for-the-badge)](docs/ARCHITECTURE.md)
+[![CI](https://img.shields.io/github/actions/workflow/status/shullp05/Autonomous-Prior-Auth-System/tests.yml?branch=main&style=for-the-badge)](https://github.com/shullp05/Autonomous-Prior-Auth-System/actions/workflows/tests.yml)
 
 [![LangChain: MIT](https://img.shields.io/badge/LangChain-MIT-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
 [![LangGraph: MIT](https://img.shields.io/badge/LangGraph-MIT-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
@@ -16,6 +17,8 @@
 [![Ollama: MIT](https://img.shields.io/badge/Ollama-MIT-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
 [![BCEmbedding: Apache-2.0](https://img.shields.io/badge/BCEmbedding-Apache--2.0-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
 [![PyTorch: BSD-3-Clause](https://img.shields.io/badge/PyTorch-BSD--3--Clause-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
+[![Pydantic: MIT](https://img.shields.io/badge/Pydantic-MIT-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
+[![Pytest: MIT](https://img.shields.io/badge/Pytest-MIT-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
 
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Tests](https://img.shields.io/badge/Tests-Pytest-brightgreen?style=for-the-badge)
@@ -81,7 +84,7 @@ graph TD
 1.  **Ingestion**: Patient observations (BMI, Conditions, Meds) are loaded from CSV/FHIR.
 2.  **Retrieval**: ChromaDB retrieves policy atoms via MedEmbed embeddings (k=25 by default), with optional BCE reranking; the top 8 docs feed the LLM by default.
 3.  **Audit**: A local LLM (default flavor `nemo8b`, override via `PA_AUDIT_MODEL_FLAVOR`) analyzes clinical data against retrieved policy evidence.
-4.  **Governance**: A deterministic Python layer (`policy_engine.py`) cross-verifies the LLM's findings against safety and eligibility rules.
+4.  **Governance**: A deterministic Python layer (`src/priorauth/policy_engine.py`) cross-verifies the LLM's findings against safety and eligibility rules.
 5.  **Output**: Structured JSON decisions plus optional appeal letter artifacts.
 
 ---
@@ -116,7 +119,7 @@ graph TD
 
 ## 📊 Dashboard Metrics & Definitions
 
-The analytics dashboard provides real-time visibility into the prior authorization process. All metrics are computed deterministically using the **Metrics Contract** (`metricsEngine.js`).
+The analytics dashboard provides real-time visibility into the prior authorization process. All metrics are computed deterministically using the **Metrics Contract** (`apps/ui/src/metricsEngine.js`).
 
 ### Status Taxonomy
 | Display Label | Definition | Action Required |
@@ -160,7 +163,7 @@ Security and trust are architectural first principles, not afterthoughts.
 ### 2. Tamper-Evident Audit
 *   **Cryptographic Chaining**: All decisions are logged to `audit_log.jsonl` using SHA-256 hash chaining (runtime artifact; gitignored).
 *   **Verification**: A standalone script (`verify_audit.py`) detects any modification, deletion, or reordering of the log history.
-*   **Centralized Logging**: `audit_logger.py` singleton captures every automated decision (input + output).
+*   **Centralized Logging**: `src/priorauth/audit_logger.py` singleton captures every automated decision (input + output).
 
 ### 3. Coding Integrity Overlay (CDI)
 *   **Clinical ≠ Administrative**: A patient can be clinically eligible (BMI 35) but administratively incomplete (Missing ICD-10 E66.9).
@@ -243,7 +246,7 @@ docker compose -f docker/docker-compose.blackbox.yml up --build
 This deployment runs the agent with `network_mode: "none"` and read-only `/models` mounts.
 
 3.  **Setup Environment**
-    Create a `.env` file (or rely on defaults in `config.py`):
+    Create a `.env` file (or rely on defaults in `src/priorauth/config.py`):
     ```ini
     PA_AUDIT_MODEL_FLAVOR=nemo8b
     PA_EMBED_MODEL=kronos483/MedEmbed-large-v0.1:latest
@@ -306,7 +309,7 @@ The test suite includes:
 pytest -q
 ```
 
-Local evidence from this repo run: `reports/pytest.txt` (265 passed, 1 skipped).
+Local evidence from this repo run: `reports/pytest.txt`.
 
 ---
 

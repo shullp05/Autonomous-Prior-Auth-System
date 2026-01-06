@@ -11,7 +11,7 @@
 - Updated test execution to `pytest -q` to match local truth.
 - Enabled pip caching via `actions/setup-python@v5` `cache: pip`.
 - Retained a separate coverage run in `ci.yml` to support the Codecov upload.
-- Documented local RAG/rerank sanity evidence (6/6 scenarios passed) in `reports/rag_rerank_sanity.txt`.
+- Documented local RAG/rerank sanity evidence in `reports/rag_rerank_sanity.txt` (see file for recorded run).
 
 ## Files
 - `.github/workflows/ci.yml`

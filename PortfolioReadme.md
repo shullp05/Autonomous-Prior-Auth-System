@@ -32,7 +32,7 @@ This repository demonstrates a **deterministic-first prior authorization system*
 ## 🏥 Project Showcase: Autonomous Prior Authorization System
 
 **The Challenge:** Prior authorization is costly and delays access to care.
-**The Solution:** A deterministic-first, human-in-the-loop agent that processes synthetic claims quickly and produces evidence-backed decisions (see `reports/benchmark.txt` for local timing evidence).
+**The Solution:** A deterministic-first, human-in-the-loop agent that processes synthetic claims quickly and produces evidence-backed decisions (see `reports/benchmark.txt` for the latest recorded timing evidence).
 
 ### 🚀 Key Technical & Strategic Features
 
@@ -40,8 +40,8 @@ This repository demonstrates a **deterministic-first prior authorization system*
 *Demonstrates: Architectural Design, Safety Engineering, Strategic Planning*
 
 I explicitly rejected a "pure LLM" approach due to hallucination risks. Instead, I architected a **Hybrid Engine**:
-*   **Deterministic Policy Engine (`policy_engine.py`)**: Hard-coded policy logic handles binary clinical rules (e.g., *BMI > 30*, *Contraindication = MTC*). This ensures reproducible outcomes for audit and governance.
-*   **LLM Agent (`agent_logic.py`)**: Handles nuance (e.g., *Is "elevated A1c" equivalent to T2DM diagnosis?*) using **LangGraph** for state management and **RAG** for policy grounding.
+*   **Deterministic Policy Engine (`src/priorauth/policy_engine.py`)**: Hard-coded policy logic handles binary clinical rules (e.g., *BMI > 30*, *Contraindication = MTC*). This ensures reproducible outcomes for audit and governance.
+*   **LLM Agent (`src/priorauth/agent_logic.py`)**: Handles nuance (e.g., *Is "elevated A1c" equivalent to T2DM diagnosis?*) using **LangGraph** for state management and **RAG** for policy grounding.
 
 #### 2. Healthcare-Specific Guardrails & Risk Mitigation
 *Demonstrates: Clinical Knowledge, Risk Management, Patient Safety*
@@ -66,8 +66,8 @@ I implemented a multi-layer safety net to prevent AI errors from harming patient
 #### 5. Credibility Hardening
 *Demonstrates: Advanced Verification, Clinical UX, Offline Security*
 
-*   **Offline Enforcement**: Implemented a strict outbound-blocking mode (`offline_mode.py`) that forbids external network access at runtime while allowing localhost when enabled.
-*   **Tamper-Evident Audit**: Architected a cryptographic log (`audit_logger.py`) using **SHA-256 hash chaining** to ensure decision history is immutable and verifiable.
+*   **Offline Enforcement**: Implemented a strict outbound-blocking mode (`src/priorauth/offline_mode.py`) that forbids external network access at runtime while allowing localhost when enabled.
+*   **Tamper-Evident Audit**: Architected a cryptographic log (`src/priorauth/audit_logger.py`) using **SHA-256 hash chaining** to ensure decision history is immutable and verifiable.
 *   **Coding Integrity Overlay**: Differentiates between "Clinically Eligible" and "Administratively Ready," automating the generation of precise **Physician Queries** for missing codes (e.g., E66.9) rather than issuing flat denials.
 
 
@@ -78,7 +78,7 @@ I implemented a multi-layer safety net to prevent AI errors from harming patient
 *   **Languages:** Python 3.11 (Strict Typing), JavaScript (React)
 *   **AI Frameworks:** LangChain, LangGraph, Ollama (local LLMs; see `docs/MODELING.md` for supported flavors)
 *   **Vector Database:** ChromaDB (Local, Zero-Trust)
-*   **Testing:** Pytest suite (latest local run: 265 passed, 1 skipped; see `reports/pytest.txt`)
+*   **Testing:** Pytest suite (latest run recorded in `reports/pytest.txt`)
 *   **Infrastructure:** Docker, GitHub Actions (CI/CD), Makefiles
 *   **Frontend:** React + Vite + D3.js (Interactive Decision Dashboard)
 
