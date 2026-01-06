@@ -48,8 +48,8 @@ Use this template to document benchmark evidence after a run:
 
 | Run | Sample size | Avg latency | JSON validity | Citation correctness | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Deterministic | TBD | TBD | n/a | n/a | Update from `reports/benchmark.txt` |
-| LLM (nemo8b) | TBD | TBD | TBD | TBD | Update from `reports/benchmark.txt` |
-| LLM (qwen25) | TBD | TBD | TBD | TBD | Update from `reports/benchmark.txt` |
-| LLM (mistral) | TBD | TBD | TBD | TBD | Update from `reports/benchmark.txt` |
-| LLM (qwen3) | TBD | TBD | TBD | TBD | Update from `reports/benchmark.txt` |
+| Deterministic | 200 | 6.15 ms | n/a | n/a | Deterministic-only run; LLM skipped. |
+| LLM (nemo8b) | 200 | 2013 ms | Not measured | Not measured | Deterministic avg 7.61 ms; agreement 200/200. |
+| LLM (qwen25) | 100 | 29694 ms | Not measured | Not measured | Deterministic avg 7.28 ms; agreement 100/100. |
+| LLM (mistral) | 50 | 2879 ms | Not measured | Not measured | Deterministic avg 6.49 ms; agreement 50/50. |
+| LLM (qwen3) | 50 | 72674 ms | Not measured | Not measured | Deterministic avg 10.55 ms; agreement 50/50; advisory JSON parse warnings observed in prior qwen3 runs (see `reports/llm_audit_json_debug.md`). |
