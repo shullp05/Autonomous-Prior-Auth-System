@@ -12,7 +12,7 @@ This React/Vite app renders the outputs produced by `src/priorauth/apps/agent/ba
 - **Missing Required Data**: Case lacked critical fields (BMI, Height/Weight) needed for decision.
 
 ### Hours Saved Calculation
-- **Default Assumption:** 25 minutes per complex PA (placeholder; set per organization).
+- **Default Assumption:** 25 minutes per complex PA (adjust per organization).
 - **Formula:** `(Total Screened − Needs Review) × 25 min / 60`
 - **Sensitivity Range:** Displays estimates for 15 min (optimistic) to 45 min (conservative) per case.
 - **Note on CDI:** Claims requiring Clinical Documentation Improvement (CDI) are excluded from "Hours Saved" calculations as they effectively pause the workflow for physician query.
