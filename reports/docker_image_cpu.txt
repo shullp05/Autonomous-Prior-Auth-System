@@ -1,1 +1,1 @@
-priorauth:cpu 3.67GB
+priorauth:local 3.67GB
