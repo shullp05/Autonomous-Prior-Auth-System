@@ -10,16 +10,10 @@ This module provides systematic evaluation of edge cases to verify:
 Run with: pytest tests/test_adversarial.py -v
 """
 
-import os
-import sys
-
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 import pytest
 
-from policy_constants import ADULT_OBESITY_DIAGNOSES, ADULT_OVERWEIGHT_DIAGNOSES, BMI_OBESE_THRESHOLD
-from policy_engine import EligibilityResult, evaluate_eligibility
+from priorauth.policy_constants import ADULT_OBESITY_DIAGNOSES, ADULT_OVERWEIGHT_DIAGNOSES, BMI_OBESE_THRESHOLD
+from priorauth.policy_engine import EligibilityResult, evaluate_eligibility
 
 OBESITY_DX = ADULT_OBESITY_DIAGNOSES[0]
 OVERWEIGHT_DX = ADULT_OVERWEIGHT_DIAGNOSES[0]

@@ -3,19 +3,19 @@
 > **"A Deterministic-Guardrailed AI Architect for High-Stakes Clinical Decision Making."**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-2b9348?style=for-the-badge)](LICENSE)
-[![Third-Party Licenses](https://img.shields.io/badge/Third--Party_Licenses-Recorded-2d6a4f?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
-[![Python License: PSF](https://img.shields.io/badge/Python_License-PSF-2b9348?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
-[![Model License: NVIDIA OML](https://img.shields.io/badge/Model_License-NVIDIA_Open_Model_License-005f73?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
-[![Model Licenses: Upstream](https://img.shields.io/badge/Model_Licenses-Upstream_See_Modelfiles-0a9396?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
-[![Offline Mode](https://img.shields.io/badge/Offline_Mode-Localhost_Safe-1b4965?style=for-the-badge)](SECURITY.md)
-[![Deterministic Engine](https://img.shields.io/badge/Deterministic_Engine-Source_of_Truth-5fa8d3?style=for-the-badge)](ARCHITECTURE.md)
+[![Third-Party Licenses](https://img.shields.io/badge/Third--Party_Licenses-Recorded-2d6a4f?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
+[![Python License: PSF](https://img.shields.io/badge/Python_License-PSF-2b9348?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
+[![Model License: NVIDIA OML](https://img.shields.io/badge/Model_License-NVIDIA_Open_Model_License-005f73?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
+[![Model Licenses: Upstream](https://img.shields.io/badge/Model_Licenses-Upstream_See_Modelfiles-0a9396?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
+[![Offline Mode](https://img.shields.io/badge/Offline_Mode-Localhost_Safe-1b4965?style=for-the-badge)](docs/SECURITY.md)
+[![Deterministic Engine](https://img.shields.io/badge/Deterministic_Engine-Source_of_Truth-5fa8d3?style=for-the-badge)](docs/ARCHITECTURE.md)
 
-[![LangChain: MIT](https://img.shields.io/badge/LangChain-MIT-6c757d?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
-[![LangGraph: MIT](https://img.shields.io/badge/LangGraph-MIT-6c757d?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
-[![ChromaDB: Apache-2.0](https://img.shields.io/badge/ChromaDB-Apache--2.0-6c757d?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
-[![Ollama: MIT](https://img.shields.io/badge/Ollama-MIT-6c757d?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
-[![BCEmbedding: Apache-2.0](https://img.shields.io/badge/BCEmbedding-Apache--2.0-6c757d?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
-[![PyTorch: BSD-3-Clause](https://img.shields.io/badge/PyTorch-BSD--3--Clause-6c757d?style=for-the-badge)](THIRD_PARTY_LICENSES.md)
+[![LangChain: MIT](https://img.shields.io/badge/LangChain-MIT-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
+[![LangGraph: MIT](https://img.shields.io/badge/LangGraph-MIT-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
+[![ChromaDB: Apache-2.0](https://img.shields.io/badge/ChromaDB-Apache--2.0-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
+[![Ollama: MIT](https://img.shields.io/badge/Ollama-MIT-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
+[![BCEmbedding: Apache-2.0](https://img.shields.io/badge/BCEmbedding-Apache--2.0-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
+[![PyTorch: BSD-3-Clause](https://img.shields.io/badge/PyTorch-BSD--3--Clause-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
 
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Tests](https://img.shields.io/badge/Tests-Pytest-brightgreen?style=for-the-badge)
@@ -139,7 +139,7 @@ The analytics dashboard provides real-time visibility into the prior authorizati
 ### Hours Saved Calculation
 Distinctly separates "System Processing Velocity" from "Staff Governance Assumptions".
 
-*   **Processing Velocity (System)**: Use `benchmark.py` to measure on your dataset (see `reports/benchmark.txt` for the latest local run).
+*   **Processing Velocity (System)**: Use `python -m priorauth.apps.agent.benchmark` to measure on your dataset (see `reports/benchmark.txt` for the latest local run).
 *   **Staff Hours Saved (Governance)**:
     *   **Formula**: `Auto-Resolved Cases × Governance Constant`
     *   **Assumption**: Define per-organization (e.g., minutes per complex PA review).
@@ -172,20 +172,17 @@ Security and trust are architectural first principles, not afterthoughts.
 
 ```text
 /root/projects/PriorAuth
-├── agent_logic.py         # 🧠 Core Agent orchestration (LangGraph state machine)
-├── policy_engine.py       # 🛡️ Deterministic Rule Engine (The "Safety Brain")
-├── governance_audit.py    # ⚖️ Audit module to verify AI vs. Rule Logic
-├── batch_runner.py        # 🚀 High-throughput batch processing entry point
-├── policy_snapshot.py     # 📄 Policy parsing and versioning (Text → JSON)
-├── policy_constants.py    # 📋 Derived constants from policy (BMI thresholds, etc.)
-├── policy_utils.py        # 🛠️ Shared utilities for normalization/matching
-├── config.py              # ⚙️ Centralized configuration management
-├── chaos_monkey.py        # 🐒 Adversarial test data generator
-├── setup_rag.py           # 🔍 ChromaDB vector store setup
-├── policies/              # 📂 JSON Policy Snapshots (Version Controlled)
-├── tests/                 # 🧪 Pytest suite (unit + safety coverage)
-├── dashboard/             # 📊 React/Vite analytics dashboard
-└── output/                # 📊 Generated artifacts (CSVs, Logs, Reports)
+├── src/priorauth/          # 🧠 Core package (agent, policy, governance)
+│   ├── agent_logic.py      # LangGraph orchestration
+│   ├── policy_engine.py    # Deterministic rules
+│   ├── governance_audit.py # Fairness audit + parity checks
+│   └── apps/               # CLI entrypoints (agent + api)
+├── apps/ui/                # 📊 React/Vite analytics dashboard
+├── docker/                 # 🐳 Dockerfile + compose
+├── docs/                   # 📚 Architecture, security, runbook, modeling
+├── policies/               # 📂 JSON Policy Snapshots (Version Controlled)
+├── tests/                  # 🧪 Pytest suite (unit + safety coverage)
+└── output/                 # 📊 Generated artifacts (CSVs, Logs, Reports)
 ```
 
 ---
@@ -228,20 +225,20 @@ This follows a **build-time online / run-time offline** split: download wheels/m
 
 ### Docker (CPU default)
 ```bash
-docker build --build-arg REQUIREMENTS_FILE=requirements-docker-cpu.txt -t priorauth:local .
+docker build -f docker/Dockerfile --build-arg REQUIREMENTS_FILE=requirements-docker-cpu.txt -t priorauth:local .
 docker run --rm priorauth:local pytest -q
 ```
 
 ### Docker (CUDA build)
 ```bash
-docker build --build-arg REQUIREMENTS_FILE=requirements.txt -t priorauth:cuda .
+docker build -f docker/Dockerfile --build-arg REQUIREMENTS_FILE=requirements.txt -t priorauth:cuda .
 docker run --rm priorauth:cuda pytest -q
 ```
 CUDA builds download large NVIDIA CUDA wheels and require a compatible NVIDIA runtime.
 
 ### Docker (Black-box offline, no network)
 ```bash
-docker compose -f docker-compose.blackbox.yml up --build
+docker compose -f docker/docker-compose.blackbox.yml up --build
 ```
 This deployment runs the agent with `network_mode: "none"` and read-only `/models` mounts.
 
@@ -256,25 +253,25 @@ This deployment runs the agent with `network_mode: "none"` and read-only `/model
 **Run a Batch Simulation:**
 ```bash
 # 1. Generate Synthetic Data
-python chaos_monkey.py
+python -m priorauth.apps.agent.chaos_monkey
 
 # 2. Setup Vector Store
-python setup_rag.py
+python -m priorauth.apps.agent.setup_rag
 
 # 3. Run the Agent
-python batch_runner.py
+python -m priorauth.apps.agent.batch_runner
 ```
 
 **Runtime Modes (Letters + Offline):**
 ```bash
 # Deterministic letters (default, zero LLM calls)
-PA_LETTER_MODE=deterministic python batch_runner.py
+PA_LETTER_MODE=deterministic python -m priorauth.apps.agent.batch_runner
 
 # Ollama letters (requires local Ollama/model)
-PA_LETTER_MODE=ollama python batch_runner.py
+PA_LETTER_MODE=ollama python -m priorauth.apps.agent.batch_runner
 
 # Optional: allow explicit fallback if Ollama is unavailable
-PA_ALLOW_LETTER_FALLBACK=1 PA_LETTER_MODE=ollama python batch_runner.py
+PA_ALLOW_LETTER_FALLBACK=1 PA_LETTER_MODE=ollama python -m priorauth.apps.agent.batch_runner
 
 # Offline deterministic (no sockets allowed)
 scripts/run_offline_deterministic.sh

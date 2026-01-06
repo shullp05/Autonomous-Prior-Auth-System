@@ -42,7 +42,7 @@ jobs:
 
       - name: Byte-compile
         run: |
-          python -m compileall -q .
+          python -m compileall -q src
 
       - name: Run Tests
         run: |
@@ -50,7 +50,7 @@ jobs:
 
       - name: Run Coverage
         run: |
-          pytest -q --cov=. --cov-report=xml
+          pytest -q --cov=priorauth --cov-report=xml
 
       - name: Verify Policy Snapshot Syntax
         # Ensures policy snapshot is valid JSON

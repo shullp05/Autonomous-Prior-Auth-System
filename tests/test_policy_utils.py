@@ -1,5 +1,5 @@
 
-from policy_utils import expand_safety_variants, has_word_boundary, is_snf_phrase, matches_term, normalize
+from priorauth.policy_utils import expand_safety_variants, has_word_boundary, is_snf_phrase, matches_term, normalize
 
 
 def test_normalize():

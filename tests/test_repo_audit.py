@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from tools import repo_audit
+from priorauth.tools import repo_audit
 
 
 def _mk(path):

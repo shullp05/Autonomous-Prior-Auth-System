@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from policy_engine import EligibilityResult, evaluate_eligibility
+from priorauth.policy_engine import EligibilityResult, evaluate_eligibility
 
 # Locating the fixture file relative to this test file
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "gold_cases.json"

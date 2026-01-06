@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, Tuple
 
 import pytest
 
-import offline_mode
+from priorauth import offline_mode
 
 
 def _snapshot_network_callables() -> Dict[str, Any]:
@@ -32,6 +32,15 @@ def _snapshot_network_callables() -> Dict[str, Any]:
     except Exception:
         snap["requests_request"] = None
     return snap
+
+
+def _skip_if_socket_denied(sock_type: int) -> None:
+    try:
+        s = socket.socket(socket.AF_INET, sock_type)
+    except PermissionError:
+        pytest.skip("Socket creation blocked in this environment; cannot validate loopback UDP.")
+    else:
+        s.close()
 
 
 def _restore_network_callables(snap: Dict[str, Any]) -> None:
@@ -166,6 +175,7 @@ def test_offline_udp_allows_loopback_send(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("PA_OFFLINE_ALLOW_LOCALHOST", "true")
     offline_mode.enforce_offline()
 
+    _skip_if_socket_denied(socket.SOCK_DGRAM)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         sent = s.sendto(b"ping", ("127.0.0.1", 9999))

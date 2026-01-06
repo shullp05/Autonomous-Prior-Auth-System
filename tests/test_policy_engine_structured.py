@@ -1,10 +1,5 @@
-import os
-import sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from policy_constants import ADULT_OVERWEIGHT_DIAGNOSES
-from policy_engine import evaluate_eligibility
+from priorauth.policy_constants import ADULT_OVERWEIGHT_DIAGNOSES
+from priorauth.policy_engine import evaluate_eligibility
 
 
 def test_snf_not_pregnancy_safety():
@@ -30,4 +25,3 @@ def test_overweight_no_comorbidity_true_denial():
     assert res.verdict == "DENIED_CLINICAL"
     assert res.decision_type == "DENIED_NO_COMORBIDITY"
     assert res.policy_path == "BMI27_COMORBIDITY"
-

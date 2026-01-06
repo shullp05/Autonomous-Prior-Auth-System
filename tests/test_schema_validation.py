@@ -6,9 +6,11 @@ from pathlib import Path
 import jsonschema
 import pytest
 
-SCHEMA_PATH = Path("schemas/dashboard_data.schema.json")
-DATA_PATH = Path(os.getenv("PA_DASHBOARD_DATA_PATH", "output/dashboard_data.json"))
-FIXTURE_PATH = Path("tests/fixtures/dashboard_data.json")
+from priorauth import paths
+
+SCHEMA_PATH = paths.SCHEMAS_DIR / "dashboard_data.schema.json"
+DATA_PATH = Path(os.getenv("PA_DASHBOARD_DATA_PATH", str(paths.OUTPUT_DIR / "dashboard_data.json")))
+FIXTURE_PATH = paths.REPO_ROOT / "tests" / "fixtures" / "dashboard_data.json"
 
 def test_dashboard_data_matches_schema():
     assert SCHEMA_PATH.exists(), "Schema file missing"

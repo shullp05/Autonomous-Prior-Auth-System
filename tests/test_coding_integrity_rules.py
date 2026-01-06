@@ -1,5 +1,5 @@
 
-from rules.coding_integrity_rules import check_admin_readiness
+from priorauth.rules.coding_integrity_rules import check_admin_readiness
 
 # Mock Requirements similar to Snapshot
 REQ_E66_OBESITY = {"E66.01", "E66.09", "E66.1", "E66.2", "E66.8", "E66.9", "E66.0", "E66.x"}

@@ -1,11 +1,7 @@
-
-
-===== Docker Build (CUDA) 2026-01-03T13:12:33Z =====
-
 #0 building with "default" instance using docker driver
 
 #1 [internal] load build definition from Dockerfile
-#1 transferring dockerfile: 894B done
+#1 transferring dockerfile: 942B done
 #1 DONE 0.0s
 
 #2 [internal] load metadata for docker.io/library/python:3.11-slim-bookworm
@@ -23,37 +19,37 @@
 #5 DONE 0.1s
 
 #4 [internal] load build context
-#4 transferring context: 15.68kB 0.0s done
-#4 DONE 0.0s
+#4 transferring context: 21.86kB 0.0s done
+#4 DONE 0.1s
 
-#6 [2/7] WORKDIR /app
+#6 [3/7] RUN apt-get update && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*
 #6 CACHED
 
-#7 [3/7] RUN apt-get update && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*
+#7 [4/7] COPY requirements.txt requirements.lock requirements-ci.txt requirements-docker-cpu.txt /tmp/
 #7 CACHED
 
-#8 [4/7] COPY requirements.txt requirements.lock requirements-ci.txt requirements-docker-cpu.txt /tmp/
+#8 [5/7] RUN pip install --no-cache-dir -r /tmp/requirements.txt
 #8 CACHED
 
-#9 [5/7] RUN pip install --no-cache-dir -r /tmp/requirements.txt
+#9 [2/7] WORKDIR /app
 #9 CACHED
 
 #10 [6/7] COPY . .
-#10 DONE 0.4s
+#10 CACHED
 
 #11 [7/7] RUN useradd -m appuser && chown -R appuser /app
-#11 DONE 2.8s
+#11 CACHED
 
 #12 exporting to image
 #12 exporting layers
-#12 exporting layers 5.9s done
-#12 exporting manifest sha256:6aeb34b09fd313c9a75d388967c74cf548ec77e63a16fbd9dab39ca386073c10 0.0s done
-#12 exporting config sha256:fb3d97c324f65db1b21bdbed2bb00991f7865c681706f938f175f294c138c3a9 0.0s done
-#12 exporting attestation manifest sha256:c7c0ff56ed2cdc832a7410d020561f5fc42b3144f5ca54658fef45017110f73b
-#12 exporting attestation manifest sha256:c7c0ff56ed2cdc832a7410d020561f5fc42b3144f5ca54658fef45017110f73b 0.1s done
-#12 exporting manifest list sha256:5fd5a16afd102405aa7d6e9968da0182076b10b552ecd9e6f7f34f263f57b966 0.0s done
+#12 exporting layers 281.4s done
+#12 exporting manifest sha256:a4eb26dea1e5c46b72507aa08d20cd31089328ffbca2b6a92f38603bb007df75 0.0s done
+#12 exporting config sha256:773ca1f9d9d3eb3459a231655872064e9f4a476af91b6d5f261966417245fb2b 0.0s done
+#12 exporting attestation manifest sha256:d8cd607103e10930d4e168761a0c3159869ce9c4a01954e21e5e485c324fd0e7
+#12 exporting attestation manifest sha256:d8cd607103e10930d4e168761a0c3159869ce9c4a01954e21e5e485c324fd0e7 0.1s done
+#12 exporting manifest list sha256:d129b8418be3bc5897b1d3fa88943bfd887aa3caa4bf8196de683212a9caf459 0.1s done
 #12 naming to docker.io/library/priorauth:cuda
 #12 naming to docker.io/library/priorauth:cuda done
 #12 unpacking to docker.io/library/priorauth:cuda
-#12 unpacking to docker.io/library/priorauth:cuda 40.3s done
-#12 DONE 46.5s
+#12 unpacking to docker.io/library/priorauth:cuda 37.1s done
+#12 DONE 318.9s
