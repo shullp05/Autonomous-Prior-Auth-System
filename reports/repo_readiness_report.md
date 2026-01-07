@@ -1,7 +1,16 @@
 # Repo Readiness Report
 
 ## Summary
-Phase 3 checks were re-run after the refactor (compileall, pytest, and verification scripts). Docker CPU/CUDA builds and tests were re-run; benchmark evidence was refreshed for deterministic and LLM runs (nemo8b 200, qwen25 100, qwen3 50, mistral 50). Socket/offline evidence remains from prior runs.
+Phase 3 checks were re-run after the refactor (compileall, pytest, and verification scripts). Docker CPU/CUDA builds and tests were re-run; benchmark evidence was refreshed for deterministic and LLM runs (nemo8b 200, qwen25 100, qwen3 50, mistral 50). Socket/offline evidence remains from prior runs. Based on the evidence below, the repo is ready for GitHub deployment.
+
+## Commands run (latest update)
+- `python -m compileall -q .` (see `reports/compileall.txt`)
+- `pytest -q` (see `reports/pytest.txt`)
+- `PYTHONPATH=src python -m priorauth.apps.agent.benchmark --deterministic-only --sample 200 --output benchmark_results.json` (see `reports/benchmark.txt`)
+- `PYTHONPATH=src python -m priorauth.apps.agent.benchmark --flavor nemo8b --sample 200 --output benchmark_results_nemo8b.json` (see `reports/benchmark_nemo8b.txt`)
+- `PYTHONPATH=src python -m priorauth.apps.agent.benchmark --flavor qwen25 --sample 100 --output benchmark_results_qwen25.json` (see `reports/benchmark_qwen25.txt`)
+- `PYTHONPATH=src python -m priorauth.apps.agent.benchmark --flavor qwen3 --sample 50 --output benchmark_results_qwen3.json` (see `reports/benchmark_qwen3.txt`)
+- `PYTHONPATH=src python -m priorauth.apps.agent.benchmark --flavor mistral --sample 50 --output benchmark_results_mistral.json` (see `reports/benchmark_mistral.txt`)
 
 ## Evidence (commands + outputs)
 - Baseline toolchain: `reports/baseline.md`
@@ -42,6 +51,8 @@ Phase 3 checks were re-run after the refactor (compileall, pytest, and verificat
 - Added a CPU-only Docker requirements file and build arg to avoid CUDA wheels (`requirements-docker-cpu.txt`, `docker/Dockerfile`).
 - Added repo-grade docs: `docs/SECURITY.md`, `docs/GOVERNANCE.md`, `docs/MODELING.md`, `docs/RUNBOOK.md`, `docs/REPRODUCIBILITY.md`.
 - Updated README/ARCHITECTURE for accuracy (defaults, RAG settings, offline mode behavior).
+- Refreshed benchmark evidence logs and modeling table (see `reports/benchmark*.txt`, `docs/MODELING.md`).
+- Refreshed pytest evidence (see `reports/pytest.txt`).
 
 ## Test results (latest rerun)
 - `pytest -q`: 265 passed, 1 skipped, 2 warnings (see `reports/pytest.txt`).
