@@ -1,57 +1,64 @@
-# 🏥 Autonomous Clinical Prior Authorization Agent (AI-Pa)
+# 🏥 Autonomous Prior Authorization Agent
 
-> **"A Deterministic-Guardrailed AI Architect for High-Stakes Clinical Decision Making."**
+Deterministic policy engine + local LLM/RAG fallback for Wegovy prior auth, producing auditable decision traces and fairness reporting.  
+**Synthetic data only. Local-first design to reduce PHI exposure; not a certified HIPAA implementation.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-2b9348?style=for-the-badge)](LICENSE)
-[![Third-Party Licenses](https://img.shields.io/badge/Third--Party_Licenses-Recorded-2d6a4f?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
-[![Python License: PSF](https://img.shields.io/badge/Python_License-PSF-2b9348?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
-[![Model License: NVIDIA OML](https://img.shields.io/badge/Model_License-NVIDIA_Open_Model_License-005f73?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
-[![Model Licenses: Upstream](https://img.shields.io/badge/Model_Licenses-Upstream_See_Modelfiles-0a9396?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
-[![Offline Mode](https://img.shields.io/badge/Offline_Mode-Localhost_Safe-1b4965?style=for-the-badge)](docs/SECURITY.md)
-[![Deterministic Engine](https://img.shields.io/badge/Deterministic_Engine-Source_of_Truth-5fa8d3?style=for-the-badge)](docs/ARCHITECTURE.md)
-[![CI](https://img.shields.io/github/actions/workflow/status/shullp05/Autonomous-Prior-Auth-System/tests.yml?branch=main&style=for-the-badge)](https://github.com/shullp05/Autonomous-Prior-Auth-System/actions/workflows/tests.yml)
+<p align="left">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/License-MIT-2b9348?style=for-the-badge"></a>
+  <a href="https://github.com/shullp05/Autonomous-Prior-Auth-System/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/shullp05/Autonomous-Prior-Auth-System/ci.yml?branch=main&style=for-the-badge&label=CI"></a>
+  <a href="https://github.com/shullp05/Autonomous-Prior-Auth-System/actions/workflows/tests.yml"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/shullp05/Autonomous-Prior-Auth-System/tests.yml?branch=main&style=for-the-badge&label=Tests"></a>
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white">
+  <img alt="Ollama" src="https://img.shields.io/badge/Ollama-Local_LLM-000000?style=for-the-badge&logo=ollama&logoColor=white">
+  <img alt="LangGraph" src="https://img.shields.io/badge/LangGraph-Workflow_Orchestration-6c757d?style=for-the-badge">
+  <img alt="RAG" src="https://img.shields.io/badge/RAG-Policy_Lookup-0a9396?style=for-the-badge">
+  <a href="docs/ARCHITECTURE.md"><img alt="Deterministic" src="https://img.shields.io/badge/Deterministic-Source_of_Truth-5fa8d3?style=for-the-badge"></a>
+  <a href="docs/SECURITY.md"><img alt="Local-first" src="https://img.shields.io/badge/Local--First-No_PHI_Required-1b4965?style=for-the-badge"></a>
+</p>
 
-[![LangChain: MIT](https://img.shields.io/badge/LangChain-MIT-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
-[![LangGraph: MIT](https://img.shields.io/badge/LangGraph-MIT-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
-[![ChromaDB: Apache-2.0](https://img.shields.io/badge/ChromaDB-Apache--2.0-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
-[![Ollama: MIT](https://img.shields.io/badge/Ollama-MIT-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
-[![BCEmbedding: Apache-2.0](https://img.shields.io/badge/BCEmbedding-Apache--2.0-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
-[![PyTorch: BSD-3-Clause](https://img.shields.io/badge/PyTorch-BSD--3--Clause-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
-[![Pydantic: MIT](https://img.shields.io/badge/Pydantic-MIT-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
-[![Pytest: MIT](https://img.shields.io/badge/Pytest-MIT-6c757d?style=for-the-badge)](docs/THIRD_PARTY_LICENSES.md)
+## Hiring Manager Quick Scan (30 seconds)
 
-![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-Pytest-brightgreen?style=for-the-badge)
-![LangChain](https://img.shields.io/badge/LangChain-Integration-DD0031?style=for-the-badge&logo=langchain&logoColor=white)
-![RAG](https://img.shields.io/badge/Architecture-RAG-orange?style=for-the-badge)
-![Ollama](https://img.shields.io/badge/LLM-Local%20Inference-000000?style=for-the-badge&logo=ollama&logoColor=white)
+- **Does:** Evaluates Wegovy PA eligibility (approve/deny/needs-review) from CSV/FHIR using deterministic rules + evidence-grounded LLM narrative.
+- **Unique:** Deterministic engine is the **source of truth**; LLM is constrained to extraction + justification with citations.
+- **Proves:** workflow orchestration (LangGraph), RAG (Chroma + embeddings/rerank), strict contracts (Pydantic), adversarial testing, reproducible audit artifacts, React+D3 dashboard.
+- **Run (3–5 min):**
+  ```bash
+  pip install -r requirements.lock
+  python -m priorauth.apps.agent.chaos_monkey
+  python -m priorauth.apps.agent.setup_rag
+  python -m priorauth.apps.agent.batch_runner
+  cd apps/ui && npm i && npm run dev
+
+## **Outputs:** `dashboard_data.json`, `governance_report.json`, `.last_model_trace.json` (+ `audit_log.jsonl` chained; gitignored).
+
+## Demo (placeholders)
+
+**90-second walkthrough (add link):**
+
+* [End-to-end demo clip (placeholder)](docs/media/demo-clip.mp4)
+* [Short demo clip (placeholder)](docs/media/demo-clip-short.mp4)
+
+**Screenshots (add 3–5):**
+![Dashboard UI (placeholder)](docs/media/screenshot-dashboard.svg)
+![Governance UI (placeholder)](docs/media/screenshot-governance.svg)
 
 ---
 
 ## 🚀 Executive Summary
 
-The **Autonomous Clinical Prior Authorization Agent (AI-Pa)** automates the high-liability process of medical prior authorization for Wegovy (semaglutide) weight management prescriptions.
+This repo demonstrates an end-to-end prior authorization evaluator for Wegovy (semaglutide) weight management prescriptions.
 
-Unlike standard chatbots, AI-Pa uses a **Split-Brain Architecture** where the **deterministic policy engine** is the source of truth and the LLM is constrained to evidence-grounded narrative and extraction.
+Instead of treating an LLM as an oracle, the system uses a split-responsibility design:
 
-AI-Pa ingests patient data (CSV/FHIR), retrieves policy guidelines via **RAG**, and executes a multi-step audit to render a verdict (Approve/Deny) with evidence trails and appeal generation. The default inference path is local-only (Ollama), and offline mode can block outbound egress while still permitting localhost calls. The repo ships synthetic data only; no PHI is included.
+* **Deterministic policy engine:** authoritative eligibility + safety rules (reproducible, testable)
+* **LLM + RAG:** constrained to evidence-grounded extraction + narrative justification and optional letter artifacts
 
----
-
-## Media (placeholders)
-
-![Dashboard UI placeholder](docs/media/screenshot-dashboard.svg)
-![Governance UI placeholder](docs/media/screenshot-governance.svg)
-
-Video placeholders:
-- [End-to-end demo clip (placeholder)](docs/media/demo-clip.mp4)
-- [Short demo clip (placeholder)](docs/media/demo-clip-short.mp4)
+The default inference path is local-only (Ollama). Optional offline mode can block outbound egress while still permitting localhost calls. The repo ships synthetic data only; no PHI is included.
 
 ---
 
 ## 🛠️ Architecture & Workflow
 
-The system utilizes a **Stateful Graph Workflow (LangGraph)** to orchestrate the decision process, ensuring auditability and retrievability at every step.
+The system uses a stateful workflow graph (LangGraph) to orchestrate retrieval, audit, and verification.
 
 ### Workflow Diagram
 
@@ -81,111 +88,97 @@ graph TD
 ```
 
 ### Data Flow
-1.  **Ingestion**: Patient observations (BMI, Conditions, Meds) are loaded from CSV/FHIR.
-2.  **Retrieval**: ChromaDB retrieves policy atoms via MedEmbed embeddings (k=25 by default), with optional BCE reranking; the top 8 docs feed the LLM by default.
-3.  **Audit**: A local LLM (default flavor `nemo8b`, override via `PA_AUDIT_MODEL_FLAVOR`) analyzes clinical data against retrieved policy evidence.
-4.  **Governance**: A deterministic Python layer (`src/priorauth/policy_engine.py`) cross-verifies the LLM's findings against safety and eligibility rules.
-5.  **Output**: Structured JSON decisions plus optional appeal letter artifacts.
+
+1. **Ingestion:** Patient observations (BMI, conditions, meds) loaded from CSV/FHIR.
+2. **Retrieval:** ChromaDB retrieves policy atoms via MedEmbed embeddings (k=25 by default), optional BCE reranking; top 8 docs feed the LLM by default.
+3. **Audit:** Local LLM analyzes clinical data against retrieved policy evidence (override model via `PA_AUDIT_MODEL_FLAVOR`).
+4. **Verification:** Deterministic Python layer cross-verifies the LLM findings against safety + eligibility rules.
+5. **Output:** Structured JSON decisions + optional letter artifacts + audit/fairness reports.
 
 ---
 
 ## 🔬 Technical Deep Dive
 
 ### Core Stack
-*   **Language**: Python 3.11+
-*   **Orchestration**: LangGraph, LangChain
-*   **Vector Query**: ChromaDB, BCEmbedding (Reranker)
-*   **LLM Serving**: Ollama (Local) - Default: `pa-audit-nemotron-cascade8b:latest` via `PA_AUDIT_MODEL_FLAVOR=nemo8b` (custom Modelfile; raw models available via `PA_USE_RAW_MODELS=true`)
-*   **Validation**: Pydantic (Strict Schema Enforcement)
-*   **Testing**: Pytest (unit, integration, adversarial, and safety tests)
+
+* **Language:** Python 3.11+
+* **Orchestration:** LangGraph, LangChain
+* **Vector Query:** ChromaDB, BCEmbedding (reranker)
+* **LLM Serving:** Ollama (Local) — default flavor `nemo8b` (`pa-audit-nemotron-cascade8b:latest`)
+* **Validation:** Pydantic (strict schema enforcement)
+* **Testing:** Pytest (unit, integration, adversarial, and safety tests)
 
 ### Key Features
-*   **🛡️ Deterministic Guardrails**: Prevents the "black box" problem. Safety exclusions (e.g., Pregnancy, MTC, concurrent GLP-1) are hard-coded checks that override any AI hallucination.
-*   **📚 Dynamic Policy Parsing**: Automatically parses policy guidelines into structured JSON snapshots (`RX-WEG-2025.json`) with SHA-256 hashing for version control.
-*   **📉 RAG with Reranking**: Two-stage retrieval (Vector Search → Cross-Encoder Reranking) ensures the AI sees only the most relevant policy clauses.
-*   **⚖️ Governance Audit**: FNR (False Negative Rate) parity analysis using Wilson CI and two-proportion z-tests to detect bias across demographic groups.
+
+* **Deterministic guardrails:** Safety exclusions (e.g., pregnancy, MTC, concurrent GLP-1) override any LLM output.
+* **Policy snapshotting:** Parses policy guidelines into versioned JSON (`RX-WEG-2025.json`) with SHA-256 hashing.
+* **RAG + reranking:** Two-stage retrieval (vector search → cross-encoder rerank) narrows context to relevant clauses.
+* **Governance audit:** FNR parity analysis using Wilson CI + two-proportion z-tests across demographic slices.
 
 ### Multi-Layer Safety Model
 
-| Layer | Component | Description |
-|-------|-----------|-------------|
-| 1 | LLM Output | Pydantic `AuditResult` schema validation |
-| 2 | JSON Parsing | Robust `_extract_json_object()` with fallbacks |
-| 3 | Python Guardrails | `_apply_policy_guardrails()` enforces hard rules |
-| 4 | Deterministic Override | `evaluate_eligibility()` always runs as cross-check |
-| 5 | Governance Audit | `run_governance_audit()` for FNR parity |
+| Layer | Component              | Description                                         |
+| ----: | ---------------------- | --------------------------------------------------- |
+|     1 | LLM Output             | Pydantic `AuditResult` schema validation            |
+|     2 | JSON Parsing           | Robust `_extract_json_object()` with fallbacks      |
+|     3 | Python Guardrails      | `_apply_policy_guardrails()` enforces hard rules    |
+|     4 | Deterministic Override | `evaluate_eligibility()` always runs as cross-check |
+|     5 | Governance Audit       | `run_governance_audit()` for FNR parity             |
 
 ---
 
 ## 📊 Dashboard Metrics & Definitions
 
-The analytics dashboard provides real-time visibility into the prior authorization process. All metrics are computed deterministically using the **Metrics Contract** (`apps/ui/src/metricsEngine.js`).
+The analytics dashboard computes metrics deterministically using the Metrics Contract (`apps/ui/src/metricsEngine.js`).
 
 ### Status Taxonomy
-| Display Label | Definition | Action Required |
-|:---|:---|:---|
-| **Meets Criteria** | Clinical data fully satisfies policy requirements (Clinical + Admin). | None (Auto-Approved) |
-| **Needs Clarification** | Ambiguous terms found (e.g., "elevated BP"). | **Manual Review** |
-| **Missing Required Data** | Essential observation data absent. | **Provider Outreach** |
-| **CDI Required** | Clinical eligibility met, but missing strictly enforced anchor codes (e.g., E66.x). | **Physician Query** |
-| **Safety Signal** | Historical or potential safety risk detected; requires human confirmation. | **Safety Verification** |
-| **Safety Contraindication** | Active "Hard Stop" detected (e.g., Pregnancy). | None (Auto-Denied) |
-| **Not Eligible** | Clinical data explicitly violates policy criteria. | None (Auto-Denied) |
 
-### Key Performance Indicators (KPIs)
-
-*   **Revenue Secured**: Total value of all `APPROVED` cases.
-*   **Revenue at Risk**: Total value of `CDI_REQUIRED` cases (recoverable with administrative fix).
-*   **Cost Avoidance**: Total value of all `DENIED` cases.
-*   **Needs Review**: Count of manual touchpoints required (`Clarification` + `Missing Data` + `Safety Signal` + `CDI`).
-
-### Hours Saved Calculation
-Distinctly separates "System Processing Velocity" from "Staff Governance Assumptions".
-
-*   **Processing Velocity (System)**: Use `python -m priorauth.apps.agent.benchmark` to measure on your dataset (see `reports/benchmark.txt` for the latest local run).
-*   **Staff Hours Saved (Governance)**:
-    *   **Formula**: `Auto-Resolved Cases × Governance Constant`
-    *   **Assumption**: Define per-organization (e.g., minutes per complex PA review).
-    *   **Basis**: Purely an ROI input, unrelated to compute speed.
+| Display Label               | Definition                                                      | Action Required      |
+| :-------------------------- | :-------------------------------------------------------------- | :------------------- |
+| **Meets Criteria**          | Clinical data satisfies policy requirements (clinical + admin). | None (Auto-Approved) |
+| **Needs Clarification**     | Ambiguous terms found (e.g., “elevated BP”).                    | Manual Review        |
+| **Missing Required Data**   | Essential observation data absent.                              | Provider Outreach    |
+| **CDI Required**            | Clinically eligible but missing anchor codes (e.g., E66.x).     | Physician Query      |
+| **Safety Signal**           | Potential safety risk detected; requires confirmation.          | Safety Verification  |
+| **Safety Contraindication** | Active hard stop detected (e.g., pregnancy).                    | None (Auto-Denied)   |
+| **Not Eligible**            | Violates policy criteria.                                       | None (Auto-Denied)   |
 
 ---
 
-## 🔒 Credibility Hardening
-Security and trust are architectural first principles, not afterthoughts.
+## 🔒 Security & Reproducibility Notes
 
-### 1. Offline Enforcement & Reproducibility
-*   **Offline Enforcement**: Runtime patching of `socket`, `getaddrinfo`, `urllib`, and `requests` blocks outbound egress while allowing localhost (Ollama).
-    *   Enabled via `PA_OFFLINE_MODE=true` (opt-in).
-    *   Raises standard network exceptions when blocked; loopback aliases remain allowed by default.
-*   **Offline Env Guardrails**: `HF_HUB_OFFLINE=1`, `HF_HUB_DISABLE_TELEMETRY=1`, `TRANSFORMERS_OFFLINE=1`, `LANGSMITH_DISABLED=true`, and `ANONYMIZED_TELEMETRY=false` are set in offline runtime scripts and docker compose.
-*   **Dependency Locking**: `requirements.lock` generated via `scripts/freeze_dependencies.sh`.
+This repo is local-first by design and supports offline enforcement options.
 
-### 2. Tamper-Evident Audit
-*   **Cryptographic Chaining**: All decisions are logged to `audit_log.jsonl` using SHA-256 hash chaining (runtime artifact; gitignored).
-*   **Verification**: A standalone script (`verify_audit.py`) detects any modification, deletion, or reordering of the log history.
-*   **Centralized Logging**: `src/priorauth/audit_logger.py` singleton captures every automated decision (input + output).
+### Offline Enforcement & Reproducibility
 
-### 3. Coding Integrity Overlay (CDI)
-*   **Clinical ≠ Administrative**: A patient can be clinically eligible (BMI 35) but administratively incomplete (Missing ICD-10 E66.9).
-*   **Automated Physician Query**: The system detects this gap and generates specific query language to resolve the coding deficiency without a clinical denial.
+* **Offline enforcement:** runtime patching of `socket`, `getaddrinfo`, `urllib`, and `requests` blocks outbound egress while allowing localhost (Ollama).
+
+  * Enabled via `PA_OFFLINE_MODE=true` (opt-in).
+* **Offline env guardrails:** `HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`, `LANGSMITH_DISABLED=true`, etc. set in offline scripts/compose.
+* **Dependency locking:** `requirements.lock` generated via `scripts/freeze_dependencies.sh`.
+
+### Tamper-Evident Audit (runtime artifact)
+
+* **Hash chaining:** decisions logged to `audit_log.jsonl` with SHA-256 chaining (gitignored).
+* **Verification:** `verify_audit.py` detects modification/deletion/reordering.
 
 ---
 
 ## 📂 Project Structure
 
 ```text
-/root/projects/PriorAuth
-├── src/priorauth/          # 🧠 Core package (agent, policy, governance)
+PriorAuth/
+├── src/priorauth/          # Core package (agent, policy, governance)
 │   ├── agent_logic.py      # LangGraph orchestration
 │   ├── policy_engine.py    # Deterministic rules
 │   ├── governance_audit.py # Fairness audit + parity checks
 │   └── apps/               # CLI entrypoints (agent + api)
-├── apps/ui/                # 📊 React/Vite analytics dashboard
-├── docker/                 # 🐳 Dockerfile + compose
-├── docs/                   # 📚 Architecture, security, runbook, modeling
-├── policies/               # 📂 JSON Policy Snapshots (Version Controlled)
-├── tests/                  # 🧪 Pytest suite (unit + safety coverage)
-└── output/                 # 📊 Generated artifacts (CSVs, Logs, Reports)
+├── apps/ui/                # React/Vite analytics dashboard
+├── docker/                 # Dockerfile + compose
+├── docs/                   # Architecture, security, runbook, modeling
+├── policies/               # JSON Policy Snapshots (version controlled)
+├── tests/                  # Pytest suite (unit + safety coverage)
+└── output/                 # Generated artifacts (CSVs, logs, reports)
 ```
 
 ---
@@ -193,79 +186,43 @@ Security and trust are architectural first principles, not afterthoughts.
 ## 🚦 Getting Started
 
 ### Prerequisites
-*   Python 3.11+
-*   Conda/Micromamba (recommended: `revenue_agent` environment)
-*   [Ollama](https://ollama.ai/) (for local LLM inference)
+
+* Python 3.11+
+* Conda/Micromamba (optional)
+* [Ollama](https://ollama.ai/) (local LLM inference)
 
 ### Installation
-1.  **Clone the repository**
-    ```bash
-    git clone https://github.com/your-username/autonomous-prior-auth.git
-    cd autonomous-prior-auth
-    ```
 
-2.  **Install Dependencies**
-    ```bash
-    pip install -r requirements.lock
-    # or: pip install -r requirements.txt (dev installs)
-    ```
-
-### Offline Artifacts (optional)
-Build wheelhouse + model staging (online build step):
 ```bash
-scripts/build_artifacts_linux.sh requirements.lock
-# Windows:
-# powershell -ExecutionPolicy Bypass -File scripts/build_artifacts_windows.ps1 -RequirementsFile requirements.lock
+git clone https://github.com/your-username/autonomous-prior-auth.git
+cd autonomous-prior-auth
+pip install -r requirements.lock
 ```
 
-Install from wheelhouse only (offline runtime):
-```bash
-scripts/install_offline_linux.sh requirements.lock
-# Windows:
-# powershell -ExecutionPolicy Bypass -File scripts/install_offline_windows.ps1 -RequirementsFile requirements.lock
-```
-This follows a **build-time online / run-time offline** split: download wheels/models once, then install with `--no-index --find-links` only.
+### Environment
 
-### Docker (CPU default)
-```bash
-docker build -f docker/Dockerfile --build-arg REQUIREMENTS_FILE=requirements-docker-cpu.txt -t priorauth:local .
-docker run --rm priorauth:local pytest -q
-```
+Create a `.env` (or rely on defaults in `src/priorauth/config.py`):
 
-### Docker (CUDA build)
-```bash
-docker build -f docker/Dockerfile --build-arg REQUIREMENTS_FILE=requirements.txt -t priorauth:cuda .
-docker run --rm priorauth:cuda pytest -q
+```ini
+PA_AUDIT_MODEL_FLAVOR=nemo8b
+PA_EMBED_MODEL=kronos483/MedEmbed-large-v0.1:latest
 ```
-CUDA builds download large NVIDIA CUDA wheels and require a compatible NVIDIA runtime.
-
-### Docker (Black-box offline, no network)
-```bash
-docker compose -f docker/docker-compose.blackbox.yml up --build
-```
-This deployment runs the agent with `network_mode: "none"` and read-only `/models` mounts.
-
-3.  **Setup Environment**
-    Create a `.env` file (or rely on defaults in `src/priorauth/config.py`):
-    ```ini
-    PA_AUDIT_MODEL_FLAVOR=nemo8b
-    PA_EMBED_MODEL=kronos483/MedEmbed-large-v0.1:latest
-    ```
 
 ### Execution
-**Run a Batch Simulation:**
+
 ```bash
-# 1. Generate Synthetic Data
+# 1) Generate synthetic data
 python -m priorauth.apps.agent.chaos_monkey
 
-# 2. Setup Vector Store
+# 2) Setup vector store
 python -m priorauth.apps.agent.setup_rag
 
-# 3. Run the Agent
+# 3) Run batch
 python -m priorauth.apps.agent.batch_runner
 ```
 
-**Runtime Modes (Letters + Offline):**
+### Runtime Modes (Letters + Offline)
+
 ```bash
 # Deterministic letters (default, zero LLM calls)
 PA_LETTER_MODE=deterministic python -m priorauth.apps.agent.batch_runner
@@ -273,39 +230,21 @@ PA_LETTER_MODE=deterministic python -m priorauth.apps.agent.batch_runner
 # Ollama letters (requires local Ollama/model)
 PA_LETTER_MODE=ollama python -m priorauth.apps.agent.batch_runner
 
-# Optional: allow explicit fallback if Ollama is unavailable
+# Allow explicit fallback if Ollama is unavailable
 PA_ALLOW_LETTER_FALLBACK=1 PA_LETTER_MODE=ollama python -m priorauth.apps.agent.batch_runner
 
-# Offline deterministic (no sockets allowed)
+# Offline deterministic (no external egress)
 scripts/run_offline_deterministic.sh
 
 # Offline Ollama (loopback allowed, external blocked)
 scripts/run_offline_ollama.sh
 ```
 
-Offline enforcement note: **offline ≠ no sockets allowed**. Offline mode blocks external egress while
-optionally allowing loopback for local Ollama; set `PA_OFFLINE_ALLOW_LOCALHOST=false` to block all sockets.
-CI/sandbox note: if your environment blocks all sockets, `PA_LETTER_MODE=ollama` will surface `LLM_UNAVAILABLE`;
-use deterministic mode or run Ollama locally with loopback allowed.
+Offline enforcement note: **offline ≠ “no sockets allowed.”** Offline mode blocks external egress while optionally allowing loopback for local Ollama. Set `PA_OFFLINE_ALLOW_LOCALHOST=false` to block all sockets.
 
-**Run Verification Tests:**
-```bash
-pytest -q
-```
-
----
-
-## 🧪 Test Coverage
-
-The test suite includes:
-- **Adversarial Tests**: Edge cases, boundary conditions, ambiguous terms
-- **Safety Tests**: Zero false approvals for MTC, pregnancy, concurrent GLP-1
-- **Policy Integration**: Comorbidity detection, BMI thresholds
-- **Statistical Tests**: Wilson CI, two-proportion z-test edge cases
-- **JSON Extraction**: Robust parsing from LLM output
+### Tests
 
 ```bash
-# Run all tests
 pytest -q
 ```
 
@@ -313,4 +252,25 @@ Local evidence from this repo run: `reports/pytest.txt`.
 
 ---
 
-*Engineered with precision. Designed for trust.*
+## 🧪 Test Coverage
+
+The test suite includes:
+
+* Adversarial tests (edge cases, boundary conditions, ambiguous terms)
+* Safety tests (zero false approvals for MTC, pregnancy, concurrent GLP-1)
+* Policy integration (comorbidity detection, BMI thresholds)
+* Statistical tests (Wilson CI, two-proportion z-test edge cases)
+* JSON extraction (robust parsing from LLM output)
+
+---
+
+## 📜 Licensing & Attribution
+
+* **Repository:** MIT — see [LICENSE](LICENSE)
+* **Third-party licenses:** documented in [docs/THIRD_PARTY_LICENSES.md](docs/THIRD_PARTY_LICENSES.md)
+* **Model licensing:** see [docs/THIRD_PARTY_LICENSES.md#models](docs/THIRD_PARTY_LICENSES.md#models)
+
+<a href="docs/THIRD_PARTY_LICENSES.md"><img alt="Third-party licenses" src="https://img.shields.io/badge/Third--Party_Licenses-Documented-2d6a4f?style=for-the-badge"></a> <a href="docs/THIRD_PARTY_LICENSES.md#models"><img alt="Model licensing" src="https://img.shields.io/badge/Model_Licensing-Documented-005f73?style=for-the-badge"></a>
+
+---
+
