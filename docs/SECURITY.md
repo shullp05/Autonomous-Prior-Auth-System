@@ -27,13 +27,13 @@ Behavior:
 - Loopback aliases (e.g., `localhost`, `127.0.0.1`, `::1`) remain allowed by default so local Ollama calls keep working.
 
 ## Audit logging
-- `audit_log.jsonl` uses SHA-256 hash chaining for tamper evidence (runtime artifact; gitignored).
-- Verify with `python -m priorauth.tools.verify_audit`.
+- [output/audit_log.jsonl](../output/audit_log.jsonl) uses SHA-256 hash chaining for tamper evidence (runtime artifact; gitignored).
+- Verify with `python -m priorauth.tools.verify_audit` ([src/priorauth/tools/verify_audit.py](../src/priorauth/tools/verify_audit.py)).
 
 ## Data handling
 - The repository ships synthetic data only; no PHI is included.
-- Use `.env` for local secrets and keep them out of git (ignored by `.gitignore`).
-- Generated artifacts (e.g., `output/`, `chroma_db/`) are ignored by default.
+- Use a local `.env` file for secrets and keep them out of git (ignored by [.gitignore](../.gitignore)).
+- Generated artifacts (e.g., [output/](../output/), [chroma_db/](../chroma_db/)) are ignored by default.
 
 ## Limitations
 - Offline mode is process-level patching, not a full firewall.
@@ -41,4 +41,4 @@ Behavior:
 - Model downloads should be pre-cached; offline mode will block external pulls.
 
 ## Verification
-- `pytest -q tests/test_offline_mode.py` validates outbound blocking and localhost allowances.
+- `pytest -q tests/test_offline_mode.py` validates outbound blocking and localhost allowances (see [tests/test_offline_mode.py](../tests/test_offline_mode.py)).

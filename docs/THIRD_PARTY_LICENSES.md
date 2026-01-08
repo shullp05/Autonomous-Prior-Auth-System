@@ -2,11 +2,11 @@
 
 This file records license metadata for core components used by this repository.
 The entries below were captured from the local Python environment package metadata
-and from the Ollama Modelfiles in `models/`. Verify upstream license terms before
+and from the Ollama Modelfiles in [models/](../models/). Verify upstream license terms before
 redistribution or commercial use.
 
 ## Project license
-- PriorAuth repository: MIT License (see `LICENSE`).
+- PriorAuth repository: MIT License (see [LICENSE](../LICENSE)).
 
 ## Language runtime
 - Python 3.11 — PSF License (standard Python license).
@@ -27,9 +27,9 @@ redistribution or commercial use.
 
 ## Models (Ollama Modelfiles)
 - pa-audit-nemotron-cascade8b: LICENSE "NVIDIA Open Model License" declared in
-  `models/pa-audit-nemotron-cascade8b/Modelfile`.
+  [models/pa-audit-nemotron-cascade8b/Modelfile](../models/pa-audit-nemotron-cascade8b/Modelfile).
 - pa-audit-nemo-cascade4b: LICENSE "NVIDIA Open Model License" declared in
-  `models/pa-audit-nemo-cascade4b/Modelfile`.
+  [models/pa-audit-nemo-cascade4b/Modelfile](../models/pa-audit-nemo-cascade4b/Modelfile).
 - pa-audit-qwen25, pa-audit-qwen3, pa-audit-mistral, pa-audit-ministral3,
   pa-audit-ministral8: Modelfiles do not declare a license. Refer to upstream
   model cards before redistribution.

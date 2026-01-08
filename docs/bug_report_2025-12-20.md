@@ -3,7 +3,7 @@
 **Date:** 2025-12-20  
 **Repository:** /root/projects/PriorAuth  
 **Analysis Duration:** ~1 Hour  
-**Status:** Historical report. Verification steps here were not re-run during the current repo-ready pass. See `reports/` for current evidence.
+**Status:** Historical report. Verification steps here were not re-run during the current repo-ready pass. See [reports/](../reports/) for current evidence.
 
 ## Executive Summary
 
@@ -18,22 +18,22 @@ A comprehensive "Deep Clean" analysis of the repository was conducted using Phas
 
 ### BUG-001: Audit Logging Gap (Backend)
 - **Severity:** CRITICAL
-- **Issue:** The `src/priorauth/policy_engine.py` was failing to log Approved/Denied/Safety decisions to the audit trail because of early return statements located *before* the logging call. Only `CDI_REQUIRED` outcomes were being logged.
+- **Issue:** The [src/priorauth/policy_engine.py](../src/priorauth/policy_engine.py) was failing to log Approved/Denied/Safety decisions to the audit trail because of early return statements located *before* the logging call. Only `CDI_REQUIRED` outcomes were being logged.
 - **Fix:** Refactored the engine to wrap the decision logic in a `evaluate_eligibility` wrapper that guarantees logging for *all* outcomes.
-- **Verification:** Reported: `tests/test_audit_bug.py` PASS.
+- **Verification:** Reported: [tests/test_audit_bug.py](../tests/test_audit_bug.py) PASS.
 
 ### BUG-002: Dashboard Crash (Frontend)
 - **Severity:** CRITICAL
-- **Issue:** `apps/ui/src/App.jsx` referenced `filteredData` which was undefined, causing the application to crash immediately upon rendering the table.
+- **Issue:** [apps/ui/src/App.jsx](../apps/ui/src/App.jsx) referenced `filteredData` which was undefined, causing the application to crash immediately upon rendering the table.
 - **Fix:** Implemented the missing `useMemo` logic to filter and sort the data based on `searchTerm` and `sortConfig`.
 - **Verification:** Reported: build successful (`npm run build`).
 
 ## Code Quality Improvements
 
-1. **React Anti-Pattern**: Removed synchronous state update inside `useEffect` in `apps/ui/src/TraceBanner.jsx` to prevent potential render loops (ESLint error).
-2. **Hygiene**: Removed unused imports (`re`, `psutil`) from `src/priorauth/agent_logic.py` and (`clsx`, `formatters`) from `apps/ui/src/App.jsx`.
-3. **Tests**: Removed obsolete test `tests/test_agent_logic_safety.py` which tested non-existent internal locking mechanisms.
+1. **React Anti-Pattern**: Removed synchronous state update inside `useEffect` in [apps/ui/src/TraceBanner.jsx](../apps/ui/src/TraceBanner.jsx) to prevent potential render loops (ESLint error).
+2. **Hygiene**: Removed unused imports (`re`, `psutil`) from [src/priorauth/agent_logic.py](../src/priorauth/agent_logic.py) and (`clsx`, `formatters`) from [apps/ui/src/App.jsx](../apps/ui/src/App.jsx).
+3. **Tests**: Removed an obsolete agent-logic safety test that covered non-existent internal locking mechanisms.
 
 ## Remaining Risks / Environment Notes
 
-- **RAG Tests**: Reported: `tests/test_rag_rerank_sanity.py` failing due to a `langchain_core` environment issue. This should be investigated if it reproduces in the current environment.
+- **RAG Tests**: Reported: [tests/test_rag_rerank_sanity.py](../tests/test_rag_rerank_sanity.py) failing due to a `langchain_core` environment issue. This should be investigated if it reproduces in the current environment.

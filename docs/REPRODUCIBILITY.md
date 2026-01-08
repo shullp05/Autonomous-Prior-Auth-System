@@ -6,37 +6,37 @@ This project favors deterministic policy logic with evidence-first artifacts. Us
 ```bash
 bash scripts/freeze_dependencies.sh
 ```
-Generates `requirements.lock` from the active environment.
+Script: [scripts/freeze_dependencies.sh](../scripts/freeze_dependencies.sh). Generates [requirements.lock](../requirements.lock) from the active environment.
 
 ## Policy snapshot (source of truth)
 ```bash
 python -m priorauth.policy_snapshot
 ```
-Writes the policy snapshot (default `policies/RX-WEG-2025.json`) from `UpdatedPAGuidelines.txt`.
+Writes the policy snapshot (default [policies/RX-WEG-2025.json](../policies/RX-WEG-2025.json)) from [policies/source/UpdatedPAGuidelines.txt](../policies/source/UpdatedPAGuidelines.txt).
 
 ## RAG index
 ```bash
 python -m priorauth.apps.agent.setup_rag
 ```
-Builds `chroma_db/` and validates embedding dimensions.
+Builds [chroma_db/](../chroma_db/) and validates embedding dimensions.
 
 ## Synthetic dataset + scenario manifest
 ```bash
 python -m priorauth.apps.agent.chaos_monkey
 ```
-Generates `output/` CSVs and `output/scenario_manifest.json`.
+Generates [output/](../output/) CSVs and [output/scenario_manifest.json](../output/scenario_manifest.json).
 
 ## Batch run outputs
 ```bash
 python -m priorauth.apps.agent.batch_runner
 ```
-Writes dashboard outputs and audit artifacts to `output/`.
+Writes dashboard outputs and audit artifacts to [output/](../output/).
 
 ## Governance report
 ```bash
 python -m priorauth.governance_audit
 ```
-Writes `output/governance_report.json`.
+Writes [output/governance_report.json](../output/governance_report.json).
 
 ## Benchmark
 ```bash
@@ -44,6 +44,7 @@ python -m priorauth.apps.agent.benchmark --deterministic-only
 # To include LLM runs (requires Ollama models):
 # python -m priorauth.apps.agent.benchmark --flavor nemo8b
 ```
+Module: [src/priorauth/apps/agent/benchmark.py](../src/priorauth/apps/agent/benchmark.py).
 
 ## Tests
 ```bash

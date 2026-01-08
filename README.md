@@ -84,7 +84,7 @@ graph TD
 1.  **Ingestion**: Patient observations (BMI, Conditions, Meds) are loaded from CSV/FHIR.
 2.  **Retrieval**: ChromaDB retrieves policy atoms via MedEmbed embeddings (k=25 by default), with optional BCE reranking; the top 8 docs feed the LLM by default.
 3.  **Audit**: A local LLM (default flavor `nemo8b`, override via `PA_AUDIT_MODEL_FLAVOR`) analyzes clinical data against retrieved policy evidence.
-4.  **Governance**: A deterministic Python layer (`src/priorauth/policy_engine.py`) cross-verifies the LLM's findings against safety and eligibility rules.
+4.  **Governance**: A deterministic Python layer ([src/priorauth/policy_engine.py](src/priorauth/policy_engine.py)) cross-verifies the LLM's findings against safety and eligibility rules.
 5.  **Output**: Structured JSON decisions plus optional appeal letter artifacts.
 
 ---
@@ -101,7 +101,7 @@ graph TD
 
 ### Key Features
 *   **🛡️ Deterministic Guardrails**: Prevents the "black box" problem. Safety exclusions (e.g., Pregnancy, MTC, concurrent GLP-1) are hard-coded checks that override any AI hallucination.
-*   **📚 Dynamic Policy Parsing**: Automatically parses policy guidelines into structured JSON snapshots (`RX-WEG-2025.json`) with SHA-256 hashing for version control.
+*   **📚 Dynamic Policy Parsing**: Automatically parses policy guidelines into structured JSON snapshots ([policies/RX-WEG-2025.json](policies/RX-WEG-2025.json)) with SHA-256 hashing for version control.
 *   **📉 RAG with Reranking**: Two-stage retrieval (Vector Search → Cross-Encoder Reranking) ensures the AI sees only the most relevant policy clauses.
 *   **⚖️ Governance Audit**: FNR (False Negative Rate) parity analysis using Wilson CI and two-proportion z-tests to detect bias across demographic groups.
 
@@ -119,7 +119,7 @@ graph TD
 
 ## 📊 Dashboard Metrics & Definitions
 
-The analytics dashboard provides real-time visibility into the prior authorization process. All metrics are computed deterministically using the **Metrics Contract** (`apps/ui/src/metricsEngine.js`).
+The analytics dashboard provides real-time visibility into the prior authorization process. All metrics are computed deterministically using the **Metrics Contract** ([apps/ui/src/metricsEngine.js](apps/ui/src/metricsEngine.js)).
 
 ### Status Taxonomy
 | Display Label | Definition | Action Required |
@@ -142,7 +142,7 @@ The analytics dashboard provides real-time visibility into the prior authorizati
 ### Hours Saved Calculation
 Distinctly separates "System Processing Velocity" from "Staff Governance Assumptions".
 
-*   **Processing Velocity (System)**: Use `python -m priorauth.apps.agent.benchmark` to measure on your dataset (see `reports/benchmark.txt` for the latest local run).
+*   **Processing Velocity (System)**: Use `python -m priorauth.apps.agent.benchmark` to measure on your dataset (see [reports/benchmark.txt](reports/benchmark.txt) for the latest local run).
 *   **Staff Hours Saved (Governance)**:
     *   **Formula**: `Auto-Resolved Cases × Governance Constant`
     *   **Assumption**: Define per-organization (e.g., minutes per complex PA review).
@@ -158,12 +158,12 @@ Security and trust are architectural first principles, not afterthoughts.
     *   Enabled via `PA_OFFLINE_MODE=true` (opt-in).
     *   Raises standard network exceptions when blocked; loopback aliases remain allowed by default.
 *   **Offline Env Guardrails**: `HF_HUB_OFFLINE=1`, `HF_HUB_DISABLE_TELEMETRY=1`, `TRANSFORMERS_OFFLINE=1`, `LANGSMITH_DISABLED=true`, and `ANONYMIZED_TELEMETRY=false` are set in offline runtime scripts and docker compose.
-*   **Dependency Locking**: `requirements.lock` generated via `scripts/freeze_dependencies.sh`.
+*   **Dependency Locking**: [requirements.lock](requirements.lock) generated via [scripts/freeze_dependencies.sh](scripts/freeze_dependencies.sh).
 
 ### 2. Tamper-Evident Audit
-*   **Cryptographic Chaining**: All decisions are logged to `audit_log.jsonl` using SHA-256 hash chaining (runtime artifact; gitignored).
-*   **Verification**: A standalone script (`verify_audit.py`) detects any modification, deletion, or reordering of the log history.
-*   **Centralized Logging**: `src/priorauth/audit_logger.py` singleton captures every automated decision (input + output).
+*   **Cryptographic Chaining**: All decisions are logged to [output/audit_log.jsonl](output/audit_log.jsonl) using SHA-256 hash chaining (runtime artifact; gitignored). Format example: [docs/examples/audit_log.sample.jsonl](docs/examples/audit_log.sample.jsonl).
+*   **Verification**: A standalone script ([verify_audit.py](verify_audit.py)) detects any modification, deletion, or reordering of the log history.
+*   **Centralized Logging**: [src/priorauth/audit_logger.py](src/priorauth/audit_logger.py) singleton captures every automated decision (input + output).
 
 ### 3. Coding Integrity Overlay (CDI)
 *   **Clinical ≠ Administrative**: A patient can be clinically eligible (BMI 35) but administratively incomplete (Missing ICD-10 E66.9).
@@ -173,20 +173,13 @@ Security and trust are architectural first principles, not afterthoughts.
 
 ## 📂 Project Structure
 
-```text
-/root/projects/PriorAuth
-├── src/priorauth/          # 🧠 Core package (agent, policy, governance)
-│   ├── agent_logic.py      # LangGraph orchestration
-│   ├── policy_engine.py    # Deterministic rules
-│   ├── governance_audit.py # Fairness audit + parity checks
-│   └── apps/               # CLI entrypoints (agent + api)
-├── apps/ui/                # 📊 React/Vite analytics dashboard
-├── docker/                 # 🐳 Dockerfile + compose
-├── docs/                   # 📚 Architecture, security, runbook, modeling
-├── policies/               # 📂 JSON Policy Snapshots (Version Controlled)
-├── tests/                  # 🧪 Pytest suite (unit + safety coverage)
-└── output/                 # 📊 Generated artifacts (CSVs, Logs, Reports)
-```
+- [src/priorauth/](src/priorauth/) — 🧠 core package (key modules: [src/priorauth/agent_logic.py](src/priorauth/agent_logic.py), [src/priorauth/policy_engine.py](src/priorauth/policy_engine.py), [src/priorauth/governance_audit.py](src/priorauth/governance_audit.py), [src/priorauth/apps/](src/priorauth/apps/))
+- [apps/ui/](apps/ui/) — 📊 React/Vite analytics dashboard (metrics: [apps/ui/src/metricsEngine.js](apps/ui/src/metricsEngine.js))
+- [docker/](docker/) — 🐳 container tooling ([docker/Dockerfile](docker/Dockerfile), [docker/docker-compose.blackbox.yml](docker/docker-compose.blackbox.yml))
+- [docs/](docs/) — 📚 architecture, security, runbook, modeling
+- [policies/](policies/) — 📂 JSON policy snapshots (example: [policies/RX-WEG-2025.json](policies/RX-WEG-2025.json))
+- [tests/](tests/) — 🧪 pytest suite (unit + safety coverage)
+- [output/](output/) — 📊 runtime artifacts (example: [output/audit_log.jsonl](output/audit_log.jsonl); format: [docs/examples/audit_log.sample.jsonl](docs/examples/audit_log.sample.jsonl))
 
 ---
 
@@ -209,6 +202,7 @@ Security and trust are architectural first principles, not afterthoughts.
     pip install -r requirements.lock
     # or: pip install -r requirements.txt (dev installs)
     ```
+    Inputs: [requirements.lock](requirements.lock), [requirements.txt](requirements.txt).
 
 ### Offline Artifacts (optional)
 Build wheelhouse + model staging (online build step):
@@ -217,6 +211,7 @@ scripts/build_artifacts_linux.sh requirements.lock
 # Windows:
 # powershell -ExecutionPolicy Bypass -File scripts/build_artifacts_windows.ps1 -RequirementsFile requirements.lock
 ```
+Scripts: [scripts/build_artifacts_linux.sh](scripts/build_artifacts_linux.sh), [scripts/build_artifacts_windows.ps1](scripts/build_artifacts_windows.ps1). Input: [requirements.lock](requirements.lock).
 
 Install from wheelhouse only (offline runtime):
 ```bash
@@ -224,6 +219,7 @@ scripts/install_offline_linux.sh requirements.lock
 # Windows:
 # powershell -ExecutionPolicy Bypass -File scripts/install_offline_windows.ps1 -RequirementsFile requirements.lock
 ```
+Scripts: [scripts/install_offline_linux.sh](scripts/install_offline_linux.sh), [scripts/install_offline_windows.ps1](scripts/install_offline_windows.ps1). Input: [requirements.lock](requirements.lock).
 This follows a **build-time online / run-time offline** split: download wheels/models once, then install with `--no-index --find-links` only.
 
 ### Docker (CPU default)
@@ -231,22 +227,25 @@ This follows a **build-time online / run-time offline** split: download wheels/m
 docker build -f docker/Dockerfile --build-arg REQUIREMENTS_FILE=requirements-docker-cpu.txt -t priorauth:local .
 docker run --rm priorauth:local pytest -q
 ```
+Files: [docker/Dockerfile](docker/Dockerfile), [requirements-docker-cpu.txt](requirements-docker-cpu.txt).
 
 ### Docker (CUDA build)
 ```bash
 docker build -f docker/Dockerfile --build-arg REQUIREMENTS_FILE=requirements.txt -t priorauth:cuda .
 docker run --rm priorauth:cuda pytest -q
 ```
+Files: [docker/Dockerfile](docker/Dockerfile), [requirements.txt](requirements.txt).
 CUDA builds download large NVIDIA CUDA wheels and require a compatible NVIDIA runtime.
 
 ### Docker (Black-box offline, no network)
 ```bash
 docker compose -f docker/docker-compose.blackbox.yml up --build
 ```
+Compose: [docker/docker-compose.blackbox.yml](docker/docker-compose.blackbox.yml).
 This deployment runs the agent with `network_mode: "none"` and read-only `/models` mounts.
 
 3.  **Setup Environment**
-    Create a `.env` file (or rely on defaults in `src/priorauth/config.py`):
+    Create an environment file (or rely on defaults in [src/priorauth/config.py](src/priorauth/config.py)):
     ```ini
     PA_AUDIT_MODEL_FLAVOR=nemo8b
     PA_EMBED_MODEL=kronos483/MedEmbed-large-v0.1:latest
@@ -282,6 +281,7 @@ scripts/run_offline_deterministic.sh
 # Offline Ollama (loopback allowed, external blocked)
 scripts/run_offline_ollama.sh
 ```
+Scripts: [scripts/run_offline_deterministic.sh](scripts/run_offline_deterministic.sh), [scripts/run_offline_ollama.sh](scripts/run_offline_ollama.sh).
 
 Offline enforcement note: **offline ≠ no sockets allowed**. Offline mode blocks external egress while
 optionally allowing loopback for local Ollama; set `PA_OFFLINE_ALLOW_LOCALHOST=false` to block all sockets.
@@ -309,7 +309,7 @@ The test suite includes:
 pytest -q
 ```
 
-Local evidence from this repo run: `reports/pytest.txt`.
+Local evidence from this repo run: [reports/pytest.txt](reports/pytest.txt).
 
 ---
 

@@ -4,9 +4,9 @@
 Governance evaluates whether the system treats protected groups consistently for clinically eligible cases. The current focus is **equal opportunity** via false negative rate (FNR) parity.
 
 ## Methodology (current implementation)
-Implemented in `src/priorauth/governance_audit.py` and run against `output/dashboard_data.json` plus the supporting CSVs in `output/`.
+Implemented in [src/priorauth/governance_audit.py](../src/priorauth/governance_audit.py) and run against [output/dashboard_data.json](../output/dashboard_data.json) plus the supporting CSVs in [output/](../output/).
 
-- **Ground truth**: Deterministic policy logic (BMI + qualifying comorbidity + safety exclusions) derived from `src/priorauth/policy_constants.py`.
+- **Ground truth**: Deterministic policy logic (BMI + qualifying comorbidity + safety exclusions) derived from [src/priorauth/policy_constants.py](../src/priorauth/policy_constants.py).
 - **Metric**: FNR parity among *truly eligible* patients.
   - `fn_access`: eligible patients not marked APPROVED (includes DENIED/FLAGGED/etc.).
   - `fn_denied_only`: eligible patients whose outcome starts with DENIED.
@@ -18,13 +18,13 @@ Implemented in `src/priorauth/governance_audit.py` and run against `output/dashb
 
 ## Inputs and outputs
 - Inputs:
-  - `output/dashboard_data.json`
-  - `output/data_patients.csv`
-  - `output/data_observations.csv`
-  - `output/data_conditions.csv`
-  - `output/data_medications.csv`
+  - [output/dashboard_data.json](../output/dashboard_data.json)
+  - [output/data_patients.csv](../output/data_patients.csv)
+  - [output/data_observations.csv](../output/data_observations.csv)
+  - [output/data_conditions.csv](../output/data_conditions.csv)
+  - [output/data_medications.csv](../output/data_medications.csv)
 - Output:
-  - `output/governance_report.json`
+  - [output/governance_report.json](../output/governance_report.json)
 
 ## How to run
 ```bash

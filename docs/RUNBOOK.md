@@ -9,17 +9,20 @@ conda activate priorauth
 python -m pip install --upgrade pip
 python -m pip install -r requirements.lock
 ```
+Input: [requirements.lock](../requirements.lock).
 
 ## Build policy artifacts and RAG index
 ```bash
 python -m priorauth.apps.agent.chaos_monkey     # synthetic dataset + scenario manifest
 python -m priorauth.apps.agent.setup_rag         # builds chroma_db policy index
 ```
+Modules: [src/priorauth/apps/agent/chaos_monkey.py](../src/priorauth/apps/agent/chaos_monkey.py), [src/priorauth/apps/agent/setup_rag.py](../src/priorauth/apps/agent/setup_rag.py).
 
 ## Run the agent
 ```bash
 python -m priorauth.apps.agent.batch_runner
 ```
+Module: [src/priorauth/apps/agent/batch_runner.py](../src/priorauth/apps/agent/batch_runner.py).
 
 ## Letter modes
 ```bash
@@ -32,12 +35,14 @@ PA_LETTER_MODE=ollama python -m priorauth.apps.agent.batch_runner
 # Explicit fallback if Ollama is unavailable
 PA_ALLOW_LETTER_FALLBACK=1 PA_LETTER_MODE=ollama python -m priorauth.apps.agent.batch_runner
 ```
+Module: [src/priorauth/apps/agent/batch_runner.py](../src/priorauth/apps/agent/batch_runner.py).
 
 ## Offline mode (localhost-safe)
 ```bash
 export PA_OFFLINE_MODE=true
 python -m priorauth.apps.agent.batch_runner
 ```
+Module: [src/priorauth/apps/agent/batch_runner.py](../src/priorauth/apps/agent/batch_runner.py).
 
 ## Offline scripts
 ```bash
@@ -47,6 +52,7 @@ scripts/run_offline_deterministic.sh
 # Ollama (loopback allowed, external blocked)
 scripts/run_offline_ollama.sh
 ```
+Scripts: [scripts/run_offline_deterministic.sh](../scripts/run_offline_deterministic.sh), [scripts/run_offline_ollama.sh](../scripts/run_offline_ollama.sh).
 
 ## Tests
 ```bash
@@ -55,6 +61,7 @@ pytest -q
 pytest -q tests/test_offline_mode.py
 pytest -q tests/test_letter_mode_offline.py
 ```
+Tests: [tests/test_offline_mode.py](../tests/test_offline_mode.py), [tests/test_letter_mode_offline.py](../tests/test_letter_mode_offline.py).
 
 ## Benchmark
 ```bash
@@ -62,6 +69,7 @@ python -m priorauth.apps.agent.benchmark --deterministic-only
 # To include LLM runs (requires Ollama models):
 # python -m priorauth.apps.agent.benchmark --flavor nemo8b
 ```
+Module: [src/priorauth/apps/agent/benchmark.py](../src/priorauth/apps/agent/benchmark.py). Evidence: [reports/benchmark.txt](../reports/benchmark.txt).
 Note: current-year filtering uses the reference date/year if set. For
 year-stable runs, set `PA_REFERENCE_DATE` (ISO) or `PA_REFERENCE_YEAR`.
 
@@ -79,6 +87,7 @@ docker run --rm priorauth:cuda pytest -q
 # Black-box offline (no network)
 docker compose -f docker/docker-compose.blackbox.yml up --build
 ```
+Files: [docker/Dockerfile](../docker/Dockerfile), [requirements-docker-cpu.txt](../requirements-docker-cpu.txt), [requirements.txt](../requirements.txt), [docker/docker-compose.blackbox.yml](../docker/docker-compose.blackbox.yml).
 
 ## CI (GitHub Actions)
 Workflows run the same local truth:
@@ -88,6 +97,7 @@ python -m pip check
 python -m compileall -q .
 pytest -q
 ```
+Input: [requirements.lock](../requirements.lock).
 
 ## Key environment variables
 - `PA_AUDIT_MODEL_FLAVOR` (default `nemo8b`)
