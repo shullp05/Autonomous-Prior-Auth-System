@@ -427,13 +427,18 @@ def parse_guidelines(path: Path = GUIDELINE_PATH) -> dict[str, object]:
         *_dedupe_preserve([n for n in safety_notes if n and not str(n).startswith("SAFETY_EXCLUSIONS")]),
     ]
 
+    try:
+        source_file = str(path.relative_to(paths.REPO_ROOT))
+    except ValueError:
+        source_file = str(path)
+
     snapshot = {
         "policy_id": POLICY_ID,
         "title": title,
         "effective_date": (effective_date_line.split(":", 1)[1].strip() if ":" in effective_date_line else effective_date_line),
         "scope": scope,
         "excluded_scopes": excluded_scopes,
-        "source_file": path.name,
+        "source_file": source_file,
         "source_hash": _hash_file(path),
         "eligibility": {
             "adult_min_age": 18,

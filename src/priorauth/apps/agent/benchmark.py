@@ -10,7 +10,7 @@ side-by-side on the same patient cohort, measuring:
 3. **Discrepancy Analysis**: Where do they disagree and why?
 
 Usage:
-    python benchmark.py [--sample N] [--output benchmark_results.json]
+    python benchmark.py [--sample N] [--output reports/benchmark_results/benchmark_results.json]
 
 This is useful for:
 - Validating that the deterministic engine matches LLM behavior
@@ -38,6 +38,8 @@ from priorauth.policy_engine import evaluate_eligibility
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+DEFAULT_RESULTS_DIR = paths.REPO_ROOT / "reports" / "benchmark_results"
+DEFAULT_RESULTS_PATH = DEFAULT_RESULTS_DIR / "benchmark_results.json"
 _REFERENCE_YEAR: int | None = None
 
 
@@ -238,7 +240,7 @@ def normalize_verdict(verdict: str) -> str:
 
 def run_benchmark(
     sample_size: int | None = None,
-    output_path: str = "benchmark_results.json",
+    output_path: str = str(DEFAULT_RESULTS_PATH),
     skip_llm: bool = False,
     model_flavor: str = "nemo8b"
 ):
@@ -444,6 +446,7 @@ def run_benchmark(
     out_path = Path(output_path)
     if not out_path.is_absolute():
         out_path = paths.REPO_ROOT / out_path
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2)
 
@@ -475,8 +478,8 @@ Examples:
     parser.add_argument(
         "--output", "-o",
         type=str,
-        default="benchmark_results.json",
-        help="Output file path (default: benchmark_results.json)"
+        default=str(DEFAULT_RESULTS_PATH),
+        help=f"Output file path (default: {DEFAULT_RESULTS_PATH})"
     )
     parser.add_argument(
         "--deterministic-only", "-d",

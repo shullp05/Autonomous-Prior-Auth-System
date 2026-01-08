@@ -5,7 +5,7 @@ import sys
 
 from priorauth import paths
 
-AUDIT_LOG_FILE = str(paths.REPO_ROOT / "audit_log.jsonl")
+AUDIT_LOG_FILE = str(paths.OUTPUT_DIR / "audit_log.jsonl")
 
 def calculate_hash(prev_hash, timestamp, event_type, details_str):
     payload = f"{prev_hash}|{timestamp}|{event_type}|{details_str}"

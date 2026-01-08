@@ -1,16 +1,14 @@
 # Repo Readiness Report
 
 ## Summary
-Phase 3 checks were re-run after the refactor (compileall, pytest, and verification scripts). Docker CPU/CUDA builds and tests were re-run; benchmark evidence was refreshed for deterministic and LLM runs (nemo8b 200, qwen25 100, qwen3 50, mistral 50). Socket/offline evidence remains from prior runs. Based on the evidence below, the repo is ready for GitHub deployment.
+Phase 3 checks were re-run in this update (compileall, pytest, and verification scripts). Docker, offline, and benchmark evidence remains from prior runs. Based on the evidence captured below (including prior runs), the repo is ready for GitHub deployment.
 
 ## Commands run (latest update)
 - `python -m compileall -q .` (see `reports/compileall.txt`)
 - `pytest -q` (see `reports/pytest.txt`)
-- `PYTHONPATH=src python -m priorauth.apps.agent.benchmark --deterministic-only --sample 200 --output benchmark_results.json` (see `reports/benchmark.txt`)
-- `PYTHONPATH=src python -m priorauth.apps.agent.benchmark --flavor nemo8b --sample 200 --output benchmark_results_nemo8b.json` (see `reports/benchmark_nemo8b.txt`)
-- `PYTHONPATH=src python -m priorauth.apps.agent.benchmark --flavor qwen25 --sample 100 --output benchmark_results_qwen25.json` (see `reports/benchmark_qwen25.txt`)
-- `PYTHONPATH=src python -m priorauth.apps.agent.benchmark --flavor qwen3 --sample 50 --output benchmark_results_qwen3.json` (see `reports/benchmark_qwen3.txt`)
-- `PYTHONPATH=src python -m priorauth.apps.agent.benchmark --flavor mistral --sample 50 --output benchmark_results_mistral.json` (see `reports/benchmark_mistral.txt`)
+- `python tests/verify_code_enforcement.py` (see `reports/verify_code_enforcement.txt`)
+- `python debug_check.py` (see `reports/debug_check.txt`)
+- `python repo_audit.py` (see `reports/repo_audit.txt`)
 
 ## Evidence (commands + outputs)
 - Baseline toolchain: `reports/baseline.md`
@@ -53,22 +51,24 @@ Phase 3 checks were re-run after the refactor (compileall, pytest, and verificat
 - Updated README/ARCHITECTURE for accuracy (defaults, RAG settings, offline mode behavior).
 - Refreshed benchmark evidence logs and modeling table (see `reports/benchmark*.txt`, `docs/MODELING.md`).
 - Refreshed pytest evidence (see `reports/pytest.txt`).
+- Moved benchmark result JSON outputs to `reports/benchmark_results/` and updated defaults in `src/priorauth/apps/agent/benchmark.py`.
+- Moved audit log and model trace outputs under `output/` (see `src/priorauth/audit_logger.py`, `src/priorauth/agent_logic.py`).
+- Moved source guidelines into `policies/source/`, input data into `data/`, bug artifacts into `docs/bug_data/`, and static analysis outputs into `reports/static_analysis/`.
 
 ## Test results (latest rerun)
 - `pytest -q`: 265 passed, 1 skipped, 2 warnings (see `reports/pytest.txt`).
 - `python -m compileall -q .` produced no errors (see `reports/compileall.txt`).
-- `tests/verify_code_enforcement.py` ran successfully (see `reports/verify_code_enforcement.txt`).
+- `python tests/verify_code_enforcement.py` ran successfully (see `reports/verify_code_enforcement.txt`).
 - `python debug_check.py` ran (see `reports/debug_check.txt`).
 - `python repo_audit.py` ran (see `reports/repo_audit.txt`).
-- Docker CPU pytest: 265 passed, 1 skipped (see `reports/docker_test_cpu.txt`).
-- Docker CUDA pytest: 265 passed, 1 skipped, 2 warnings (see `reports/docker_test_cuda.txt`).
-- Docker socket/offline tests were not re-run in this update (see `reports/offline_socket_tests_docker.txt`).
 
 ## Prior evidence (not re-run in this update)
 - Offline-mode standalone test run (see `reports/offline_mode_tests.txt`).
 - Docker socket/offline tests (see `reports/offline_socket_tests_docker.txt`).
+- Docker CPU/CUDA builds + tests (see `reports/docker_build_cpu.txt`, `reports/docker_test_cpu.txt`, `reports/docker_build_cuda.txt`, `reports/docker_test_cuda.txt`).
 - Batch runner + governance audit (see `reports/batch_runner.txt`).
 - RAG/rerank sanity runs (see `reports/rag_rerank_sanity.txt`).
+- Benchmark runs (see `reports/benchmark.txt`, `reports/benchmark_nemo8b.txt`, `reports/benchmark_qwen25.txt`, `reports/benchmark_qwen3.txt`, `reports/benchmark_mistral.txt`).
 
 ## Limitations / notes
 - `conda info` failed in this environment due to a permission error (see `reports/baseline.md`).
@@ -77,9 +77,9 @@ Phase 3 checks were re-run after the refactor (compileall, pytest, and verificat
 - Docker socket/offline evidence is from a prior run (see `reports/offline_socket_tests_docker.txt`).
 - Benchmark + governance evidence uses synthetic Wegovy claims generated locally (see `reports/chaos_monkey.txt`).
 - LLM advisory audit JSON parse warnings were observed in prior qwen3 runs (see `reports/llm_audit_json_debug.md`).
-- Benchmark logs updated: deterministic (`reports/benchmark.txt`), nemo8b (`reports/benchmark_nemo8b.txt`), qwen25 (`reports/benchmark_qwen25.txt`), qwen3 (`reports/benchmark_qwen3.txt`), and mistral (`reports/benchmark_mistral.txt`).
+- Benchmark logs available: deterministic (`reports/benchmark.txt`), nemo8b (`reports/benchmark_nemo8b.txt`), qwen25 (`reports/benchmark_qwen25.txt`), qwen3 (`reports/benchmark_qwen3.txt`), and mistral (`reports/benchmark_mistral.txt`).
 - Secret scan matches are false positives due to `sk-` substring in `flask-cors` (see `reports/secrets_scan.md`).
-- `audit_log.jsonl` is treated as a runtime artifact (gitignored) and regenerated by batch runs.
+- `output/audit_log.jsonl` is treated as a runtime artifact (gitignored) and regenerated by batch runs.
 
 ## Next steps
 - If GPU validation is needed, run CUDA container with NVIDIA runtime and verify `torch.cuda.is_available()`.

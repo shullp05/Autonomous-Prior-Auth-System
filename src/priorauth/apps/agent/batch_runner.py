@@ -102,7 +102,7 @@ SNAPSHOT = load_policy_snapshot(SNAPSHOT_PATH, POLICY_ID)
 validate_policy_snapshot(SNAPSHOT)
 POLICY_VERSION: str = SNAPSHOT["policy_id"]
 DASHBOARD_PUBLIC_DIR = paths.UI_DIR / "public"
-TRACE_FILE = paths.REPO_ROOT / ".last_model_trace.json"
+TRACE_FILE = OUTPUT_DIR / ".last_model_trace.json"
 
 
 def _now_iso() -> str:

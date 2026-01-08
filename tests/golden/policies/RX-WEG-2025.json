@@ -454,7 +454,7 @@
     }
   ],
   "scope": "OBESITY/ CHRONIC WEIGHT MANAGEMENT  - NOT CV-RISK OR MASH PATHWAYS",
-  "source_file": "UpdatedPAGuidelines.txt",
+  "source_file": "policies/source/UpdatedPAGuidelines.txt",
   "source_hash": "01a798fae1a2f611fd7d573855461c2ee787d99ec56e2783dd7ea6838fcfff4d",
   "title": "PAYER POLICY: Chronic Weight Management (Wegovy/Semaglutide)"
 }

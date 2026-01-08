@@ -41,4 +41,4 @@ tests/test_schema_validation.py .                                        [100%]
     _torch_pytree._register_pytree_node(
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-================= 265 passed, 1 skipped, 2 warnings in 14.60s ==================
+================= 265 passed, 1 skipped, 2 warnings in 12.94s ==================

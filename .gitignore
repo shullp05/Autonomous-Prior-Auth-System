@@ -45,22 +45,21 @@ dmypy.json
 output/*
 !output/.gitkeep
 chroma_db/
-.last_model_trace.json
-audit_log.jsonl
 dashboard_data.json
 !tests/fixtures/dashboard_data.json
 governance_report.json
-orphan_report.json
+reports/orphan_report.json
 rag_sanity_out.json
 
 # Large Data Files (should be downloaded/generated, not committed)
 data_*.csv
+!data/data_*.csv
+!data/diagnosisMap.csv
 synthea-with-dependencies.jar
 *.jar
 
 # Benchmark Results (generated)
-benchmark_*.json
-benchmark_results.json
+reports/benchmark_results/
 
 # Patch Files (temporary)
 *.patch
@@ -118,4 +117,8 @@ readme_updates.md
 
 # Additional session/conversation artifacts
 additionalInfo/
+.agent/
 repo-readiness.skill
+
+# Model-local trace artifacts
+models/**/.last_model_trace.json

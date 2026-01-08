@@ -3,6 +3,7 @@ import json
 import os
 import threading
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from priorauth import paths
@@ -17,7 +18,7 @@ class AuditLogger:
     This ensures the log is append-only and tamper-evident.
     """
     _instance = None
-    LOG_FILE = str(paths.REPO_ROOT / "audit_log.jsonl")
+    LOG_FILE = str(paths.OUTPUT_DIR / "audit_log.jsonl")
 
     def __new__(cls, log_file: Optional[str] = None):
         if cls._instance is None:
@@ -30,6 +31,7 @@ class AuditLogger:
             return
 
         self.log_file = log_file or self.LOG_FILE
+        Path(self.log_file).parent.mkdir(parents=True, exist_ok=True)
         self.prev_hash = self._get_last_hash()
         self._initialized = True
 

@@ -34,7 +34,7 @@ def test_committed_snapshot_matches_parse_output():
     guideline_hash = _current_guideline_hash()
     assert (
         committed["source_hash"] == guideline_hash
-    ), "Committed snapshot is stale relative to UpdatedPAGuidelines.txt; regenerate via setup_rag.py."
+    ), "Committed snapshot is stale relative to policies/source/UpdatedPAGuidelines.txt; regenerate via setup_rag.py."
 
     generated = parse_guidelines()
     validate_policy_snapshot(committed)
@@ -65,4 +65,3 @@ def test_ambiguity_parsing():
     assert sleep_apnea is not None
     assert sleep_apnea["action"] == "MANUAL_REVIEW"
     assert "obstructive" in sleep_apnea.get("notes", "").lower()
-

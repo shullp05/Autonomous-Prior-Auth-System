@@ -304,7 +304,9 @@ def write_model_trace(model_name: str, role: str, params: dict, required_ram_gb:
         "ram_required_gb": required_ram_gb or "unknown",
     }
     try:
-        with open(".last_model_trace.json", "w", encoding="utf-8") as f:
+        trace_path = paths.OUTPUT_DIR / ".last_model_trace.json"
+        trace_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(trace_path, "w", encoding="utf-8") as f:
             json.dump(trace, f, indent=2)
     except Exception as e:
         logger.warning("Could not write model trace: %s", e)

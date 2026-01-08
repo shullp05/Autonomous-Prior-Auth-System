@@ -149,7 +149,10 @@ def audit_repo() -> dict:
 if __name__ == "__main__":
     try:
         rep = audit_repo()
-        with open(paths.REPO_ROOT / "orphan_report.json", "w", encoding="utf-8") as f:
+        reports_dir = paths.REPO_ROOT / "reports"
+        reports_dir.mkdir(parents=True, exist_ok=True)
+        report_path = reports_dir / "orphan_report.json"
+        with open(report_path, "w", encoding="utf-8") as f:
             json.dump(rep, f, indent=2)
         print(f"Audit complete. Found {rep['total_found']} items; orphans: {rep['orphan_count']}")
     except Exception as e:
