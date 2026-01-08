@@ -31,4 +31,4 @@ tests/test_rag_sections.py .                                             [ 98%]
 tests/test_repo_audit.py ....                                            [ 99%]
 tests/test_schema_validation.py .                                        [100%]
 
-======================== 265 passed, 1 skipped in 5.26s ========================
+======================== 265 passed, 1 skipped in 6.27s ========================

@@ -1,7 +1,7 @@
 # Repo Readiness Report
 
 ## Summary
-Phase 3 checks were re-run in this update (compileall, pytest, and verification scripts). Docker, offline, and benchmark evidence remains from prior runs. Based on the evidence captured below (including prior runs), the repo is ready for GitHub deployment.
+Phase 3 checks, offline-mode tests, Docker CPU/CUDA builds/tests, and Docker offline socket tests were re-run in this update. Benchmark evidence remains from prior runs. Based on the evidence captured below (including prior runs for benchmarks), the repo is ready for GitHub deployment.
 
 ## Commands run (latest update)
 - `python -m compileall -q .` (see `reports/compileall.txt`)
@@ -9,6 +9,15 @@ Phase 3 checks were re-run in this update (compileall, pytest, and verification 
 - `python tests/verify_code_enforcement.py` (see `reports/verify_code_enforcement.txt`)
 - `python debug_check.py` (see `reports/debug_check.txt`)
 - `python repo_audit.py` (see `reports/repo_audit.txt`)
+- `pytest -q tests/test_offline_mode.py` (see `reports/offline_mode_tests.txt`)
+- `pytest -q tests/test_letter_mode_offline.py` (see `reports/letter_mode_offline_tests.txt`)
+- `docker build -f docker/Dockerfile --build-arg REQUIREMENTS_FILE=requirements-docker-cpu.txt -t priorauth:local .` (see `reports/docker_build_cpu.txt`)
+- `docker run --rm priorauth:local pytest -q` (see `reports/docker_test_cpu.txt`)
+- `docker image ls priorauth:local --format '{{.Repository}}:{{.Tag}} {{.Size}}'` (see `reports/docker_image_cpu.txt`)
+- `docker build -f docker/Dockerfile --build-arg REQUIREMENTS_FILE=requirements.txt -t priorauth:cuda .` (see `reports/docker_build_cuda.txt`)
+- `docker run --rm priorauth:cuda pytest -q` (see `reports/docker_test_cuda.txt`)
+- `docker image ls priorauth:cuda --format '{{.Repository}}:{{.Tag}} {{.Size}}'` (see `reports/docker_image_cuda.txt`)
+- `docker run --rm --network none priorauth:local pytest -q tests/test_offline_mode.py tests/test_letter_mode_offline.py` (see `reports/offline_socket_tests_docker.txt`)
 
 ## Evidence (commands + outputs)
 - Baseline toolchain: `reports/baseline.md`
@@ -21,6 +30,7 @@ Phase 3 checks were re-run in this update (compileall, pytest, and verification 
 - Byte-compile: `reports/compileall.txt`
 - Tests: `reports/pytest.txt`
 - Offline-mode tests: `reports/offline_mode_tests.txt`
+- Letter-mode offline tests: `reports/letter_mode_offline_tests.txt`
 - Offline socket tests in Docker: `reports/offline_socket_tests_docker.txt`
 - Debug check: `reports/debug_check.txt`
 - Verify code enforcement: `reports/verify_code_enforcement.txt`
@@ -61,11 +71,13 @@ Phase 3 checks were re-run in this update (compileall, pytest, and verification 
 - `python tests/verify_code_enforcement.py` ran successfully (see `reports/verify_code_enforcement.txt`).
 - `python debug_check.py` ran (see `reports/debug_check.txt`).
 - `python repo_audit.py` ran (see `reports/repo_audit.txt`).
+- `pytest -q tests/test_offline_mode.py`: 6 passed (see `reports/offline_mode_tests.txt`).
+- `pytest -q tests/test_letter_mode_offline.py`: 2 passed, 1 warning (see `reports/letter_mode_offline_tests.txt`).
+- `docker run --rm priorauth:local pytest -q`: 265 passed, 1 skipped (see `reports/docker_test_cpu.txt`).
+- `docker run --rm priorauth:cuda pytest -q`: 265 passed, 1 skipped, 2 warnings (see `reports/docker_test_cuda.txt`).
+- `docker run --rm --network none priorauth:local pytest -q tests/test_offline_mode.py tests/test_letter_mode_offline.py`: 8 passed (see `reports/offline_socket_tests_docker.txt`).
 
 ## Prior evidence (not re-run in this update)
-- Offline-mode standalone test run (see `reports/offline_mode_tests.txt`).
-- Docker socket/offline tests (see `reports/offline_socket_tests_docker.txt`).
-- Docker CPU/CUDA builds + tests (see `reports/docker_build_cpu.txt`, `reports/docker_test_cpu.txt`, `reports/docker_build_cuda.txt`, `reports/docker_test_cuda.txt`).
 - Batch runner + governance audit (see `reports/batch_runner.txt`).
 - RAG/rerank sanity runs (see `reports/rag_rerank_sanity.txt`).
 - Benchmark runs (see `reports/benchmark.txt`, `reports/benchmark_nemo8b.txt`, `reports/benchmark_qwen25.txt`, `reports/benchmark_qwen3.txt`, `reports/benchmark_mistral.txt`).
@@ -74,12 +86,15 @@ Phase 3 checks were re-run in this update (compileall, pytest, and verification 
 - `conda info` failed in this environment due to a permission error (see `reports/baseline.md`).
 - Default Docker image is CPU-only; CUDA build is larger (see `reports/docker_image_cpu.txt`, `reports/docker_image_cuda.txt`).
 - CUDA image was validated via CPU-only tests; GPU runtime validation requires NVIDIA Container Toolkit and a `--gpus all` run.
-- Docker socket/offline evidence is from a prior run (see `reports/offline_socket_tests_docker.txt`).
 - Benchmark + governance evidence uses synthetic Wegovy claims generated locally (see `reports/chaos_monkey.txt`).
 - LLM advisory audit JSON parse warnings were observed in prior qwen3 runs (see `reports/llm_audit_json_debug.md`).
 - Benchmark logs available: deterministic (`reports/benchmark.txt`), nemo8b (`reports/benchmark_nemo8b.txt`), qwen25 (`reports/benchmark_qwen25.txt`), qwen3 (`reports/benchmark_qwen3.txt`), and mistral (`reports/benchmark_mistral.txt`).
 - Secret scan matches are false positives due to `sk-` substring in `flask-cors` (see `reports/secrets_scan.md`).
 - `output/audit_log.jsonl` is treated as a runtime artifact (gitignored) and regenerated by batch runs.
+
+## Risk / rollback
+- Evidence-only updates; rollback by reverting `reports/repo_readiness_report.md`, `reports/offline_mode_tests.txt`, `reports/letter_mode_offline_tests.txt`, `reports/docker_test_cpu.txt`, `reports/docker_image_cpu.txt`, and `reports/docker_test_cuda.txt`.
+- Local Docker images can be removed with `docker image rm priorauth:local priorauth:cuda` if disk space is needed.
 
 ## Next steps
 - If GPU validation is needed, run CUDA container with NVIDIA runtime and verify `torch.cuda.is_available()`.

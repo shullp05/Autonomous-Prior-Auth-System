@@ -3,7 +3,7 @@ platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0
 rootdir: /app
 configfile: pyproject.toml
 testpaths: tests
-plugins: cov-7.0.0, langsmith-0.6.0, anyio-4.12.0
+plugins: cov-7.0.0, langsmith-0.6.1, anyio-4.12.1
 collected 265 items / 1 skipped
 
 tests/test_adversarial.py .............................................. [ 17%]
@@ -41,4 +41,4 @@ tests/test_schema_validation.py .                                        [100%]
     _torch_pytree._register_pytree_node(
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-================== 265 passed, 1 skipped, 2 warnings in 5.26s ==================
+================== 265 passed, 1 skipped, 2 warnings in 3.65s ==================
