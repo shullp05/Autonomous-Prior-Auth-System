@@ -38,17 +38,6 @@ AI-Pa ingests patient data (CSV/FHIR), retrieves policy guidelines via **RAG**, 
 
 ---
 
-## Media (placeholders)
-
-![Dashboard UI placeholder](docs/media/screenshot-dashboard.svg)
-![Governance UI placeholder](docs/media/screenshot-governance.svg)
-
-Video placeholders:
-- [End-to-end demo clip (placeholder)](docs/media/demo-clip.mp4)
-- [Short demo clip (placeholder)](docs/media/demo-clip-short.mp4)
-
----
-
 ## 🛠️ Architecture & Workflow
 
 The system utilizes a **Stateful Graph Workflow (LangGraph)** to orchestrate the decision process, ensuring auditability and retrievability at every step.
