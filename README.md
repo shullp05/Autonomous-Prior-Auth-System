@@ -30,17 +30,6 @@ Deterministic policy engine + local LLM/RAG fallback for Wegovy prior auth, prod
 
 ## **Outputs:** `dashboard_data.json`, `governance_report.json`, `.last_model_trace.json` (+ `audit_log.jsonl` chained; gitignored).
 
-## Demo (placeholders)
-
-**90-second walkthrough (add link):**
-
-* [End-to-end demo clip (placeholder)](docs/media/demo-clip.mp4)
-* [Short demo clip (placeholder)](docs/media/demo-clip-short.mp4)
-
-**Screenshots (add 3–5):**
-![Dashboard UI (placeholder)](docs/media/screenshot-dashboard.svg)
-![Governance UI (placeholder)](docs/media/screenshot-governance.svg)
-
 ---
 
 ## 🚀 Executive Summary
