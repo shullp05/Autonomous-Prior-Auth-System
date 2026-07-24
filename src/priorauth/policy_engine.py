@@ -17,7 +17,11 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import Any
 
+from priorauth.audit_logger import AuditError, AuditWriteError, get_audit_logger
+from priorauth.context_rules import classify_context
+from priorauth.decision_control import Actor
 from priorauth.policy_constants import (
     BMI_MAX_REASONABLE,
     BMI_MIN_REASONABLE,
@@ -40,6 +44,7 @@ from priorauth.policy_utils import (
     normalize,
 )
 from priorauth.schema_validation import validate_policy_snapshot
+from priorauth.rules.coding_integrity_rules import check_admin_readiness
 
 logger = logging.getLogger(__name__)
 
@@ -48,10 +53,6 @@ validate_policy_snapshot(_SNAPSHOT)
 
 AMBIGUITY_RULES = _SNAPSHOT.get("ambiguities", []) or []
 
-
-from priorauth.audit_logger import get_audit_logger
-from priorauth.context_rules import classify_context
-from priorauth.rules.coding_integrity_rules import check_admin_readiness
 
 _audit_logger = get_audit_logger()
 
@@ -637,10 +638,14 @@ def evaluate_eligibility(patient_data: dict) -> EligibilityResult:
         conds = patient_data.get("conditions", []) or []
         meds = patient_data.get("meds", []) or []
 
+        actor = Actor.from_environment()
         _audit_logger.log_event(
             event_type="DECISION",
-            actor="system",
+            actor=actor.subject,
+            actor_roles=list(actor.roles),
             patient_id=patient_data.get("patient_id"),
+            decision_id=patient_data.get("_decision_id"),
+            idempotency_key=patient_data.get("_idempotency_key"),
             details={
                 "inputs": {
                     "bmi": raw_bmi,
@@ -654,8 +659,10 @@ def evaluate_eligibility(patient_data: dict) -> EligibilityResult:
                 }
             }
         )
+    except AuditError:
+        raise
     except Exception as e:
-        logger.error("Audit Logging Failed: %s", e)
+        raise AuditWriteError(f"Audit logging failed; decision withheld: {e}") from e
 
     return result
 
