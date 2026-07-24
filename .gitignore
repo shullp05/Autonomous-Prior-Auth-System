@@ -47,6 +47,8 @@ output/*
 chroma_db/
 .last_model_trace.json
 audit_log.jsonl
+decision_idempotency.jsonl
+audit_checkpoints/
 dashboard_data.json
 !tests/fixtures/dashboard_data.json
 governance_report.json

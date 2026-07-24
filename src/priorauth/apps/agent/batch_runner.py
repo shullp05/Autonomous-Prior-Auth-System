@@ -47,6 +47,7 @@ import math
 import os
 import shutil
 import time
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -61,7 +62,8 @@ enforce_offline()
 
 from priorauth.policy_utils import format_criteria_list
 
-from priorauth.audit_logger import get_audit_logger
+from priorauth.audit_logger import AuditError, get_audit_logger
+from priorauth.decision_control import Actor, IdempotencyStore, decision_identifiers
 from priorauth.letter_service import LetterResult, generate_approved_letter
 from priorauth.policy_engine import evaluate_eligibility
 from priorauth.policy_snapshot import POLICY_ID, SNAPSHOT_PATH, load_policy_snapshot
@@ -103,6 +105,9 @@ validate_policy_snapshot(SNAPSHOT)
 POLICY_VERSION: str = SNAPSHOT["policy_id"]
 DASHBOARD_PUBLIC_DIR = paths.UI_DIR / "public"
 TRACE_FILE = paths.REPO_ROOT / ".last_model_trace.json"
+RUN_ID = os.getenv("PA_REQUEST_ID", str(uuid.uuid4()))
+ACTOR = Actor.from_environment()
+IDEMPOTENCY_STORE = IdempotencyStore()
 
 
 def _now_iso() -> str:
@@ -575,6 +580,12 @@ def run_batch() -> None:
 
     def process_patient(pid: str) -> dict[str, Any]:
         start_time = time.time()
+        decision_id, idempotency_key = decision_identifiers(
+            pid,
+            str(SNAPSHOT.get("source_hash", POLICY_VERSION)),
+            f"{RUN_ID}:{pid}",
+        )
+        IDEMPOTENCY_STORE.reserve(decision_id, idempotency_key)
 
         # Defaults to keep return object well-formed
         status = "FLAGGED"
@@ -610,6 +621,8 @@ def run_batch() -> None:
         try:
             if USE_DETERMINISTIC:
                 patient_data = _load_patient_data(pid, df_patients, df_obs, df_conds, df_meds)
+                patient_data["_decision_id"] = decision_id
+                patient_data["_idempotency_key"] = idempotency_key
                 det_result_obj = evaluate_eligibility(patient_data)
 
                 raw_verdict = det_result_obj.verdict
@@ -640,7 +653,11 @@ def run_batch() -> None:
                         "policy_path": policy_path,
                         "bmi": det_result_obj.bmi_numeric,
                     },
-                    patient_id=pid
+                    actor=ACTOR.subject,
+                    actor_roles=list(ACTOR.roles),
+                    patient_id=pid,
+                    decision_id=decision_id,
+                    idempotency_key=idempotency_key,
                 )
 
                 # Letters: deterministic mode should remain LLM-free when possible.
@@ -877,6 +894,8 @@ Sincerely,
 Clinical Pharmacy Review Team
 """
 
+        except AuditError:
+            raise
         except Exception as e:
             status = "FLAGGED"
             reason = str(e)
@@ -893,6 +912,8 @@ Clinical Pharmacy Review Team
             final_bmi_val = (llm_response_obj.get("audit_findings") or {}).get("bmi_numeric")
 
         return {
+            "decision_id": decision_id,
+            "idempotency_key": idempotency_key,
             "patient_id": pid,
             "status": status,              # normalized: APPROVED / DENIED / FLAGGED / PROVIDER_ACTION_REQUIRED / CDI_REQUIRED
             "raw_verdict": raw_verdict,    # preserves engine output: DENIED_CLINICAL, MANUAL_REVIEW, etc
