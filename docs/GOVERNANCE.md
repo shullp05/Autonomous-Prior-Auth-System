@@ -14,6 +14,10 @@ Implemented in `src/priorauth/governance_audit.py` and run against `output/dashb
   - Wilson 95% confidence intervals for rates.
   - Two-proportion z-tests with Bonferroni correction across groups.
 - **Attributes audited**: `race` and `gender` (from patient data).
+- **Intersectional audit**: `race × gender`, with the same minimum-sample and uncertainty controls.
+- **Calibration**: Brier score and confidence bins when results include numeric `decision_confidence`.
+- **Drift**: Status-distribution deltas when `PA_GOVERNANCE_BASELINE_PATH` points to a locked prior result set.
+- **Clinically reviewed truth**: `PA_CLINICAL_GROUND_TRUTH_PATH` may supply reviewer-attributed prospective labels that supersede synthetic labels for matching cases.
 - **Stop-ship rule**: A group is flagged if disparity exceeds the configured threshold and is statistically significant.
 
 ## Inputs and outputs
@@ -35,4 +39,5 @@ python -m priorauth.governance_audit
 - The audit depends on **synthetic or staged data**; results should not be interpreted as real-world bias measurements.
 - Cases with **unknown ground truth** (e.g., missing BMI) are excluded from eligible denominators.
 - The parity checks do not account for clinical confounders or distribution shifts.
-- Governance currently evaluates **outcome parity**, not calibration, error attribution, or utility-based fairness.
+- Small groups are retained with confidence intervals and marked insufficient rather than treated as evidence of parity.
+- Calibration is reported only when callers provide numeric confidence; the audit still does not establish causal fairness or clinical utility.

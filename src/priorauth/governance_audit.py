@@ -476,6 +476,8 @@ def run_governance_audit(
     min_eligible_sample_size: int = 30,
     disparity_threshold: float = 0.10,
     alpha: float = 0.05,
+    clinical_ground_truth_path: str | None = None,
+    drift_baseline_path: str | None = None,
 ) -> None:
     logger.info("Running clinical fairness audit (equal opportunity / FNR parity) on %s", ai_results_path)
 
@@ -561,6 +563,23 @@ def run_governance_audit(
     df_ai["ground_truth_reason"] = df_ai["patient_id"].map(lambda x: truth_meta.get(str(x), {}).get("reason", ""))
     df_ai["ground_truth_evidence"] = df_ai["patient_id"].map(lambda x: truth_meta.get(str(x), {}).get("evidence", ""))
 
+    reviewed_path = clinical_ground_truth_path or os.getenv("PA_CLINICAL_GROUND_TRUTH_PATH")
+    reviewed_count = 0
+    if reviewed_path:
+        reviewed = pd.read_csv(reviewed_path)
+        required_reviewed = {"patient_id", "eligible", "reviewer_id", "reviewed_at"}
+        missing_reviewed = required_reviewed - set(reviewed.columns)
+        if missing_reviewed:
+            raise ValueError(f"Clinical ground truth is missing columns: {sorted(missing_reviewed)}")
+        reviewed["patient_id"] = reviewed["patient_id"].astype(str)
+        reviewed_map = reviewed.set_index("patient_id")["eligible"].map(
+            lambda value: str(value).strip().lower() in {"1", "true", "yes", "eligible"}
+        )
+        matched = df_ai["patient_id"].isin(reviewed_map.index)
+        df_ai.loc[matched, "ground_truth_eligible"] = df_ai.loc[matched, "patient_id"].map(reviewed_map)
+        df_ai.loc[matched, "ground_truth_reason"] = "Clinically reviewed ground truth"
+        reviewed_count = int(matched.sum())
+
     # Merge demographics
     df_merged = df_ai.merge(df_pat, on="patient_id", how="left")
 
@@ -568,17 +587,23 @@ def run_governance_audit(
     df_merged["decision_norm"] = df_merged[status_col].astype(str).str.upper().str.strip()
     df_merged["is_approved"] = df_merged["decision_norm"] == "APPROVED"
     df_merged["is_denied"] = df_merged["decision_norm"].str.startswith("DENIED")
+    if {"race", "gender"}.issubset(df_merged.columns):
+        df_merged["race_x_gender"] = (
+            df_merged["race"].fillna("UNKNOWN").astype(str)
+            + " × "
+            + df_merged["gender"].fillna("UNKNOWN").astype(str)
+        )
 
     # False negative definitions
-    df_merged["fn_access"] = (df_merged["ground_truth_eligible"] == True) & (~df_merged["is_approved"])
-    df_merged["fn_denied_only"] = (df_merged["ground_truth_eligible"] == True) & (df_merged["is_denied"])
+    df_merged["fn_access"] = df_merged["ground_truth_eligible"].eq(True) & (~df_merged["is_approved"])
+    df_merged["fn_denied_only"] = df_merged["ground_truth_eligible"].eq(True) & df_merged["is_denied"]
 
     # Exclude unknown ground truth from parity denominators
     df_eval = df_merged[df_merged["ground_truth_eligible"].isin([True, False])].copy()
 
     def compute_group_metrics(df_group: pd.DataFrame) -> dict:
         total_n = int(len(df_group))
-        eligible_mask = df_group["ground_truth_eligible"] == True
+        eligible_mask = df_group["ground_truth_eligible"].eq(True)
         eligible_n = int(eligible_mask.sum())
         unknown_truth_n = int(df_group["ground_truth_eligible"].isna().sum())
 
@@ -626,7 +651,7 @@ def run_governance_audit(
             }
 
         metrics: dict[str, dict] = {}
-        groups = [g for g in df_eval[attr].dropna().unique()]
+        groups = list(df_eval[attr].dropna().unique())
 
         for g in groups:
             df_g_all = df_merged[df_merged[attr] == g]
@@ -645,8 +670,8 @@ def run_governance_audit(
             df_g = df_eval[df_eval[attr] == g]
             df_rest = df_eval[df_eval[attr] != g]
 
-            g_eligible_mask = df_g["ground_truth_eligible"] == True
-            r_eligible_mask = df_rest["ground_truth_eligible"] == True
+            g_eligible_mask = df_g["ground_truth_eligible"].eq(True)
+            r_eligible_mask = df_rest["ground_truth_eligible"].eq(True)
 
             n1 = int(g_eligible_mask.sum())
             n2 = int(r_eligible_mask.sum())
@@ -718,12 +743,63 @@ def run_governance_audit(
 
     logger.info("Analyzing Disparities (Minimum Eligible N=%d)...", min_eligible_sample_size)
 
-    audits = [audit_attribute(attr) for attr in ["race", "gender"]]
+    audit_attributes = ["race", "gender"]
+    if "race_x_gender" in df_merged.columns:
+        audit_attributes.append("race_x_gender")
+    audits = [audit_attribute(attr) for attr in audit_attributes]
 
-    eligible_known = df_eval[df_eval["ground_truth_eligible"] == True]
+    eligible_known = df_eval[df_eval["ground_truth_eligible"].eq(True)]
     overall_eligible_n = int(len(eligible_known))
     overall_fn_access_n = int(eligible_known["fn_access"].sum()) if overall_eligible_n > 0 else 0
     overall_fnr_access = (overall_fn_access_n / overall_eligible_n) if overall_eligible_n > 0 else None
+
+    calibration: dict[str, Any] = {"available": False, "reason": "decision_confidence was not supplied"}
+    if "decision_confidence" in df_merged.columns:
+        scored = df_merged.dropna(subset=["decision_confidence", "ground_truth_eligible"]).copy()
+        scored["decision_confidence"] = pd.to_numeric(scored["decision_confidence"], errors="coerce")
+        scored = scored.dropna(subset=["decision_confidence"])
+        scored = scored[scored["decision_confidence"].between(0, 1)]
+        if not scored.empty:
+            truth = scored["ground_truth_eligible"].astype(float)
+            confidence = scored["decision_confidence"].astype(float)
+            bins = pd.cut(confidence, bins=[0, .2, .4, .6, .8, 1], include_lowest=True)
+            calibration = {
+                "available": True,
+                "n": int(len(scored)),
+                "brier_score": round(float(((confidence - truth) ** 2).mean()), 6),
+                "bins": [
+                    {
+                        "range": str(name),
+                        "n": int(len(group)),
+                        "mean_confidence": round(float(group["decision_confidence"].mean()), 4),
+                        "observed_eligibility": round(float(group["ground_truth_eligible"].astype(float).mean()), 4),
+                    }
+                    for name, group in scored.groupby(bins, observed=True)
+                ],
+            }
+
+    drift: dict[str, Any] = {"available": False, "reason": "No drift baseline configured"}
+    baseline_path = drift_baseline_path or os.getenv("PA_GOVERNANCE_BASELINE_PATH")
+    if baseline_path:
+        baseline_data = json.loads(Path(baseline_path).read_text(encoding="utf-8"))
+        baseline_rows = baseline_data.get("results", baseline_data) if isinstance(baseline_data, dict) else baseline_data
+        baseline_df = pd.DataFrame(baseline_rows)
+        baseline_status = "status" if "status" in baseline_df.columns else "final_decision"
+        current_rates = df_merged["decision_norm"].value_counts(normalize=True)
+        baseline_rates = baseline_df[baseline_status].astype(str).str.upper().str.strip().value_counts(normalize=True)
+        labels = sorted(set(current_rates.index) | set(baseline_rates.index))
+        drift = {
+            "available": True,
+            "baseline_path": str(baseline_path),
+            "status_rate_deltas": {
+                label: round(float(current_rates.get(label, 0) - baseline_rates.get(label, 0)), 4)
+                for label in labels
+            },
+            "max_absolute_delta": round(
+                max((abs(float(current_rates.get(label, 0) - baseline_rates.get(label, 0))) for label in labels), default=0),
+                4,
+            ),
+        }
 
     report = {
         "metric_name": f"False Negative Rate Parity (Equality of Opportunity) | Min Eligible N={min_eligible_sample_size}",
@@ -741,6 +817,13 @@ def run_governance_audit(
             "fnr_access_ci95": None if overall_eligible_n <= 0 else wilson_ci(overall_fn_access_n, overall_eligible_n),
             "notes": "Ground truth unknown cases (e.g., missing BMI) are excluded from eligible denominators.",
         },
+        "clinical_validation": {
+            "reviewed_ground_truth_path": reviewed_path,
+            "reviewed_case_count": reviewed_count,
+            "prospective_validation_required": True,
+        },
+        "calibration": calibration,
+        "data_drift": drift,
         "attribute_audits": audits,
     }
 
